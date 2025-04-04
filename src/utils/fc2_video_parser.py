@@ -6,6 +6,7 @@ FC2视频解析模块 - 视频信息和作者数据提取工具
 import os
 import re
 import time
+import random
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,7 +18,7 @@ from src.utils.logger import get_logger
 logger = get_logger("fc2_video_parser")
 
 
-def get_writer_username_from_vid(vid, max_retries=3):
+def get_writer_username_from_vid(vid, max_retries=None):
     """
     从视频ID获取作者用户名
 
@@ -28,6 +29,9 @@ def get_writer_username_from_vid(vid, max_retries=3):
     Returns:
         str: 作者用户名，失败返回None
     """
+    # 使用配置的重试次数
+    if max_retries is None:
+        max_retries = config.max_retries
     url = f"{config.fc2ppvdb_api_base}/articles/{vid}"
 
     # 使用配置中的请求头
@@ -41,8 +45,9 @@ def get_writer_username_from_vid(vid, max_retries=3):
 
             # 处理429错误
             if response.status_code == 429:
-                wait_time = 30 * (retry_count + 1)  # 增加等待时间
-                logger.warning(f"收到429错误，等待 {wait_time} 秒后重试...")
+                # 使用指数退避策略计算等待时间
+                wait_time = (config.retry_base ** retry_count) + random.uniform(1, 3)
+                logger.warning(f"收到429错误，等待 {wait_time:.2f} 秒后重试...")
                 time.sleep(wait_time)
                 retry_count += 1
                 continue
@@ -118,14 +123,24 @@ def get_writer_username_from_vid(vid, max_retries=3):
             except Exception as e:
                 logger.error(f"保存HTML源码失败: {e}")
 
+            # 等待一点时间避免频繁请求
+            wait_time = random.uniform(*config.request_interval)  # 使用配置的请求间隔范围
+            logger.debug(f"等待 {wait_time:.2f} 秒后继续...")
+            time.sleep(wait_time)
+
             return None
 
         except requests.exceptions.RequestException as e:
             logger.error(f"请求错误: {e}")
-            wait_time = 5 * (retry_count + 1)
-            logger.info(f"等待 {wait_time} 秒后重试...")
-            time.sleep(wait_time)
+            # 一般网络错误，指数退避重试
             retry_count += 1
+            if retry_count > max_retries:
+                return None
+                
+            # 使用指数退避策略计算等待时间
+            wait_time = (config.retry_base ** retry_count) + random.uniform(1, 3)
+            logger.info(f"等待 {wait_time:.2f} 秒后重试...")
+            time.sleep(wait_time)
         except Exception as e:
             logger.error(f"解析错误: {e}")
             return None
@@ -134,14 +149,18 @@ def get_writer_username_from_vid(vid, max_retries=3):
     return None
 
 
-def get_writer_info(writerusername, request_counter, max_retries=5):
+def get_writer_info(writerusername, request_counter, max_retries=None):
     """获取作者的ID，使用基于请求次数的退避策略"""
+    # 使用配置的重试次数
+    if max_retries is None:
+        max_retries = config.max_retries
     url = f"{config.fc2ppvdb_api_base}/writers/{writerusername}"
 
-    # 检查是否需要等待 - 每20次请求后的第一次(21,41,61...)
-    if request_counter % 20 == 1 and request_counter > 1:
-        logger.info(f"达到请求限制点 ({request_counter})，等待30秒以避免被封...")
-        time.sleep(30)
+    # 检查是否需要等待 - 每X次请求后的第一次(21,41,61...)
+    if request_counter % config.request_limit_count == 1 and request_counter > 1:
+        wait_time = (config.retry_base ** 2) + random.uniform(1, 3)  # 使用适当的等待时间
+        logger.info(f"达到请求限制点 ({request_counter})，等待 {wait_time:.2f} 秒以避免被封...")
+        time.sleep(wait_time)
 
     retry_count = 0
 
@@ -197,7 +216,10 @@ def get_writer_info(writerusername, request_counter, max_retries=5):
         except Exception as e:
             logger.error(f"获取作者信息失败: {e}")
             retry_count += 1
-            time.sleep(5)
+            # 使用配置的退避策略
+            wait_time = random.uniform(*config.request_interval)
+            logger.debug(f"等待 {wait_time:.2f} 秒后重试...")
+            time.sleep(wait_time)
 
     logger.error(f"已达最大重试次数，无法获取作者 {writerusername} 的ID")
     return None

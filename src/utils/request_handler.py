@@ -43,9 +43,9 @@ class RequestHandler:
         cls,
         url,
         headers=None,
-        timeout=15,
+        timeout=None,
         step_name=None,
-        max_retries=3,
+        max_retries=None,
         verify=True,
         allow_redirects=True,
     ):
@@ -63,6 +63,12 @@ class RequestHandler:
         Returns:
             Response: 请求响应对象
         """
+        # 使用配置的默认值
+        if timeout is None:
+            timeout = config.timeout
+        if max_retries is None:
+            max_retries = config.max_retries
+            
         retry_count = 0
 
         while retry_count <= max_retries:
@@ -159,7 +165,7 @@ class RequestHandler:
                 site_url,
                 step_name=f"检查视频 {video_id} 在 {site_name}",
                 max_retries=1,  # 减少重试次数以加快速度
-                timeout=10,
+                timeout=config.timeout,  # 使用配置的超时时间
             )
 
             if response:

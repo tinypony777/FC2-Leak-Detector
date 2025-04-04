@@ -49,6 +49,7 @@ class Config:
         # 请求间隔设置 - 防止请求过于频繁导致IP被限制
         self.page_interval = (0.5, 1.2)  # 分页请求间隔时间范围(秒)
         self.request_interval = (0.5, 1.0)  # 普通请求间隔时间范围(秒)
+        self.request_limit_count = 20  # 每X次请求后强制等待一次
         # 并发与超时设置
         self.max_workers = 30  # 最大并发线程数 (增加可提升速度，但可能增加被限制风险)
         self.timeout = 15  # 请求超时时间(秒)，网络不稳定时可适当增加
