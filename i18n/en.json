@@ -1,0 +1,86 @@
+{
+  "app_name": "FC2 Video Analyzer",
+  "app_description": "FC2 Video Status Checking Tool",
+  
+  "main_menu": {
+    "title": "Main Menu",
+    "options": {
+      "analyze_writer": "Analyze Author Works",
+      "analyze_actress": "Analyze Actress Works",
+      "batch_process": "Batch Processing",
+      "extract_writers": "Extract Popular Authors",
+      "show_config": "Show Configuration",
+      "exit": "Exit Program"
+    }
+  },
+  
+  "general": {
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "back": "Back",
+    "continue": "Continue",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Info",
+    "loading": "Loading",
+    "processing": "Processing",
+    "completed": "Completed",
+    "unknown": "Unknown"
+  },
+  
+  "analyzer": {
+    "fetch_author": "Fetching author information",
+    "fetch_videos": "Fetching video list",
+    "check_status": "Checking video status",
+    "get_magnets": "Getting magnet links",
+    "download_images": "Downloading thumbnails",
+    "generate_report": "Generating report",
+    "analyze_complete": "Analysis complete",
+    "total_videos": "Total videos",
+    "leaked_videos": "Leaked videos",
+    "leaked_ratio": "Leak ratio",
+    "check_failed": "Check failed",
+    "video_id": "Video ID",
+    "status": "Status",
+    "leaked": "Leaked",
+    "not_leaked": "Not leaked"
+  },
+  
+  "input_prompts": {
+    "writer_id": "Please enter author ID",
+    "actress_id": "Please enter actress ID",
+    "batch_ids": "Please enter ID list (comma separated)",
+    "threads": "Please enter thread count",
+    "confirm_continue": "Continue?"
+  },
+  
+  "errors": {
+    "invalid_id": "Invalid ID",
+    "not_found": "Not found",
+    "connection_error": "Connection error",
+    "timeout": "Request timeout",
+    "rate_limited": "Rate limited",
+    "server_error": "Server error",
+    "missing_dependency": "Missing dependency: {lib}",
+    "python_version": "Python 3.8 or higher required"
+  },
+  
+  "config": {
+    "max_workers": "Max threads",
+    "timeout": "Timeout (seconds)",
+    "max_retries": "Max retries",
+    "cache_ttl": "Cache validity (hours)",
+    "check_sites": "Check sites"
+  },
+  
+  "reports": {
+    "summary": "Summary",
+    "details": "Details",
+    "statistics": "Statistics",
+    "save_path": "Save path",
+    "report_saved": "Report saved to: {path}"
+  }
+} 
