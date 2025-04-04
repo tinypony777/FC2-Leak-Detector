@@ -42,35 +42,11 @@ from src.utils.request_handler import RequestHandler
 # 创建console实例
 console = Console()
 
-# 设置请求头
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Connection": "keep-alive",
-    "DNT": "1",
-}
-
 # 获取日志记录器
 logger = get_logger("fc2analyzer")
 
 # 忽略警告
 warnings.filterwarnings("ignore")
-
-# 默认User-Agent列表
-DEFAULT_USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-]
-
-# 默认请求头
-DEFAULT_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-    "DNT": "1",
-}
-
 
 class FC2Analyzer:
     """FC2流出检测器，检查FC2视频的状态和获取相关信息"""
@@ -144,17 +120,9 @@ class FC2Analyzer:
 
         # 其他初始化保持不变
         self.base_url = f"{config.fc2ppvdb_api_base}/api/v1"
-        self.headers = config.base_headers.copy()
 
         # 数据存储
         self.all_videos = []  # 所有视频信息
-
-        # 设置API请求头
-        self.fc2_headers = config.api_headers.copy()
-        self.fc2_headers["referer"] = f"{config.fc2ppvdb_api_base}/writers/{self.write_id}"
-        # 添加User-Agent
-        user_agents = config.user_agents
-        self.fc2_headers["User-Agent"] = random.choice(user_agents) if user_agents else config.base_headers["User-Agent"]
 
         # 请求控制参数
         self.request_interval = config.request_interval
@@ -217,7 +185,7 @@ class FC2Analyzer:
                 print(f"名称获取URL: {api_url}")  # 调试信息
                 api_response = RequestHandler.make_request(
                     api_url,
-                    headers=self.fc2_headers,
+                    headers=config.api_headers,
                     step_name=f"API获取{entity_desc}名称[第{attempt+1}次]",
                 )
 
@@ -244,7 +212,7 @@ class FC2Analyzer:
                 entity_url = f"{base_url}/{entity_type.lstrip('/')}/{self.write_id}"
                 response = RequestHandler.make_request(
                     entity_url,
-                    headers=self.fc2_headers,
+                    headers=config.api_headers,
                     step_name=f"获取{entity_desc}名称[第{attempt+1}次]",
                 )
 
@@ -350,7 +318,7 @@ class FC2Analyzer:
                         "page": page,
                         "per_page": 100,
                     },
-                    headers=self.fc2_headers,
+                    headers=config.api_headers,
                 )
 
                 if response.status_code != 200:
@@ -602,7 +570,7 @@ class FC2Analyzer:
 
                     response = requests.get(
                         search_url,
-                        headers=self.fc2_headers,
+                        headers=config.api_headers,
                         timeout=config.timeout,
                     )
 
@@ -866,7 +834,7 @@ class FC2Analyzer:
 
                     response = requests.get(
                         image_url,
-                        headers=self.fc2_headers,
+                        headers=config.api_headers,
                         timeout=config.timeout,
                     )
 
