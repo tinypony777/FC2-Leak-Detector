@@ -128,8 +128,8 @@ class RequestHandler:
             # 默认检查站点
             check_sites = [
                 {
-                    "name": "FC2Hub",
-                    "url": "https://fc2hub.com/search?kw=FC2-PPV-{vid}",
+                    "name": "MissAV",
+                    "url": "https://missav.ws/dm18/en/fc2-ppv-{vid}",
                     "priority": 1,
                 }
             ]
