@@ -363,7 +363,7 @@ FC2-Leak-Detector/
 
 Actress ID can be found in the URL of fc2ppvdb.com website. For example:
 - Actress page URL: `.../actress/6789` where `6789` is the actress ID
-Author ID is not explicitly displayed on the webpage. Users can select any FC2 video ID from that author and use the -v id command line format to directly get videos from that author without providing a specific id.
+- Author ID is not explicitly displayed on the webpage. Users can select any FC2 video ID from that author and use the -v id command line format to directly get videos from that author without providing a specific id.
 
 #### What If Analysis is Slow?
 
