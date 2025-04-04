@@ -1111,22 +1111,40 @@ class FC2Analyzer:
                 magnet_only_path = os.path.join(result_dir, f"{file_prefix}_磁链.txt")
                 reports["magnet_only"] = magnet_only_path
 
-                with open(magnet_only_path, "w", encoding="utf-8") as f:
-                    for video in leaked_with_magnet:
-                        vid = video.get("video_id")
-                        title = video.get("title", f"FC2-PPV-{vid}")
-                        # 获取磁链
-                        magnets = (
-                            video.get("magnets") or [video.get("magnet")]
-                            if video.get("magnet")
-                            else []
-                        )
-
-                        f.write(f"# {vid} | {title}\n")
-                        for magnet in magnets:
-                            if magnet:
-                                f.write(f"{magnet}\n")
-                        f.write("\n")  # 空行分隔
+                try:
+                    with open(magnet_only_path, "w", encoding="utf-8") as f:
+                        for video in leaked_with_magnet:
+                            vid = video.get("video_id")
+                            title = video.get("title", f"FC2-PPV-{vid}")
+                            
+                            # 获取磁链 - 兼容两种格式
+                            magnets = []
+                            
+                            # 尝试获取magnets列表
+                            if video.get("magnets"):
+                                magnets = video.get("magnets")
+                            # 如果没有magnets列表但有单个magnet
+                            elif video.get("magnet"):
+                                magnets = [video.get("magnet")]
+                            
+                            # 写入视频信息作为注释
+                            f.write(f"# {vid} | {title}\n")
+                            
+                            # 写入磁链
+                            if magnets:
+                                for magnet in magnets:
+                                    if magnet and isinstance(magnet, str):
+                                        f.write(f"{magnet}\n")
+                            else:
+                                # 没有磁链时添加提示
+                                f.write("# [未获取到磁力链接]\n")
+                            
+                            # 添加空行分隔
+                            f.write("\n")
+                            
+                    self.logger.info(f"已生成磁链专用文件: {magnet_only_path}")
+                except Exception as e:
+                    self.logger.error(f"生成磁链专用文件失败: {str(e)}")
 
             self.logger.info(f"已生成{len(reports)}个报告文件")
             return reports
