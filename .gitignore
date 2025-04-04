@@ -40,6 +40,31 @@ media/
 static/
 uploads/
 
+# FC2视频分析器特定缓存目录
+/data/
+/data/id_cache/
+/data/img/
+/data/results/
+/data/magnets/
+/data/logs/
+*.cache
+*.json.cache
+
+# 图片和临时文件
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# 结果文件
+*_总报告.txt
+*_已流出_有磁链.txt
+*_已流出_无磁链.txt
+*_未流出.txt
+*_已流出视频总表.txt
+*_磁链.txt
+
 # Temporary files
 *.tmp
 .DS_Store
