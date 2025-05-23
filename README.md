@@ -69,7 +69,7 @@ cd FC2-Leak-Detector
 **方法2: 直接下载发布版本**
 
 1. 访问[GitHub Releases页面](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
-2. 下载最新版本的源代码(zip)
+2. 下载最新版本的源代码
 3. 解压下载的文件
 4. 通过命令行进入解压后的目录
 
@@ -277,7 +277,7 @@ python --version
 
 #### Step 2: Get the Code
 
-**Method 1: Using Git (Recommended for Developers)**
+**Method 1: Using Git **
 
 ```bash
 git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
@@ -287,7 +287,7 @@ cd FC2-Leak-Detector
 **Method 2: Direct Download from Releases**
 
 1. Visit the [GitHub Releases page](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
-2. Download the latest version source code (zip or tar.gz)
+2. Download the latest version source code 
 3. Extract the downloaded file
 4. Navigate to the extracted directory via command line
 
