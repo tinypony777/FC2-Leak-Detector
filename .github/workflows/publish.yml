@@ -74,16 +74,16 @@ jobs:
         with:
           version: "latest"
 
-      - name: Install build dependencies with uv
+      - name: Install dependencies and build package
+        env:
+          UV_LINK_MODE: copy
         run: |
-          uv sync --frozen --no-cache -v
-
-      - name: Build package with uv
-        run: |
-          uv build
+          python -m pip install build setuptools wheel twine
+          python -m build
+          twine check dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.10
         with:
           password: ${{ secrets.PYPI }}
-          skip_existing: true
+          skip-existing: true

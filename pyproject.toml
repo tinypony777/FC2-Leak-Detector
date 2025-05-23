@@ -60,4 +60,11 @@ exclude = [
 ] 
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"] 
+packages = ["src"]
+include = ["src/**/*.py", "src/**/*.json", "src/**/*.txt"]
+
+[tool.hatch.build]
+include = ["src"]
+
+[tool.hatch.metadata]
+allow-direct-references = true 
