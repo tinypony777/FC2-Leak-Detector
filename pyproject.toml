@@ -21,13 +21,13 @@ profile = "black"
 line_length = 88
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=7.0"]
 build-backend = "setuptools.build_meta"
 
 # 添加项目元数据
 [project]
 name = "fc2-leak-detector"
-version = "1.0.0"
+dynamic = ["version"]
 description = "FC2流出检测器，用于查询和分析FC2视频流出状态"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -39,6 +39,8 @@ dependencies = [
     "beautifulsoup4>=4.9.0",
     "tqdm>=4.60.0",
     "pycryptodome>=3.10.1",
+    "rich>=13.0.0",
+    "loguru>=0.5.0",
 ]
 
 [project.urls]
@@ -58,6 +60,9 @@ exclude = [
     ".env",
     "env"
 ] 
+
+[tool.setuptools.dynamic]
+version = {attr = "src.__version__"}
 
 [tool.setuptools]
 packages = ["src"] 
