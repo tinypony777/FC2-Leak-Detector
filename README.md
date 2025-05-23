@@ -1,5 +1,5 @@
 [![版本](https://img.shields.io/github/v/release/FC2-Research-Club/FC2-Leak-Detector?include_prereleases&style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
-[![许可证](https://img.shields.io/github/license/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/blob/main/LICENSE)
+[![许可证](https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/blob/main/LICENSE)
 [![Python版本](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://www.python.org/)
 [![GitHub Stars](https://img.shields.io/github/stars/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/network/members)
