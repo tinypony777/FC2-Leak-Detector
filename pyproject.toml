@@ -1,78 +1,60 @@
-# 项目元数据
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[build-system]
+requires = ["hatchling>=1.0.0"]
+build-backend = "hatchling.build"
+
+# 添加项目元数据
 [project]
 name = "fc2-leak-detector"
-version = "0.0.1"
+version = "1.0.0"
 description = "FC2流出检测器，用于查询和分析FC2视频流出状态"
 readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "GPL-3.0-or-later" }
-authors = [{ name = "soundstarrain" }]
-maintainers = [{ name = "soundstarrain" }]
-keywords = ["fc2", "video", "leakage", "detection"]
-classifiers = [
-  "Development Status :: 5 - Production/Stable",
-  "Intended Audience :: End Users/Desktop",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
+requires-python = ">=3.8"
+authors = [
+    {name = "soundstarrain", email = "114404785+soundstarrain@users.noreply.github.com"}
 ]
 dependencies = [
-  "requests>=2.0.0",
-  "beautifulsoup4>=4.4.0",
-  "loguru>=0.5.0",
-  "rich>=14.0.0",
-  "typing-extensions>=4.0.0",
+    "requests>=2.25.0",
+    "beautifulsoup4>=4.9.0",
+    "tqdm>=4.60.0",
+    "pycryptodome>=3.10.1",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector"
-"Bug Reports" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector/issues"
-"Source" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector"
-
-[project.optional-dependencies]
-dev = [
-  "flake8==6.1.0",
-  "pytest==8.3.5",
-  "pytest-cov==6.1.1",
-  "build==1.2",
-  "wheel==0.46.0",
-]
-
-
-[build-system]
-requires = [
-  "hatchling==1.26.3",
-] # Without a version spec, hatchling==1.27.0 is used which fails to publish. Ref: https://github.com/astral-sh/rye/issues/1446#issuecomment-2545154562
-build-backend = "hatchling.build"
-
-
-[tool.hatch.build.targets.wheel]
-packages = ["src"]
-
+"Bug Tracker" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector/issues"
 
 [tool.flake8]
 max-line-length = 88
 extend-ignore = ["E203"]
 exclude = [
-  ".git",
-  "__pycache__",
-  "build",
-  "dist",
-  "venv",
-  ".venv",
-  ".env",
-  "env",
-]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-
-[tool.coverage.run]
-source = ["src"]
-omit = ["tests/*"]
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    ".env",
+    "env"
+] 
