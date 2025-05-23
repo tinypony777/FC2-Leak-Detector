@@ -21,8 +21,8 @@ profile = "black"
 line_length = 88
 
 [build-system]
-requires = ["hatchling>=1.0.0"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 # 添加项目元数据
 [project]
@@ -59,12 +59,5 @@ exclude = [
     "env"
 ] 
 
-[tool.hatch.build.targets.wheel]
-packages = ["src"]
-include = ["src/**/*.py", "src/**/*.json", "src/**/*.txt"]
-
-[tool.hatch.build]
-include = ["src"]
-
-[tool.hatch.metadata]
-allow-direct-references = true 
+[tool.setuptools]
+packages = ["src"] 

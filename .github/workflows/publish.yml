@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: CI Build
 
 on:
   push:
@@ -8,55 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # lint:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.9'
-  #         cache: 'pip'
-
-  #     - name: Install the latest version of uv
-  #       uses: astral-sh/setup-uv@v5
-  #       with:
-  #         version: "latest"
-
-  #     - name: Install dependencies with uv
-  #       run: |
-  #         uv sync --frozen --no-cache -v --extra dev
-
-  #     - name: Lint with flake8
-  #       run: |
-  #         # 将所有警告都视为错误
-  #         uv run flake8 . --count --max-line-length=88 --statistics --show-source --extend-ignore=E203 --max-complexity=10
-
-  # test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.9'
-  #         cache: 'pip'
-
-  #     - name: Install the latest version of uv
-  #       uses: astral-sh/setup-uv@v5
-  #       with:
-  #         version: "latest"
-
-  #     - name: Install dependencies with uv
-  #       run: |
-  #         uv sync --frozen --no-cache -v --extra dev
-
-  #     - name: Run tests with pytest
-  #       run: uv run pytest
-
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -69,21 +21,8 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          version: "latest"
-
       - name: Install dependencies and build package
-        env:
-          UV_LINK_MODE: copy
         run: |
-          python -m pip install build setuptools wheel twine
+          python -m pip install --upgrade pip
+          python -m pip install build twine
           python -m build
-          twine check dist/*
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.10
-        with:
-          password: ${{ secrets.PYPI }}
-          skip-existing: true
