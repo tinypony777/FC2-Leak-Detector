@@ -3,6 +3,9 @@
 [![Python版本](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://www.python.org/)
 [![GitHub Stars](https://img.shields.io/github/stars/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/network/members)
+[![CI状态](https://img.shields.io/github/actions/workflow/status/FC2-Research-Club/FC2-Leak-Detector/publish.yml?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/actions)
+[![代码大小](https://img.shields.io/github/languages/code-size/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector)
+[![最后提交](https://img.shields.io/github/last-commit/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/commits/main)
 
 # FC2流出检测器 | FC2 Leak Detector
 
@@ -45,14 +48,32 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
 - Python 3.8 或更高版本
 - 支持的操作系统: Windows, macOS, Linux
 
-#### 步骤一: 获取代码
+#### 步骤一: 安装Python
+
+确保您的系统已安装Python 3.8或更高版本。您可以从[Python官网](https://www.python.org/downloads/)下载并安装适合您操作系统的版本。
+
+可以通过以下命令验证Python版本：
+```bash
+python --version
+```
+
+#### 步骤二: 获取代码
+
+**方法1: 使用Git克隆（推荐用于开发者）**
 
 ```bash
-git clone https://github.com/soundstarrain/FC2-Leak-Detector.git
+git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
 cd FC2-Leak-Detector
 ```
 
-#### 步骤二: 安装依赖
+**方法2: 直接下载发布版本**
+
+1. 访问[GitHub Releases页面](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
+2. 下载最新版本的源代码(zip或tar.gz)
+3. 解压下载的文件
+4. 通过命令行进入解压后的目录
+
+#### 步骤三: 安装依赖
 
 ```bash
 pip install -r requirements.txt
@@ -135,34 +156,34 @@ python run.py -w 5656 --no-image
 
 ```
 FC2-Leak-Detector/
-├── src/                 # Source code directory
-│   ├── checkers/        # Video check modules
-│   ├── writers/         # Author information modules
-│   ├── utils/           # Utility modules
-│   └── __init__.py      # Package initialization file
-├── data/                # Data storage directory (auto-created)
-│   ├── id_cache/        # ID cache directory
-│   ├── results/         # Results save directory
-│   ├── img/             # Images save directory
-│   ├── magnets/         # Magnet cache directory
-│   └── logs/            # Log directory
-├── i18n/                # Internationalization language files
-│   ├── en.json          # English language file
-│   └── zh.json          # Chinese language file
-├── .github/             # GitHub configuration
-│   └── workflows/       # GitHub workflows
-├── run.py               # Program entry point
-├── main.py              # Main program code
-├── config.py            # Configuration file
-├── requirements.txt     # Basic dependency list
-├── requirements-dev.txt # Development dependencies
-├── pyproject.toml       # Project configuration file
-├── .gitignore           # Git ignore file
-├── .editorconfig        # Editor configuration
-├── .pre-commit-config.yaml # Pre-commit hook configuration
-├── CHANGELOG.md         # Update log
-├── LICENSE              # License file
-└── README.md            # Documentation
+├── src/                 # 源代码目录
+│   ├── checkers/        # 视频检查模块
+│   ├── writers/         # 作者信息模块
+│   └── utils/           # 工具模块
+├── data/                # 数据存储目录（自动创建）
+│   ├── id_cache/        # ID缓存目录
+│   ├── results/         # 结果保存目录
+│   ├── img/             # 图片保存目录
+│   ├── magnets/         # 磁链缓存目录
+│   └── logs/            # 日志目录
+├── i18n/                # 国际化语言文件
+│   ├── en.json          # 英文语言文件
+│   └── zh.json          # 中文语言文件
+├── .github/             # GitHub配置
+│   └── workflows/       # GitHub工作流
+├── logs/                # 根目录日志文件夹
+├── run.py               # 程序入口点
+├── main.py              # 主程序代码
+├── config.py            # 配置文件
+├── setup.py             # 包安装配置
+├── requirements.txt     # 基本依赖列表
+├── pyproject.toml       # 项目配置文件
+├── .gitignore           # Git忽略文件
+├── .editorconfig        # 编辑器配置
+├── .python-version      # Python版本配置
+├── CHANGELOG.md         # 更新日志
+├── LICENSE              # 许可证文件
+└── README.md            # 文档说明
 ```
 
 ### 常见问题
@@ -204,6 +225,10 @@ python run.py --clear-cache
 4. 不要分享或传播通过本工具获取的任何可能侵犯版权的内容
 5. **特别提示：中国大陆用户需确保网络环境可正常访问国际互联网，以便连接本工具依赖的各项在线服务**
 
+### Star趋势
+
+[![Star历史图表](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
+
 ## English
 
 FC2 Leak Detector is a professional content status analysis tool built on the fc2ppvdb.com database. Users only need to provide an actress ID or author ID to quickly obtain a complete status report of their works, while automatically integrating high-quality preview images and magnet link resources. The tool has built-in powerful statistical analysis functions, providing users with intuitive and detailed data visualization results. Designed with a lightweight command-line interface, it is simple and intuitive to operate, while providing rich customization options to meet analysis needs in different scenarios.
@@ -241,14 +266,32 @@ FC2 Leak Detector is a professional content status analysis tool built on the fc
 - Python 3.8 or higher
 - Supported Operating Systems: Windows, macOS, Linux
 
-#### Step 1: Get the Code
+#### Step 1: Install Python
+
+Ensure Python 3.8 or higher is installed on your system. You can download and install the appropriate version for your operating system from the [Python official website](https://www.python.org/downloads/).
+
+You can verify your Python version with:
+```bash
+python --version
+```
+
+#### Step 2: Get the Code
+
+**Method 1: Using Git (Recommended for Developers)**
 
 ```bash
-git clone https://github.com/soundstarrain/FC2-Leak-Detector.git
+git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
 cd FC2-Leak-Detector
 ```
 
-#### Step 2: Install Dependencies
+**Method 2: Direct Download from Releases**
+
+1. Visit the [GitHub Releases page](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
+2. Download the latest version source code (zip or tar.gz)
+3. Extract the downloaded file
+4. Navigate to the extracted directory via command line
+
+#### Step 3: Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -334,8 +377,7 @@ FC2-Leak-Detector/
 ├── src/                 # Source code directory
 │   ├── checkers/        # Video check modules
 │   ├── writers/         # Author information modules
-│   ├── utils/           # Utility modules
-│   └── __init__.py      # Package initialization file
+│   └── utils/           # Utility modules
 ├── data/                # Data storage directory (auto-created)
 │   ├── id_cache/        # ID cache directory
 │   ├── results/         # Results save directory
@@ -347,15 +389,16 @@ FC2-Leak-Detector/
 │   └── zh.json          # Chinese language file
 ├── .github/             # GitHub configuration
 │   └── workflows/       # GitHub workflows
+├── logs/                # Root level logs directory
 ├── run.py               # Program entry point
 ├── main.py              # Main program code
 ├── config.py            # Configuration file
+├── setup.py             # Package installation setup
 ├── requirements.txt     # Basic dependency list
-├── requirements-dev.txt # Development dependencies
 ├── pyproject.toml       # Project configuration file
 ├── .gitignore           # Git ignore file
 ├── .editorconfig        # Editor configuration
-├── .pre-commit-config.yaml # Pre-commit hook configuration
+├── .python-version      # Python version configuration
 ├── CHANGELOG.md         # Update log
 ├── LICENSE              # License file
 └── README.md            # Documentation
@@ -399,4 +442,8 @@ python run.py --clear-cache
 3. Comply with relevant laws and regulations, respect content copyright
 4. Do not share or distribute any potentially copyright-infringing content obtained through this tool
 5. **Important Note: Users in mainland China need to ensure proper access to the global internet to connect with online services required by this tool**
+
+### Star History
+
+[![Star History Chart](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
 
