@@ -135,35 +135,34 @@ python run.py -w 5656 --no-image
 
 ```
 FC2-Leak-Detector/
-├── src/                 # 源代码目录
-│   ├── checkers/        # 视频检查模块
-│   ├── writers/         # 作者信息模块
-│   ├── utils/           # 工具模块
-│   └── __init__.py      # 包初始化文件
-├── data/                # 数据存储目录(自动创建)
-│   ├── id_cache/        # ID缓存目录
-│   ├── results/         # 结果保存目录
-│   ├── img/             # 图片保存目录
-│   ├── magnets/         # 磁链缓存目录
-│   └── logs/            # 日志目录
-├── i18n/                # 国际化语言文件
-│   ├── en.json          # 英文语言文件
-│   └── zh.json          # 中文语言文件
-├── .github/             # GitHub配置
-│   └── workflows/       # GitHub工作流
-├── run.py               # 程序启动入口
-├── main.py              # 主程序代码
-├── config.py            # 配置文件
-├── requirements.txt     # 基本依赖列表
-├── requirements-dev.txt # 开发环境依赖
-├── pyproject.toml       # 项目配置文件
-├── .gitignore           # Git忽略文件
-├── .editorconfig        # 编辑器配置
-├── .pre-commit-config.yaml # 预提交钩子配置
-├── CHANGELOG.md         # 更新日志
-├── CONTRIBUTING.md      # 贡献指南
-├── LICENSE              # 许可证文件
-└── README.md            # 说明文档
+├── src/                 # Source code directory
+│   ├── checkers/        # Video check modules
+│   ├── writers/         # Author information modules
+│   ├── utils/           # Utility modules
+│   └── __init__.py      # Package initialization file
+├── data/                # Data storage directory (auto-created)
+│   ├── id_cache/        # ID cache directory
+│   ├── results/         # Results save directory
+│   ├── img/             # Images save directory
+│   ├── magnets/         # Magnet cache directory
+│   └── logs/            # Log directory
+├── i18n/                # Internationalization language files
+│   ├── en.json          # English language file
+│   └── zh.json          # Chinese language file
+├── .github/             # GitHub configuration
+│   └── workflows/       # GitHub workflows
+├── run.py               # Program entry point
+├── main.py              # Main program code
+├── config.py            # Configuration file
+├── requirements.txt     # Basic dependency list
+├── requirements-dev.txt # Development dependencies
+├── pyproject.toml       # Project configuration file
+├── .gitignore           # Git ignore file
+├── .editorconfig        # Editor configuration
+├── .pre-commit-config.yaml # Pre-commit hook configuration
+├── CHANGELOG.md         # Update log
+├── LICENSE              # License file
+└── README.md            # Documentation
 ```
 
 ### 常见问题
@@ -358,7 +357,6 @@ FC2-Leak-Detector/
 ├── .editorconfig        # Editor configuration
 ├── .pre-commit-config.yaml # Pre-commit hook configuration
 ├── CHANGELOG.md         # Update log
-├── CONTRIBUTING.md      # Contribution guidelines
 ├── LICENSE              # License file
 └── README.md            # Documentation
 ```
