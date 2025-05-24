@@ -25,81 +25,62 @@ current_language = None
 # 翻译字典
 translations = {}
 
-# 语言偏好文件路径
-USER_PREFS_DIR = os.path.join(
+# 获取i18n目录路径
+I18N_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "data"
+    "i18n",
 )
-USER_PREFS_FILE = os.path.join(USER_PREFS_DIR, "user_preferences.json")
 
-# 确保目录存在
-os.makedirs(USER_PREFS_DIR, exist_ok=True)
+# 用户偏好文件
+USER_PREFS_FILE = os.path.join(I18N_DIR, "preference.json")
+
+# 确保i18n目录存在
+os.makedirs(I18N_DIR, exist_ok=True)
 
 
 def load_language_file(lang_code):
     """
-    加载指定语言的翻译文件
+    加载指定语言代码的语言文件
 
     参数:
-        lang_code: 语言代码，如'zh', 'en', 'ja'
+        lang_code: 语言代码，如'zh'、'en'、'ja'
 
     返回:
-        dict: 翻译字典，如果加载失败则返回空字典
+        dict: 语言翻译字典，加载失败则返回None
     """
     try:
         # 获取语言文件路径
-        lang_file = os.path.join(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            ),
-            "i18n",
-            f"{lang_code}.json",
-        )
-
+        lang_file = os.path.join(I18N_DIR, f"{lang_code}.json")
+        
         # 检查文件是否存在
         if not os.path.exists(lang_file):
             logger.warning(f"语言文件不存在: {lang_file}")
-            return {}
-
-        # 加载语言文件
-        with open(lang_file, "r", encoding="utf-8") as f:
+            return None
+            
+        # 读取语言文件
+        with open(lang_file, 'r', encoding='utf-8') as f:
             return json.load(f)
-
     except json.JSONDecodeError as e:
         logger.error(f"语言文件格式错误: {lang_code}.json - {e}")
-        return {}
+        return None
     except Exception as e:
         logger.error(f"加载语言文件失败: {e}")
-        return {}
+        return None
 
 
 def save_language_preference(language):
     """
-    保存用户语言偏好
+    保存用户语言偏好设置
 
     参数:
         language: 语言代码
 
     返回:
-        bool: 是否成功保存
+        bool: 是否保存成功
     """
     try:
-        # 读取现有偏好(如果存在)
-        user_prefs = {}
-        if os.path.exists(USER_PREFS_FILE):
-            try:
-                with open(USER_PREFS_FILE, "r", encoding="utf-8") as f:
-                    user_prefs = json.load(f)
-            except:
-                user_prefs = {}
-        
-        # 更新语言偏好
-        user_prefs["language"] = language
-        
-        # 保存偏好
-        with open(USER_PREFS_FILE, "w", encoding="utf-8") as f:
-            json.dump(user_prefs, f, ensure_ascii=False, indent=2)
-        
+        with open(USER_PREFS_FILE, 'w', encoding='utf-8') as f:
+            json.dump({"language": language}, f)
         logger.debug(f"已保存语言偏好: {language}")
         return True
     except Exception as e:
@@ -109,55 +90,43 @@ def save_language_preference(language):
 
 def load_language_preference():
     """
-    加载用户语言偏好
+    加载用户语言偏好设置
 
     返回:
-        str: 偏好的语言代码，如果没有保存则返回None
+        str: 语言代码，如果没有设置或加载失败则返回None
     """
     try:
         if os.path.exists(USER_PREFS_FILE):
-            with open(USER_PREFS_FILE, "r", encoding="utf-8") as f:
-                prefs = json.load(f)
-            language = prefs.get("language")
-            if language in SUPPORTED_LANGUAGES:
+            with open(USER_PREFS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                language = data.get("language")
                 logger.debug(f"已加载语言偏好: {language}")
                 return language
     except Exception as e:
         logger.debug(f"加载语言偏好失败: {e}")
-    
     return None
 
 
 def check_translation_completeness():
     """
-    检查所有语言文件的完整性，输出缺失的键
+    检查所有语言文件的翻译完整性
 
     返回:
-        dict: 各语言缺失的键的统计
+        dict: 每种语言缺少的键，格式为{lang: [missing_keys]}
     """
     try:
-        # 获取所有语言文件
-        i18n_dir = os.path.join(
-            os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            ),
-            "i18n"
-        )
-        
         # 加载所有语言文件
         lang_files = {}
-        all_keys = set()
-        
         for lang in SUPPORTED_LANGUAGES:
-            lang_file = os.path.join(i18n_dir, f"{lang}.json")
-            if os.path.exists(lang_file):
-                with open(lang_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    lang_files[lang] = data
-                    
-                    # 收集所有键
-                    keys = _extract_all_keys(data)
-                    all_keys.update(keys)
+            lang_data = load_language_file(lang)
+            if lang_data:
+                lang_files[lang] = lang_data
+        
+        # 收集所有键
+        all_keys = set()
+        for lang, data in lang_files.items():
+            keys = set(_extract_all_keys(data))
+            all_keys.update(keys)
         
         # 检查每个语言文件是否包含所有键
         missing_keys = {}

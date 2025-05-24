@@ -38,7 +38,7 @@ from config import config
 from src.utils import get_logger
 from src.utils.cache_manager import CacheManager
 from src.utils.request_handler import RequestHandler
-from src.utils.i18n import get_text as _
+from src.utils.i18n import get_text as _  # 添加i18n翻译函数
 
 # 创建console实例
 console = Console()
@@ -167,12 +167,12 @@ class FC2Analyzer:
         if self.is_actress:
             entity_type = "actresses"
             entity_id_param = "actressid"
-            entity_desc = "女优"
+            entity_desc = _("analyzer.entity_type_actress", "女优")
             api_path = "actresses/actress-articles"  # 使用单数形式
         else:
             entity_type = "writers"
             entity_id_param = "writerid"
-            entity_desc = "作者"
+            entity_desc = _("analyzer.entity_type_writer", "作者")
             api_path = (
                 "writers/writer-articles"  # 修正：使用单数形式writer-articles而非writers-articles
             )
@@ -183,11 +183,11 @@ class FC2Analyzer:
                 api_url = (
                     f"{base_url}/{api_path.lstrip('/')}?{entity_id_param}={self.write_id}&page=1"
                 )
-                print(f"名称获取URL: {api_url}")  # 调试信息
+                print(_("analyzer.api_url", "名称获取URL: {url}").format(url=api_url))  # 调试信息
                 api_response = RequestHandler.make_request(
                     api_url,
                     headers=config.api_headers,
-                    step_name=f"API获取{entity_desc}名称[第{attempt+1}次]",
+                    step_name=f"{_('analyzer.fetch_author', '获取{entity_desc}名称')}[第{attempt+1}次]",
                 )
 
                 if api_response and api_response.status_code == 200:
@@ -203,18 +203,18 @@ class FC2Analyzer:
                                 ):
                                     self.name = article[entity_key]["name"]
                                     console.print(
-                                        f"[bold green]✅ 从API获取到{entity_desc}名称:[/bold green] [cyan]{self.name}[/cyan]"
+                                        f"[bold green]✅ {_('analyzer.author_name_success', '从API获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
                                     )
                                     return self.name
                     except Exception as e:
-                        console.print(f"[yellow]⚠️ API数据解析失败: {str(e)}[/yellow]")
+                        console.print(f"[yellow]⚠️ {_('analyzer.api_data_parse_fail', 'API数据解析失败: {error}').format(error=str(e))}[/yellow]")
 
                 # 如果API获取失败，尝试其他方法
                 entity_url = f"{base_url}/{entity_type.lstrip('/')}/{self.write_id}"
                 response = RequestHandler.make_request(
                     entity_url,
                     headers=config.api_headers,
-                    step_name=f"获取{entity_desc}名称[第{attempt+1}次]",
+                    step_name=f"{_('analyzer.fetch_author', '获取{entity_desc}名称')}[第{attempt+1}次]",
                 )
 
                 if response and response.status_code == 200:
@@ -226,7 +226,7 @@ class FC2Analyzer:
                     if info_elem and info_elem.text.strip():
                         self.name = info_elem.text.strip()
                         console.print(
-                            f"[bold green]✅ 从页面信息获取到{entity_desc}名称:[/bold green] [cyan]{self.name}[/cyan]"
+                            f"[bold green]✅ {_('analyzer.author_name_success', '从页面信息获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
                         )
                         return self.name
 
@@ -238,7 +238,7 @@ class FC2Analyzer:
                         if " - " in title_text:
                             self.name = title_text.split(" - ")[0].strip()
                             console.print(
-                                f"[bold green]✅ 从页面标题获取到{entity_desc}名称:[/bold green] [cyan]{self.name}[/cyan]"
+                                f"[bold green]✅ {_('analyzer.author_name_success', '从页面标题获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
                             )
                             return self.name
 
@@ -251,21 +251,21 @@ class FC2Analyzer:
                         if text and len(text) < 30:  # 假设名称不会太长
                             self.name = text
                             console.print(
-                                f"[bold green]✅ 从页面元素获取到{entity_desc}名称:[/bold green] [cyan]{self.name}[/cyan]"
+                                f"[bold green]✅ {_('analyzer.author_name_success', '从页面元素获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
                             )
                             return self.name
 
             except Exception as e:
-                print(f"❌ 获取{entity_desc}名称时出错: {str(e)}")
+                print(_("analyzer.get_name_error", "获取{entity_desc}名称时出错: {error}").format(entity_desc=entity_desc, error=str(e)))
                 if attempt < max_retries - 1:  # 如果不是最后一次尝试
                     wait_time = (2**attempt) + random.uniform(1, 3)
-                    print(f"等待 {wait_time:.1f} 秒后重试...")
+                    print(_("analyzer.wait_retry", "等待 {time} 秒后重试...").format(time=wait_time))
                     time.sleep(wait_time)
 
         # 如果所有尝试都失败，使用ID作为名称
         id_prefix = "Actress" if self.is_actress else "Writer"
         self.name = f"{id_prefix}_{self.write_id}"
-        print(f"⚠️ 无法获取{entity_desc}名称，使用ID: {self.name}")
+        print(_("analyzer.name_not_found", "无法获取{entity_desc}名称，使用ID: {name}").format(entity_desc=entity_desc, name=self.name))
         return self.name
 
     def fetch_video_ids(self):
@@ -282,25 +282,25 @@ class FC2Analyzer:
             # 女优使用特定的API路径
             entity_type = "actresses"
             entity_id_param = "actressid"
-            entity_desc = "女优"
+            entity_desc = _("analyzer.entity_type_actress", "女优")
             api_path = "/actresses/actress-articles"
-            print(f"[调试] 使用女优API路径: {api_path}")
+            print(_("analyzer.using_actress_path", "使用女优API路径: {path}").format(path=api_path))
         else:
             # 作者使用常规API路径
             entity_type = "writers"
             entity_id_param = "writerid"
-            entity_desc = "作者"
+            entity_desc = _("analyzer.entity_type_writer", "作者")
             api_path = "/writers/writer-articles"
-            print(f"[调试] 使用作者API路径: {api_path}")
+            print(_("analyzer.using_author_path", "使用作者API路径: {path}").format(path=api_path))
 
         # 首先尝试从缓存中加载
         cached_videos = CacheManager.load(self.write_id, self.is_actress)
         if cached_videos:
             self.stats["total"] = len(cached_videos)
-            print(f"✅ 从缓存中读取到 {self.stats['total']} 个视频")
+            print(_("analyzer.loaded_from_cache", "从缓存中读取到 {count} 个视频").format(count=self.stats["total"]))
             return cached_videos
 
-        print(f"🔄 开始获取{entity_desc} {self.write_id} 的视频列表...")
+        print(_("analyzer.start_fetching", "开始获取{entity_desc} {id} 的视频列表...").format(entity_desc=entity_desc, id=self.write_id))
         all_videos = []
         page = 1
 
@@ -311,7 +311,7 @@ class FC2Analyzer:
             try:
                 # 从API获取视频列表
                 api_url = f"{api_base}/{api_path.lstrip('/')}"
-                print(f"请求URL: {api_url}?{entity_id_param}={self.write_id}&page={page}")
+                print(_("analyzer.request_url", "请求URL: {url}").format(url=f"{api_url}?{entity_id_param}={self.write_id}&page={page}"))
                 response = requests.get(
                     api_url,
                     params={
@@ -323,18 +323,18 @@ class FC2Analyzer:
                 )
 
                 if response.status_code != 200:
-                    print(f"❌ API请求失败: {response.status_code}")
+                    print(_("analyzer.api_request_failed", "API请求失败: {status_code}").format(status_code=response.status_code))
                     break
 
                 data = response.json()
                 if not data.get("data"):
-                    print(f"⚠️ API返回数据为空，可能该{entity_desc}没有视频")
+                    print(_("analyzer.api_empty_data", "API返回数据为空，可能该{entity_desc}没有视频").format(entity_desc=entity_desc))
                     break
 
                 # 记录API返回的第一个视频数据结构（用于调试）
                 if page == 1 and len(data.get("data", [])) > 0:
                     sample_video = data["data"][0]
-                    print(f"\n[调试] {entity_desc}API返回的视频数据示例:")
+                    print(_("analyzer.api_data_example", "\n[调试] {entity_desc}API返回的视频数据示例:").format(entity_desc=entity_desc))
                     for key, value in sample_video.items():
                         if key not in ["search_data", "pivot"]:  # 跳过太长的字段
                             print(f"  - {key}: {value}")
@@ -347,7 +347,7 @@ class FC2Analyzer:
                         if self.is_actress:
                             # 女优API的特殊处理 - 使用专门的字段
                             if "video_id" not in video:
-                                print(f"⚠️ 女优视频数据中找不到video_id字段，跳过")
+                                print(_("analyzer.actress_no_video_id", "女优视频数据中找不到video_id字段，跳过"))
                                 continue
 
                             video_id = str(video["video_id"])
@@ -360,7 +360,7 @@ class FC2Analyzer:
                             ):
                                 image_url = f"{api_base}/storage/{image_url}"
 
-                            print(f"[调试] 女优视频: ID={video_id}, 图片URL={image_url}")
+                            print(_("analyzer.actress_video_debug", "[调试] 女优视频: ID={id}, 图片URL={url}").format(id=video_id, url=image_url))
 
                             video_info = {
                                 "video_id": video_id,
@@ -401,7 +401,7 @@ class FC2Analyzer:
 
                             # 如果还是没找到ID，则跳过此视频
                             if video_id is None:
-                                print(f"⚠️ 无法确定作者视频ID，跳过此视频数据")
+                                print(_("analyzer.author_no_video_id", "无法确定作者视频ID，跳过此视频数据"))
                                 continue
 
                             # 处理图片URL - 使用算法构建
@@ -421,7 +421,7 @@ class FC2Analyzer:
                         all_videos.append(video_info)
 
                     except Exception as e:
-                        print(f"⚠️ 处理单个视频数据时出错: {str(e)}")
+                        print(_("analyzer.process_video_error", "处理单个视频数据时出错: {error}").format(error=str(e)))
                         continue
 
                 # 检查是否还有更多页
@@ -431,18 +431,18 @@ class FC2Analyzer:
                 page += 1
                 time.sleep(random.uniform(1, 3))  # 随机延迟
             except Exception as e:
-                print(f"❌ 获取视频列表页面 {page} 时出错: {str(e)}")
+                print(_("analyzer.fetch_page_error", "获取视频列表页面 {page} 时出错: {error}").format(page=page, error=str(e)))
                 break
 
         # 完成获取所有视频
         total_videos = len(all_videos)
         if total_videos > 0:
-            print(f"✅ 已获取 {total_videos} 个视频，开始保存缓存...")
+            print(_("analyzer.fetch_complete", "已获取 {count} 个视频，开始保存缓存...").format(count=total_videos))
             self.all_videos = all_videos
             self.stats["total"] = total_videos
 
             # 调试打印前5个视频的ID，确认数据正确
-            print("\n[调试] 前5个视频ID和图片URL示例:")
+            print(_("analyzer.video_debug_sample", "\n[调试] 前5个视频ID和图片URL示例:"))
             for i, v in enumerate(all_videos[: min(5, len(all_videos))]):
                 print(
                     f"  {i+1}. video_id: {v['video_id']}, image_url: {v['image_url']}"
@@ -453,7 +453,7 @@ class FC2Analyzer:
             CacheManager.save(self.write_id, all_videos, self.is_actress)
             return all_videos
         else:
-            print(f"⚠️ 未找到任何视频，请检查{entity_desc}ID是否正确")
+            print(_("analyzer.no_videos_found", "未找到任何视频，请检查{entity_desc}ID是否正确").format(entity_desc=entity_desc))
             return []
 
     def check_video_status(self, video_id):
@@ -477,17 +477,19 @@ class FC2Analyzer:
             # 映射结果到现有的返回格式
             if is_leaked:
                 self.logger.info(
-                    f"视频 {video_id} 在站点 {site_name} 的响应码为 {status_code}，视频已流出"
+                    _("logger.video_check_response", "视频 {video_id} 在站点 {site_name} 的响应码为 {status_code}，视频已流出").format(
+                        video_id=video_id, site_name=site_name, status_code=status_code
+                    )
                 )
                 return "available"
             else:
                 # 如果未找到视频，视为未流出
-                self.logger.info(f"视频 {video_id} 未在任何站点找到，视频未流出")
+                self.logger.info(_("logger.video_not_leaked", "视频 {video_id} 未在任何站点找到，视频未流出").format(video_id=video_id))
                 return "unavailable"
 
         except Exception as e:
             # 记录错误
-            self.logger.error(f"检查视频 {video_id} 状态出错: {str(e)}")
+            self.logger.error(_("logger.video_check_error", "检查视频 {video_id} 状态出错: {error}").format(video_id=video_id, error=str(e)))
             # 连接错误、超时等异常情况也应该保守处理为未流出
             return "unavailable"
 
@@ -530,7 +532,7 @@ class FC2Analyzer:
         if not self.with_magnet:
             return []
 
-        self.logger.info(f"准备获取视频 {video_id} 的磁力链接")
+        self.logger.info(_("logger.prepare_magnet", "准备获取视频 {video_id} 的磁力链接").format(video_id=video_id))
 
         try:
             # 构建搜索URL
@@ -552,10 +554,12 @@ class FC2Analyzer:
                     # 仅在重试时显示信息并使用退避策略
                     if attempt > 0:
                         self.logger.info(
-                            f"正在重试获取磁力链接({attempt}/{max_retries}): {video_id}"
+                            _("logger.magnet_retry", "正在重试获取磁力链接({attempt}/{max_retries}): {video_id}").format(
+                                attempt=attempt, max_retries=max_retries, video_id=video_id
+                            )
                         )
                         delay = backoff_strategy[attempt - 1]
-                        self.logger.info(f"等待 {delay:.2f} 秒后重试...")
+                        self.logger.info(_("logger.wait_retry", "等待 {wait_time:.2f} 秒后重试...").format(wait_time=delay))
                         time.sleep(delay)
                         # 记录重试统计
                         with self.lock:
@@ -579,7 +583,9 @@ class FC2Analyzer:
                     if response.status_code in [429, 403]:
                         wait_time = (2**attempt) + random.uniform(1.0, 3.0)
                         self.logger.warning(
-                            f"受到限流或访问拒绝 (状态码: {response.status_code})，等待 {wait_time:.2f} 秒后重试"
+                            _("logger.rate_limit", "受到限流或访问拒绝 (状态码: {status_code})，等待 {wait_time:.2f} 秒后重试").format(
+                                status_code=response.status_code, wait_time=wait_time
+                            )
                         )
                         time.sleep(wait_time)
                         continue
@@ -590,7 +596,7 @@ class FC2Analyzer:
                         torrent_table = soup.select_one("table.torrent-list")
 
                         if not torrent_table:
-                            self.logger.warning(f"未找到种子列表表格")
+                            self.logger.warning(_("logger.no_torrent_table", "未找到种子列表表格"))
                             continue
 
                         # 收集有效的条目
@@ -658,18 +664,18 @@ class FC2Analyzer:
                             # 返回磁链列表
                             return [entry["magnet"] for entry in selected_entries]
                         else:
-                            self.logger.warning(f"未找到视频 {video_id} 的磁力链接")
+                            self.logger.warning(_("logger.no_magnet_found", "未找到视频 {video_id} 的磁力链接").format(video_id=video_id))
                     else:
-                        self.logger.warning(f"获取磁力链接响应失败，状态码: {response.status_code}")
+                        self.logger.warning(_("logger.magnet_response_failed", "获取磁力链接响应失败，状态码: {status_code}").format(status_code=response.status_code))
 
                 except (
                     requests.exceptions.ConnectionError,
                     requests.exceptions.Timeout,
                 ) as e:
-                    self.logger.warning(f"网络错误: {str(e)}")
+                    self.logger.warning(_("logger.network_error", "网络错误: {error}").format(error=str(e)))
                     # 网络错误自动重试（由外层循环控制）
                 except Exception as e:
-                    self.logger.error(f"获取磁力链接异常: {str(e)}")
+                    self.logger.error(_("logger.magnet_exception", "获取磁力链接异常: {error}").format(error=str(e)))
                     if attempt == max_retries:
                         self._save_error_log(
                             video_id,
@@ -685,7 +691,7 @@ class FC2Analyzer:
             return []
 
         except Exception as e:
-            self.logger.error(f"获取磁力链接异常: {str(e)}")
+            self.logger.error(_("logger.get_magnet_failed", "获取磁力链接异常: {error}").format(error=str(e)))
             with self.lock:
                 self.stats["magnet_fail"] += 1
             return []
@@ -701,26 +707,26 @@ class FC2Analyzer:
             filepath = os.path.join(error_dir, filename)
 
             with open(filepath, "w", encoding="utf-8") as f:
-                f.write(f"时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"视频ID: {video_id}\n")
-                f.write(f"请求URL: {url}\n")
+                f.write(_("reports.error_time", "时间: {timestamp}\n").format(timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                f.write(_("reports.error_video_id", "视频ID: {video_id}\n").format(video_id=video_id))
+                f.write(_("reports.error_request_url", "请求URL: {url}\n").format(url=url))
                 f.write(
-                    f"响应状态: {response.status_code if response else 'No Response'}\n"
+                    _("reports.error_response_status", "响应状态: {status}\n").format(status=response.status_code if response else _("reports.no_response", "无响应"))
                 )
                 if error_msg:
-                    f.write(f"错误信息: {error_msg}\n")
-                f.write("\n响应内容:\n")
+                    f.write(_("reports.error_message", "错误信息: {message}\n").format(message=error_msg))
+                f.write(_("reports.error_response_content", "\n响应内容:\n"))
                 if response:
                     f.write(
                         response.text[:10000]
-                        + ("..." if len(response.text) > 10000 else "")
+                        + (_("reports.content_truncated", "...") if len(response.text) > 10000 else "")
                     )
                 else:
-                    f.write("无响应内容")
+                    f.write(_("reports.no_response_content", "无响应内容"))
 
-            self.logger.info(f"已保存错误详情: {filepath}")
+            self.logger.info(_("logger.error_details_saved", "已保存错误详情: {filepath}").format(filepath=filepath))
         except Exception as e:
-            self.logger.error(f"保存错误日志失败: {str(e)}")
+            self.logger.error(_("logger.error_log_failed", "保存错误日志失败: {error}").format(error=str(e)))
 
     def download_image(self, video_id):
         """下载视频缩略图，正确区分流出和未流出状态"""
@@ -749,7 +755,7 @@ class FC2Analyzer:
 
             # 检查video_id有效性
             if not video_id or not video_id.isdigit():
-                self.logger.error(f"无效的视频ID: {video_id}")
+                self.logger.error(_("logger.invalid_video_id", "无效的视频ID: {video_id}").format(video_id=video_id))
                 return None
 
             # 创建基于作者/女优的目录结构
@@ -792,11 +798,11 @@ class FC2Analyzer:
                         file_ext = ext
 
             save_path = os.path.join(status_dir, f"{video_id}{file_ext}")
-            self.logger.info(f"图片保存路径: {save_path}, 流出状态: {status_desc}")
+            self.logger.info(_("logger.image_save_path", "图片保存路径: {save_path}, 流出状态: {status_desc}").format(save_path=save_path, status_desc=status_desc))
 
             # 检查是否已存在(重复下载保护)
             if os.path.exists(save_path):
-                self.logger.info(f"缩略图已存在，跳过下载: {save_path}")
+                self.logger.info(_("logger.image_exists", "缩略图已存在，跳过下载: {save_path}").format(save_path=save_path))
                 # 修改：将已存在的图片也计入下载成功的统计
                 with self.lock:
                     self.stats["image_success"] += 1
@@ -825,10 +831,12 @@ class FC2Analyzer:
                     # 重试逻辑...
                     if attempt > 0:
                         self.logger.info(
-                            f"正在重试下载图片({attempt}/{max_retries}): {video_id}"
+                            _("logger.image_retry", "正在重试下载图片({attempt}/{max_retries}): {video_id}").format(
+                                attempt=attempt, max_retries=max_retries, video_id=video_id
+                            )
                         )
                         delay = backoff_strategy[attempt - 1]
-                        self.logger.info(f"等待 {delay:.2f} 秒后重试...")
+                        self.logger.info(_("logger.wait_retry", "等待 {wait_time:.2f} 秒后重试...").format(wait_time=delay))
                         time.sleep(delay)
                         with self.lock:
                             self.stats["image_retries"] += 1
@@ -854,9 +862,9 @@ class FC2Analyzer:
 
                         return save_path
                     else:
-                        self.logger.warning(f"下载图片失败，状态码: {response.status_code}")
+                        self.logger.warning(_("logger.image_download_failed", "下载图片失败，状态码: {status_code}").format(status_code=response.status_code))
                 except Exception as e:
-                    self.logger.error(f"下载图片异常: {str(e)}")
+                    self.logger.error(_("logger.image_download_error", "下载图片异常: {error}").format(error=str(e)))
 
             # 如果所有重试都失败
             with self.lock:
@@ -864,7 +872,7 @@ class FC2Analyzer:
             return None
 
         except Exception as e:
-            self.logger.error(f"下载视频 {video_id} 图片出错: {str(e)}")
+            self.logger.error(_("logger.image_error", "下载视频 {video_id} 图片出错: {error}").format(video_id=video_id, error=str(e)))
             with self.lock:
                 self.stats["image_fail"] += 1
             return None
@@ -892,7 +900,7 @@ class FC2Analyzer:
         """生成多种格式的标准化报告，区分作者和女优"""
         try:
             if not results:
-                self.logger.warning("没有结果可供生成报告")
+                self.logger.warning(_("logger.no_report_data", "没有结果可供生成报告"))
                 return {}
 
             # 清理和准备实体名称（作者或女优）
@@ -901,10 +909,10 @@ class FC2Analyzer:
             )
 
             # 调试输出 - 不再输出重复日志
-            self.logger.info(f"=== 生成报告 ===")
-            self.logger.info(f"原始writer_name: '{writer_name}'")
-            self.logger.info(f"原始self.name: '{self.name}'")
-            self.logger.info(f"使用的entity_name: '{entity_name}'")
+            self.logger.info(_("logger.generate_report", "=== 生成报告 ==="))
+            self.logger.info(_("logger.original_writer_name", "原始writer_name: '{writer_name}'").format(writer_name=writer_name))
+            self.logger.info(_("logger.original_self_name", "原始self.name: '{name}'").format(name=self.name))
+            self.logger.info(_("logger.entity_name_used", "使用的entity_name: '{entity_name}'").format(entity_name=entity_name))
 
             # 创建唯一前缀，区分作者和女优，但保持文件名结构一致
             # 修改：无论是作者还是女优，统一使用"author"为前缀格式，保持一致性
@@ -914,19 +922,19 @@ class FC2Analyzer:
             has_special_chars = any(
                 c in entity_name for c in ["\\", "/", "*", "?", ":", '"', "<", ">", "|"]
             )
-            self.logger.info(f"是否包含特殊字符: {has_special_chars}")
+            self.logger.info(_("logger.has_special_chars", "是否包含特殊字符: {has_special_chars}").format(has_special_chars=has_special_chars))
 
             if has_special_chars:
-                self.logger.info(f"名称包含特殊字符，只使用ID")
+                self.logger.info(_("logger.name_special_chars", "名称包含特殊字符，只使用ID"))
                 clean_name = ""
                 file_prefix = f"{entity_type}_{writer_id}"
             else:
                 # 清理名称并使用
                 clean_name = self.clean_filename(entity_name)
-                self.logger.info(f"清理后的名称: '{clean_name}'")
+                self.logger.info(_("logger.cleaned_name", "清理后的名称: '{clean_name}'").format(clean_name=clean_name))
                 file_prefix = f"{entity_type}_{writer_id}_{clean_name}"
 
-            self.logger.info(f"生成的文件前缀: '{file_prefix}'")
+            self.logger.info(_("logger.file_prefix", "生成的文件前缀: '{file_prefix}'").format(file_prefix=file_prefix))
 
             # 确保目录存在
             result_dir = config.result_dir
@@ -961,7 +969,7 @@ class FC2Analyzer:
             reports = {}
 
             # 1. 总报告 - 使用固定格式
-            summary_path = os.path.join(result_dir, f"{writer_id}_{clean_name}_总报告.txt")
+            summary_path = os.path.join(result_dir, f"{writer_id}_{clean_name}_{_('reports.file_summary', '总报告')}.txt")
             reports["summary"] = summary_path
 
             # 统计信息
@@ -974,34 +982,33 @@ class FC2Analyzer:
 
             # 生成总报告
             with open(summary_path, "w", encoding="utf-8") as f:
-                entity_desc = "女优" if self.is_actress else "作者"
+                entity_desc = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
                 f.write(f"{entity_desc}ID: {writer_id}\n")
 
                 # 根据是否有特殊字符，决定使用原名还是清理后的名称
                 if has_special_chars:
-                    f.write(f"{entity_desc}名称: {entity_name} (含特殊字符)\n")
+                    f.write(_("reports.entity_name_special", "{entity_desc}名称: {entity_name} (含特殊字符)\n").format(entity_desc=entity_desc, entity_name=entity_name))
                 else:
-                    f.write(f"{entity_desc}名称: {clean_name}\n")
+                    f.write(_("reports.entity_name", "{entity_desc}名称: {name}\n").format(entity_desc=entity_desc, name=clean_name))
 
-                f.write(f"分析时间: {timestamp}\n")
-                f.write(f"\n=== 总体统计 ===\n")
-                f.write(f"总视频数: {total}\n")
-                f.write(f"已流出视频数: {leaked_count}\n")
-                f.write(f"未流出视频数: {unleaked_count}\n")
-                f.write(f"流出比例: {leak_ratio:.2f}%\n")
-                f.write(f"有磁链数量: {with_magnet_count}\n")
-                f.write(f"无磁链数量: {without_magnet_count}\n")
+                f.write(_("reports.analysis_time", "分析时间: {timestamp}\n").format(timestamp=timestamp))
+                f.write(_("reports.summary_header", "\n=== 总体统计 ===\n"))
+                f.write(_("reports.total_videos", "总视频数: {count}\n").format(count=total))
+                f.write(_("reports.leaked_videos", "已流出视频数: {count}\n").format(count=leaked_count))
+                f.write(_("reports.unleaked_videos", "未流出视频数: {count}\n").format(count=unleaked_count))
+                f.write(_("reports.leak_ratio", "流出比例: {ratio:.2f}%\n").format(ratio=leak_ratio))
+                f.write(_("reports.with_magnet", "有磁链数量: {count}\n").format(count=with_magnet_count))
+                f.write(_("reports.without_magnet", "无磁链数量: {count}\n").format(count=without_magnet_count))
 
-                f.write(f"\n=== 已流出视频列表 ===\n")
+                f.write(_("reports.leaked_list_header", "\n=== 已流出视频列表 ===\n"))
                 for idx, video in enumerate(all_leaked, 1):
                     vid = video.get("video_id")
                     title = video.get("title", f"FC2-PPV-{vid}")
                     has_magnet = bool(video.get("magnets") or video.get("magnet"))
-                    f.write(
-                        f"{idx}. [{vid}] {'[有磁链]' if has_magnet else '[无磁链]'} {title}\n"
-                    )
+                    magnet_status = _("reports.has_magnet", "[有磁链]") if has_magnet else _("reports.no_magnet", "[无磁链]")
+                    f.write(f"{idx}. [{vid}] {magnet_status} {title}\n")
 
-                f.write(f"\n=== 未流出视频列表 ===\n")
+                f.write(_("reports.unleaked_list_header", "\n=== 未流出视频列表 ===\n"))
                 for idx, video in enumerate(unleaked, 1):
                     vid = video.get("video_id")
                     title = video.get("title", f"FC2-PPV-{vid}")
@@ -1010,28 +1017,28 @@ class FC2Analyzer:
             # 2. 已流出_有磁链 - 使用固定格式
             if leaked_with_magnet:
                 with_magnet_path = os.path.join(
-                    result_dir, f"{writer_id}_{clean_name}_已流出_有磁链.txt"
+                    result_dir, f"{writer_id}_{clean_name}_{_('reports.file_leaked_with_magnet', '已流出_有磁链')}.txt"
                 )
                 reports["leaked_with_magnet"] = with_magnet_path
 
                 with open(with_magnet_path, "w", encoding="utf-8") as f:
-                    entity_desc = "女优" if self.is_actress else "作者"
+                    entity_desc = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
                     f.write(f"{entity_desc}ID: {writer_id}\n")
 
                     # 根据是否有特殊字符，决定使用原名还是清理后的名称
                     if has_special_chars:
-                        f.write(f"{entity_desc}名称: {entity_name} (含特殊字符)\n")
+                        f.write(_("reports.entity_name_special", "{entity_desc}名称: {entity_name} (含特殊字符)\n").format(entity_desc=entity_desc, entity_name=entity_name))
                     else:
-                        f.write(f"{entity_desc}名称: {clean_name}\n")
+                        f.write(_("reports.entity_name", "{entity_desc}名称: {name}\n").format(entity_desc=entity_desc, name=clean_name))
 
-                    f.write(f"分析时间: {timestamp}\n")
-                    f.write(f"有磁链视频数量: {with_magnet_count}\n\n")
+                    f.write(_("reports.analysis_time", "分析时间: {timestamp}\n").format(timestamp=timestamp))
+                    f.write(_("reports.with_magnet_count", "有磁链视频数量: {count}\n\n").format(count=with_magnet_count))
 
                     for idx, video in enumerate(leaked_with_magnet, 1):
                         vid = video.get("video_id")
                         title = video.get("title", f"FC2-PPV-{vid}")
-                        f.write(f"=== {idx}. FC2-PPV-{vid} ===\n")
-                        f.write(f"标题: {title}\n")
+                        f.write(_("reports.video_entry", "=== {idx}. FC2-PPV-{vid} ===\n").format(idx=idx, vid=vid))
+                        f.write(_("reports.video_title", "标题: {title}\n").format(title=title))
 
                         # 磁力链接
                         magnets = (
@@ -1041,28 +1048,28 @@ class FC2Analyzer:
                         )
                         for i, magnet in enumerate(magnets, 1):
                             if magnet:
-                                f.write(f"磁链{i}: {magnet}\n")
+                                f.write(_("reports.magnet_link", "磁链{num}: {link}\n").format(num=i, link=magnet))
                         f.write("\n")
 
             # 3. 已流出_无磁链 - 使用固定格式
             if leaked_without_magnet:
                 without_magnet_path = os.path.join(
-                    result_dir, f"{writer_id}_{clean_name}_已流出_无磁链.txt"
+                    result_dir, f"{writer_id}_{clean_name}_{_('reports.file_leaked_without_magnet', '已流出_无磁链')}.txt"
                 )
                 reports["leaked_without_magnet"] = without_magnet_path
 
                 with open(without_magnet_path, "w", encoding="utf-8") as f:
-                    entity_desc = "女优" if self.is_actress else "作者"
+                    entity_desc = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
                     f.write(f"{entity_desc}ID: {writer_id}\n")
 
                     # 根据是否有特殊字符，决定使用原名还是清理后的名称
                     if has_special_chars:
-                        f.write(f"{entity_desc}名称: {entity_name} (含特殊字符)\n")
+                        f.write(_("reports.entity_name_special", "{entity_desc}名称: {entity_name} (含特殊字符)\n").format(entity_desc=entity_desc, entity_name=entity_name))
                     else:
-                        f.write(f"{entity_desc}名称: {clean_name}\n")
+                        f.write(_("reports.entity_name", "{entity_desc}名称: {name}\n").format(entity_desc=entity_desc, name=clean_name))
 
-                    f.write(f"分析时间: {timestamp}\n")
-                    f.write(f"无磁链视频数量: {without_magnet_count}\n\n")
+                    f.write(_("reports.analysis_time", "分析时间: {timestamp}\n").format(timestamp=timestamp))
+                    f.write(_("reports.without_magnet_count", "无磁链视频数量: {count}\n\n").format(count=without_magnet_count))
 
                     for idx, video in enumerate(leaked_without_magnet, 1):
                         vid = video.get("video_id")
@@ -1072,22 +1079,22 @@ class FC2Analyzer:
             # 4. 未流出视频 - 使用固定格式
             if unleaked:
                 unleaked_path = os.path.join(
-                    result_dir, f"{writer_id}_{clean_name}_未流出.txt"
+                    result_dir, f"{writer_id}_{clean_name}_{_('reports.file_unleaked', '未流出')}.txt"
                 )
                 reports["unleaked"] = unleaked_path
 
                 with open(unleaked_path, "w", encoding="utf-8") as f:
-                    entity_desc = "女优" if self.is_actress else "作者"
+                    entity_desc = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
                     f.write(f"{entity_desc}ID: {writer_id}\n")
 
                     # 根据是否有特殊字符，决定使用原名还是清理后的名称
                     if has_special_chars:
-                        f.write(f"{entity_desc}名称: {entity_name} (含特殊字符)\n")
+                        f.write(_("reports.entity_name_special", "{entity_desc}名称: {entity_name} (含特殊字符)\n").format(entity_desc=entity_desc, entity_name=entity_name))
                     else:
-                        f.write(f"{entity_desc}名称: {clean_name}\n")
+                        f.write(_("reports.entity_name", "{entity_desc}名称: {name}\n").format(entity_desc=entity_desc, name=clean_name))
 
-                    f.write(f"分析时间: {timestamp}\n")
-                    f.write(f"未流出视频数量: {unleaked_count}\n\n")
+                    f.write(_("reports.analysis_time", "分析时间: {timestamp}\n").format(timestamp=timestamp))
+                    f.write(_("reports.unleaked_count", "未流出视频数量: {count}\n\n").format(count=unleaked_count))
 
                     for idx, video in enumerate(unleaked, 1):
                         vid = video.get("video_id")
@@ -1097,7 +1104,7 @@ class FC2Analyzer:
             # 5. 已流出视频总表(简洁版-只有ID和标题) - 使用固定格式
             if all_leaked:
                 leaked_summary_path = os.path.join(
-                    result_dir, f"{writer_id}_{clean_name}_已流出视频总表.txt"
+                    result_dir, f"{writer_id}_{clean_name}_{_('reports.file_leaked_summary', '已流出视频总表')}.txt"
                 )
                 reports["leaked_summary"] = leaked_summary_path
 
@@ -1109,7 +1116,7 @@ class FC2Analyzer:
 
             # 6. 已流出的磁链专用文件(只有磁链)
             if leaked_with_magnet:
-                magnet_only_path = os.path.join(result_dir, f"{file_prefix}_磁链.txt")
+                magnet_only_path = os.path.join(result_dir, f"{file_prefix}_{_('reports.file_magnets', '磁链')}.txt")
                 reports["magnet_only"] = magnet_only_path
 
                 try:
@@ -1138,20 +1145,20 @@ class FC2Analyzer:
                                         f.write(f"{magnet}\n")
                             else:
                                 # 没有磁链时添加提示
-                                f.write("# [未获取到磁力链接]\n")
+                                f.write(_("reports.no_magnet_found", "# [未获取到磁力链接]\n"))
                             
                             # 添加空行分隔
                             f.write("\n")
                             
-                    self.logger.info(f"已生成磁链专用文件: {magnet_only_path}")
+                    self.logger.info(_("logger.magnet_file_generated", "已生成磁链专用文件: {path}").format(path=magnet_only_path))
                 except Exception as e:
-                    self.logger.error(f"生成磁链专用文件失败: {str(e)}")
+                    self.logger.error(_("logger.magnet_file_failed", "生成磁链专用文件失败: {error}").format(error=str(e)))
 
-            self.logger.info(f"已生成{len(reports)}个报告文件")
+            self.logger.info(_("logger.reports_generated", "已生成{count}个报告文件").format(count=len(reports)))
             return reports
 
         except Exception as e:
-            self.logger.error(f"生成报告失败: {str(e)}")
+            self.logger.error(_("logger.report_failed", "生成报告失败: {error}").format(error=str(e)))
             return {}
 
     def process_video(self, video_id):
@@ -1174,12 +1181,12 @@ class FC2Analyzer:
                 video_obj = video_id
                 video_id_str = str(video_obj.get("video_id", ""))
                 # 保存视频对象以供后续使用（特别是获取image_url）
-                print(f"[调试] 输入是视频对象，提取video_id: {video_id_str}")
+                print(_("analyzer.debug_video_object", "[调试] 输入是视频对象，提取video_id: {id}").format(id=video_id_str))
             else:
                 # 如果只是字符串ID，转换为字符串并创建基本对象
                 video_id_str = str(video_id)
                 video_obj = {"video_id": video_id_str}
-                print(f"[调试] 输入是ID字符串: {video_id_str}")
+                print(_("analyzer.debug_video_string", "[调试] 输入是ID字符串: {id}").format(id=video_id_str))
 
             # 初始化结果字典
             result = {
@@ -1201,7 +1208,7 @@ class FC2Analyzer:
 
             # 在控制台显示处理状态
             if not self.quiet_mode:
-                console.print(f"🔍 处理视频 {video_id_str}")
+                console.print(_("process_video.processing", "🔍 处理视频 {id}").format(id=video_id_str))
 
             # 检查视频状态
             status = self.check_video_status(video_id_str)
@@ -1212,12 +1219,14 @@ class FC2Analyzer:
                 result["exists"] = True
 
                 # 显示视频类型
-                entity_type = "女优" if self.is_actress else "作者"
+                entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
 
                 # 在控制台显示视频可用状态
                 if not self.quiet_mode:
                     console.print(
-                        f"✅ 视频 {video_id_str} 已流出 ({entity_type}: {self.write_id})"
+                        _("process_video.leaked", "✅ 视频 {id} 已流出 ({entity_type}: {writer_id})").format(
+                            id=video_id_str, entity_type=entity_type, writer_id=self.write_id
+                        )
                     )
 
                 # 获取磁力链接 - 无论是女优还是作者，都使用相同的方式获取磁链
@@ -1229,15 +1238,15 @@ class FC2Analyzer:
                             result["magnets"] = magnets
                             # 在控制台显示磁力链接状态
                             if not self.quiet_mode:
-                                console.print(f"🧲 视频 {video_id_str} 找到磁力链接")
+                                console.print(_("process_video.found_magnet", "🧲 视频 {id} 找到磁力链接").format(id=video_id_str))
                         else:
                             # 在控制台显示未找到磁力链接状态
                             if not self.quiet_mode:
-                                console.print(f"⚠️ 视频 {video_id_str} 未找到磁力链接")
+                                console.print(_("process_video.no_magnet", "⚠️ 视频 {id} 未找到磁力链接").format(id=video_id_str))
                     except Exception as e:
-                        logger.error(f"获取磁力链接失败: {str(e)}")
+                        logger.error(_("process_video.magnet_error", "获取磁力链接失败: {error}").format(error=str(e)))
                         if not self.quiet_mode:
-                            console.print(f"❌ 获取磁力链接失败: {str(e)}")
+                            console.print(_("process_video.magnet_error", "❌ 获取磁力链接失败: {error}").format(error=str(e)))
 
                 # 下载图片 - 传递完整视频对象而不仅仅是ID
                 if self.download_images:
@@ -1252,26 +1261,28 @@ class FC2Analyzer:
                             result["image_path"] = image_path
                             # 在控制台显示图片下载状态
                             if not self.quiet_mode:
-                                console.print(f"🖼️ 视频 {video_id_str} 图片已下载")
+                                console.print(_("process_video.image_downloaded", "🖼️ 视频 {id} 图片已下载").format(id=video_id_str))
                         else:
                             # 在控制台显示图片下载失败状态
                             if not self.quiet_mode:
-                                console.print(f"⚠️ 视频 {video_id_str} 图片下载失败")
+                                console.print(_("process_video.image_failed", "⚠️ 视频 {id} 图片下载失败").format(id=video_id_str))
                     except Exception as e:
-                        logger.error(f"下载图片失败: {str(e)}")
+                        logger.error(_("process_video.image_error", "下载图片失败: {error}").format(error=str(e)))
                         if not self.quiet_mode:
-                            console.print(f"❌ 下载图片失败: {str(e)}")
+                            console.print(_("process_video.image_error", "❌ 下载图片失败: {error}").format(error=str(e)))
             else:
                 # 视频不可用，在控制台显示状态
                 result["exists"] = False  # 确保一致性
 
                 # 显示视频类型和状态
-                entity_type = "女优" if self.is_actress else "作者"
-                status_display = "未流出" if status == "unavailable" else f"错误({status})"
+                entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
+                status_display = _("check_videos.status_unavailable", "未流出") if status == "unavailable" else _("check_videos.status_error", "错误({status})").format(status=status)
 
                 if not self.quiet_mode:
                     console.print(
-                        f"⚠️ 视频 {video_id_str} {status_display} ({entity_type}: {self.write_id})"
+                        _("process_video.unleaked", "⚠️ 视频 {id} {status_display} ({entity_type}: {writer_id})").format(
+                            id=video_id_str, status_display=status_display, entity_type=entity_type, writer_id=self.write_id
+                        )
                     )
 
                 # 即使视频未流出，也尝试下载图片
@@ -1287,15 +1298,15 @@ class FC2Analyzer:
                             result["image_path"] = image_path
                             # 在控制台显示图片下载状态
                             if not self.quiet_mode:
-                                console.print(f"🖼️ 视频 {video_id_str} 图片已下载")
+                                console.print(_("process_video.image_downloaded", "🖼️ 视频 {id} 图片已下载").format(id=video_id_str))
                         else:
                             # 在控制台显示图片下载失败状态
                             if not self.quiet_mode:
-                                console.print(f"⚠️ 视频 {video_id_str} 图片下载失败")
+                                console.print(_("process_video.image_failed", "⚠️ 视频 {id} 图片下载失败").format(id=video_id_str))
                     except Exception as e:
-                        logger.error(f"下载图片失败: {str(e)}")
+                        logger.error(_("process_video.image_error", "下载图片失败: {error}").format(error=str(e)))
                         if not self.quiet_mode:
-                            console.print(f"❌ 下载图片失败: {str(e)}")
+                            console.print(_("process_video.image_error", "❌ 下载图片失败: {error}").format(error=str(e)))
             # 更新统计信息
             self._update_stats(result)
 
@@ -1304,7 +1315,10 @@ class FC2Analyzer:
         except Exception as e:
             # 使用self.logger
             self.logger.error(
-                f"处理视频 {video_id if isinstance(video_id, str) else video_id.get('video_id', 'unknown')} 时出错: {str(e)}"
+                _("logger.process_video_error", "处理视频 {video} 时出错: {error}").format(
+                    video=video_id if isinstance(video_id, str) else video_id.get('video_id', 'unknown'), 
+                    error=str(e)
+                )
             )
             if not self.quiet_mode:
                 video_id_str = (
@@ -1312,7 +1326,7 @@ class FC2Analyzer:
                     if isinstance(video_id, str)
                     else video_id.get("video_id", "unknown")
                 )
-                console.print(f"❌ 处理视频 {video_id_str} 时出错: {str(e)}")
+                console.print(_("process_video.processing_error", "❌ 处理视频 {id} 时出错: {error}").format(id=video_id_str, error=str(e)))
 
             # 设置错误信息
             video_id_str = (
@@ -1350,7 +1364,7 @@ class FC2Analyzer:
         # 检查videos是否为有效列表
         if not videos:
             if not self.quiet_mode:
-                console.print("⚠️ 未找到视频，无法进行分析")
+                console.print(_("analyzer.no_videos", "⚠️ 未找到视频，无法进行分析"))
             return [], self.stats
 
         # 更新总视频数
@@ -1360,7 +1374,7 @@ class FC2Analyzer:
         results = []
 
         # 显示分析开始信息
-        entity_type = "女优" if self.is_actress else "作者"
+        entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
         entity_id = self.write_id
         entity_name = self.name or entity_id
 
@@ -1370,12 +1384,14 @@ class FC2Analyzer:
         # 显示开始分析消息
         if not self.quiet_mode:
             console.print(
-                f"\n[bold cyan]开始分析{entity_type} {entity_id} [{clean_entity_name}] 的 {len(videos)} 个视频[/bold cyan]"
+                _("analyzer.start_analysis", "\n[bold cyan]开始分析{entity_type} {id} [{name}] 的 {count} 个视频[/bold cyan]").format(
+                    entity_type=entity_type, id=entity_id, name=clean_entity_name, count=len(videos)
+                )
             )
             if self.with_magnet:
-                console.print("[dim]将获取已流出视频的磁力链接[/dim]")
+                console.print(_("check_videos.get_magnet_links", "[dim]将获取已流出视频的磁力链接[/dim]"))
             if self.download_images:
-                console.print("[dim]将下载视频缩略图[/dim]")
+                console.print(_("check_videos.download_thumbnails", "[dim]将下载视频缩略图[/dim]"))
 
         # 使用进度条跟踪处理进度
         with Progress(
@@ -1387,7 +1403,7 @@ class FC2Analyzer:
             console=console,
         ) as progress:
             # 创建主任务
-            task_desc = f"{entity_type}视频分析进度"
+            task_desc = _("analyzer.progress_task", "{entity_type}视频分析进度").format(entity_type=entity_type)
             task = progress.add_task(task_desc, total=len(videos))
 
             # 使用线程池并发处理视频
@@ -1408,9 +1424,9 @@ class FC2Analyzer:
                         if result:
                             results.append(result)
                     except Exception as e:
-                        self.logger.error(f"处理视频 {video} 时出错: {str(e)}")
+                        self.logger.error(_("logger.process_video_error", "处理视频 {video} 时出错: {error}").format(video=video, error=str(e)))
                         if not self.quiet_mode:
-                            console.print(f"❌ 处理视频 {video} 时出错: {str(e)}")
+                            console.print(_("process_video.processing_error", "❌ 处理视频 {id} 时出错: {error}").format(id=video, error=str(e)))
 
                     # 更新进度条
                     progress.update(task, advance=1)
@@ -1428,7 +1444,9 @@ class FC2Analyzer:
             leaked = sum(1 for r in results if r.get("leaked", False))
             leak_ratio = (leaked / total) * 100 if total > 0 else 0
             console.print(
-                f"\n[bold green]✅ 分析完成！总共 {total} 个视频，已流出 {leaked} 个 (流出比例: {leak_ratio:.1f}%)[/bold green]"
+                _("analyzer.analysis_complete", "\n[bold green]✅ 分析完成！总共 {total} 个视频，已流出 {leaked} 个 (流出比例: {ratio:.1f}%)[/bold green]").format(
+                    total=total, leaked=leaked, ratio=leak_ratio
+                )
             )
 
         # 返回结果和统计信息
@@ -1448,7 +1466,7 @@ class FC2Analyzer:
         try:
             # 如果结果为空，显示提示信息
             if not results:
-                console.print("[bold yellow]⚠️ 没有分析结果可显示[/bold yellow]")
+                console.print(_("analyzer.no_results", "[bold yellow]⚠️ 没有分析结果可显示[/bold yellow]"))
                 return
 
             # 根据ID排序结果
@@ -1467,7 +1485,7 @@ class FC2Analyzer:
             error_ratio = (errors / total * 100) if total > 0 else 0
 
             # 创建主表格
-            entity_type = "女优" if self.is_actress else "作者"
+            entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
             entity_id = self.write_id
             entity_name = self.name or entity_id
 
@@ -1475,12 +1493,14 @@ class FC2Analyzer:
             clean_entity_name = self.clean_filename(entity_name)
 
             console.print(
-                f"\n[bold cyan]━━━━━━━━━━━━━━ {entity_type}分析结果 ━━━━━━━━━━━━━━[/bold cyan]"
+                _("analyzer.results_header", "\n[bold cyan]━━━━━━━━━━━━━━ {entity_type}分析结果 ━━━━━━━━━━━━━━[/bold cyan]").format(entity_type=entity_type)
             )
 
             # 创建更美观的主表格
             table = Table(
-                title=f"[bold magenta]{entity_type} {entity_id} [{clean_entity_name}][/bold magenta]",
+                title=_("analyzer.results_title", "[bold magenta]{entity_type} {id} [{name}][/bold magenta]").format(
+                    entity_type=entity_type, id=entity_id, name=clean_entity_name
+                ),
                 box=box.ROUNDED,
                 title_justify="center",
                 highlight=True,
@@ -1488,13 +1508,13 @@ class FC2Analyzer:
             )
 
             # 添加列
-            table.add_column("[bold]分类[/bold]", style="cyan")
-            table.add_column("[bold]数量[/bold]", justify="right", style="green")
-            table.add_column("[bold]百分比[/bold]", justify="right", style="yellow")
-            table.add_column("[bold]状态条[/bold]", justify="left")
+            table.add_column(_("analyzer.category_column", "[bold]分类[/bold]"), style="cyan")
+            table.add_column(_("analyzer.count_column", "[bold]数量[/bold]"), justify="right", style="green")
+            table.add_column(_("analyzer.percent_column", "[bold]百分比[/bold]"), justify="right", style="yellow")
+            table.add_column(_("analyzer.bar_column", "[bold]状态条[/bold]"), justify="left")
 
             # 添加行
-            table.add_row("总视频数", f"{total}", "100%", "━" * 20)
+            table.add_row(_("analyzer.total_videos", "总视频数"), f"{total}", "100%", "━" * 20)
 
             # 根据百分比选择颜色
             avail_color = "green"  # 已流出始终使用绿色
@@ -1509,19 +1529,19 @@ class FC2Analyzer:
             error_bar = "█" * int(error_ratio / 5) if error_ratio > 0 else ""
 
             table.add_row(
-                "已流出",
+                _("analyzer.leaked", "已流出"),
                 f"[bold]{available}[/bold]",
                 f"[{avail_color}]{avail_ratio:.1f}%[/{avail_color}]",
                 f"[{avail_color}]{avail_bar}[/{avail_color}]",
             )
             table.add_row(
-                "未流出",
+                _("analyzer.not_leaked", "未流出"),
                 f"{unavailable}",
                 f"[{unavail_color}]{unavail_ratio:.1f}%[/{unavail_color}]",
                 f"[{unavail_color}]{unavail_bar}[/{unavail_color}]",
             )
             table.add_row(
-                "错误数",
+                _("analyzer.check_failed", "错误数"),
                 f"{errors}",
                 f"[{error_color}]{error_ratio:.1f}%[/{error_color}]",
                 f"[{error_color}]{error_bar}[/{error_color}]",
@@ -1532,7 +1552,7 @@ class FC2Analyzer:
 
             # 显示详细统计信息
             console.print(
-                "\n[bold cyan]━━━━━━━━━━━━━━ 详细统计信息 ━━━━━━━━━━━━━━[/bold cyan]"
+                _("analyzer.details_header", "\n[bold cyan]━━━━━━━━━━━━━━ 详细统计信息 ━━━━━━━━━━━━━━[/bold cyan]")
             )
 
             details_table = Table(
@@ -1544,10 +1564,10 @@ class FC2Analyzer:
             )
 
             # 添加列
-            details_table.add_column("[bold]类别[/bold]", style="cyan")
-            details_table.add_column("[bold]数量[/bold]", justify="right", style="green")
-            details_table.add_column("[bold]比例[/bold]", justify="right", style="yellow")
-            details_table.add_column("[bold]状态条[/bold]", justify="left")
+            details_table.add_column(_("analyzer.category_column", "[bold]类别[/bold]"), style="cyan")
+            details_table.add_column(_("analyzer.count_column", "[bold]数量[/bold]"), justify="right", style="green")
+            details_table.add_column(_("analyzer.percent_column", "[bold]比例[/bold]"), justify="right", style="yellow")
+            details_table.add_column(_("analyzer.bar_column", "[bold]状态条[/bold]"), justify="left")
 
             # 添加磁力链接统计
             if self.with_magnet:
@@ -1566,16 +1586,16 @@ class FC2Analyzer:
                 no_magnet_bar = "█" * int((100 - magnet_ratio) / 5)
 
                 details_table.add_row(
-                    "[bold magenta]== 磁链统计 ==[/bold magenta]", "", "", ""
+                    _("analyzer.magnet_stats_header", "[bold magenta]== 磁链统计 ==[/bold magenta]"), "", "", ""
                 )
                 details_table.add_row(
-                    "流出视频中有磁链",
+                    _("analyzer.leaked_with_magnet", "流出视频中有磁链"),
                     f"[bold]{with_magnet}[/bold]",
                     f"[{magnet_color}]{magnet_ratio:.1f}%[/{magnet_color}]",
                     f"[{magnet_color}]{magnet_bar}[/{magnet_color}]",
                 )
                 details_table.add_row(
-                    "流出视频中无磁链",
+                    _("analyzer.leaked_without_magnet", "流出视频中无磁链"),
                     f"{without_magnet}",
                     f"[{no_magnet_color}]{100-magnet_ratio:.1f}%[/{no_magnet_color}]",
                     f"[{no_magnet_color}]{no_magnet_bar}[/{no_magnet_color}]",
@@ -1615,16 +1635,16 @@ class FC2Analyzer:
 
                 details_table.add_row("", "", "", "")
                 details_table.add_row(
-                    "[bold magenta]== 图片统计 ==[/bold magenta]", "", "", ""
+                    _("analyzer.image_stats_header", "[bold magenta]== 图片统计 ==[/bold magenta]"), "", "", ""
                 )
                 details_table.add_row(
-                    "成功下载图片",
+                    _("analyzer.image_success", "成功下载图片"),
                     f"[bold]{image_success}[/bold]",
                     f"[{image_color}]{image_ratio:.1f}%[/{image_color}]",
                     f"[{image_color}]{image_bar}[/{image_color}]",
                 )
                 details_table.add_row(
-                    "图片下载失败",
+                    _("analyzer.image_fail", "图片下载失败"),
                     f"{image_fail}",
                     f"[{fail_color}]{100-image_ratio:.1f}%[/{fail_color}]",
                     f"[{fail_color}]{fail_bar}[/{fail_color}]",
@@ -1634,7 +1654,7 @@ class FC2Analyzer:
             console.print(details_table)
 
             # 显示结果摘要
-            console.print("\n[bold cyan]━━━━━━━━━━━━━━ 结果摘要 ━━━━━━━━━━━━━━[/bold cyan]")
+            console.print(_("analyzer.summary_header", "\n[bold cyan]━━━━━━━━━━━━━━ 结果摘要 ━━━━━━━━━━━━━━[/bold cyan]"))
 
             summary = Table(
                 show_header=False,
@@ -1645,24 +1665,26 @@ class FC2Analyzer:
             )
 
             # 添加列
-            summary.add_column("项目", style="cyan", justify="right")
-            summary.add_column("值", style="bold green", justify="left")
+            summary.add_column(_("analyzer.item_column", "项目"), style="cyan", justify="right")
+            summary.add_column(_("analyzer.value_column", "值"), style="bold green", justify="left")
 
             # 添加行 - 删除emoji图标
-            summary.add_row("总计视频:", f"[bold]{total}[/bold] 个")
+            summary.add_row(_("analyzer.total_videos_row", "总计视频:"), f"[bold]{total}[/bold] {_('analyzer.count_unit', '个')}")
             summary.add_row(
-                "已泄漏:",
-                f"[bold green]{available}[/bold green] 个 (含磁链: [bold]{stats.get('with_magnet', 0)}[/bold])",
+                _("analyzer.leaked_videos_row", "已泄漏:"),
+                _("analyzer.leaked_count", "[bold green]{count}[/bold green] 个 (含磁链: [bold]{with_magnet}[/bold])").format(
+                    count=available, with_magnet=stats.get("with_magnet", 0)
+                ),
             )
-            summary.add_row("未泄漏:", f"[bold red]{unavailable}[/bold red] 个")
-            summary.add_row("检查失败:", f"[bold yellow]{errors}[/bold yellow] 个")
+            summary.add_row(_("analyzer.unleaked_videos_row", "未泄漏:"), f"[bold red]{unavailable}[/bold red] {_('analyzer.count_unit', '个')}")
+            summary.add_row(_("analyzer.error_count_row", "检查失败:"), f"[bold yellow]{errors}[/bold yellow] {_('analyzer.count_unit', '个')}")
 
             # 根据比例选择颜色
             ratio_color = (
                 "green" if avail_ratio > 70 else "yellow" if avail_ratio > 40 else "red"
             )
             summary.add_row(
-                "流出比例:", f"[bold {ratio_color}]{avail_ratio:.1f}%[/bold {ratio_color}]"
+                _("analyzer.leak_ratio_row", "流出比例:"), f"[bold {ratio_color}]{avail_ratio:.1f}%[/bold {ratio_color}]"
             )
 
             # 添加图片下载统计 - 删除emoji图标
@@ -1684,11 +1706,13 @@ class FC2Analyzer:
                 )
                 summary.add_row("", "")
                 summary.add_row(
-                    "图片下载:",
-                    f"成功: [bold green]{image_success}[/bold green]，失败: [bold red]{image_fail}[/bold red]",
+                    _("analyzer.image_stats_row", "图片下载:"),
+                    _("analyzer.image_stats_value", "成功: [bold green]{success}[/bold green]，失败: [bold red]{fail}[/bold red]").format(
+                        success=image_success, fail=image_fail
+                    ),
                 )
                 summary.add_row(
-                    "图片下载成功率:",
+                    _("analyzer.image_ratio_row", "图片下载成功率:"),
                     f"[bold {image_color}]{image_ratio:.1f}%[/bold {image_color}]",
                 )
 
@@ -1711,11 +1735,13 @@ class FC2Analyzer:
                 )
                 summary.add_row("", "")
                 summary.add_row(
-                    "磁链统计:",
-                    f"有磁链: [bold green]{with_magnet}[/bold green]，无磁链: [bold red]{without_magnet}[/bold red]",
+                    _("analyzer.magnet_stats_row", "磁链统计:"),
+                    _("analyzer.magnet_stats_value", "有磁链: [bold green]{with_magnet}[/bold green]，无磁链: [bold red]{without_magnet}[/bold red]").format(
+                        with_magnet=with_magnet, without_magnet=without_magnet
+                    ),
                 )
                 summary.add_row(
-                    "磁链获取成功率:",
+                    _("analyzer.magnet_ratio_row", "磁链获取成功率:"),
                     f"[bold {magnet_color}]{magnet_ratio:.1f}%[/bold {magnet_color}]",
                 )
 
@@ -1736,11 +1762,13 @@ class FC2Analyzer:
                         else "red"
                     )
                     summary.add_row(
-                        "磁链重试次数:",
-                        f"[bold]{magnet_retries}[/bold] 次，成功: [bold green]{magnet_retry_success}[/bold green] 次",
+                        _("analyzer.magnet_retry_row", "磁链重试次数:"),
+                        _("analyzer.magnet_retry_value", "[bold]{retries}[/bold] 次，成功: [bold green]{success}[/bold green] 次").format(
+                            retries=magnet_retries, success=magnet_retry_success
+                        ),
                     )
                     summary.add_row(
-                        "磁链重试成功率:",
+                        _("analyzer.retry_ratio_row", "磁链重试成功率:"),
                         f"[bold {retry_color}]{retry_success_ratio:.1f}%[/bold {retry_color}]",
                     )
 
@@ -1763,11 +1791,13 @@ class FC2Analyzer:
                     )
                     summary.add_row("", "")
                     summary.add_row(
-                        "图片重试次数:",
-                        f"[bold]{image_retries}[/bold] 次，成功: [bold green]{image_retry_success}[/bold green] 次",
+                        _("analyzer.image_retry_row", "图片重试次数:"),
+                        _("analyzer.image_retry_value", "[bold]{retries}[/bold] 次，成功: [bold green]{success}[/bold green] 次").format(
+                            retries=image_retries, success=image_retry_success
+                        ),
                     )
                     summary.add_row(
-                        "图片重试成功率:",
+                        _("analyzer.image_retry_ratio_row", "图片重试成功率:"),
                         f"[bold {retry_img_color}]{image_retry_ratio:.1f}%[/bold {retry_img_color}]",
                     )
 
@@ -1775,8 +1805,8 @@ class FC2Analyzer:
             console.print(summary)
 
         except Exception as e:
-            self.logger.error(f"显示结果出错: {e}")
-            console.print(f"[bold red]❌ 显示结果出错: {e}[/bold red]")
+            self.logger.error(_("logger.display_error", "显示结果出错: {error}").format(error=e))
+            console.print(_("analyzer.display_error", "[bold red]❌ 显示结果出错: {error}[/bold red]").format(error=e))
 
     def _update_stats(self, result):
         """
@@ -1827,11 +1857,11 @@ def main():
 
     提供命令行交互界面，让用户输入作者ID和线程数，然后执行分析
     """
-    print("=== FC2流出检测器 ===")
+    print(_("app_name", "=== FC2流出检测器 ==="))
 
-    writer_id = input("请输入FC2作者ID: ").strip()
+    writer_id = input(_("input_prompts.writer_id", "请输入FC2作者ID: ")).strip()
     if not writer_id:
-        print("❌ 作者ID不能为空")
+        print(_("errors.invalid_id", "❌ 作者ID不能为空"))
         return
 
     # 创建分析器
@@ -1840,16 +1870,16 @@ def main():
     # 获取作者名称
     author_name = analyzer.fetch_author_name()
     if author_name:
-        print(f"✅ 作者名称: {author_name}")
+        print(_("analyzer.author_name_success", "✅ 作者名称: {name}").format(name=author_name))
 
     # 获取视频列表
     videos = analyzer.fetch_video_ids()
     if not videos:
-        print("❌ 未找到视频，程序退出")
+        print(_("analyzer.no_videos_found", "❌ 未找到视频，程序退出"))
         return
 
     # 设置线程数
-    threads = input(f"请输入并行线程数 (默认{config.max_workers}): ").strip()
+    threads = input(_("input_prompts.threads", "请输入并行线程数 (默认{max_workers}): ").format(max_workers=config.max_workers)).strip()
     max_workers = (
         config.max_workers if not threads or not threads.isdigit() else int(threads)
     )
@@ -1860,7 +1890,7 @@ def main():
     # 保存结果
     analyzer.save_results()
 
-    print("✅ 程序执行完毕！结果已保存")
+    print(_("checker.program_completed", "✅ 程序执行完毕！结果已保存"))
 
 
 if __name__ == "__main__":

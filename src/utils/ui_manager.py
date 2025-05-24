@@ -40,16 +40,27 @@ try:
     )
     from rich.table import Table
 except ImportError as e:
-    print(f"错误: 无法导入rich库: {e}")
-    print("\n============== 重要提示 ==============")
-    print("FC2流出检测器依赖于rich库来提供美观的界面和进度显示。")
-    print("请使用以下命令安装rich库:")
+    # 导入i18n模块的get_text函数
+    try:
+        from src.utils.i18n import get_text as _
+    except ImportError:
+        # 如果i18n模块无法导入，使用简单的替代函数
+        def _(key, default=None):
+            return default or key
+            
+    print(f"{_('ui_manager.error_import_rich', '错误: 无法导入rich库')}: {e}")
+    print(f"\n{_('ui_manager.important_notice', '============== 重要提示 ==============')}")
+    print(_('ui_manager.rich_dependency', 'FC2流出检测器依赖于rich库来提供美观的界面和进度显示。'))
+    print(_('ui_manager.install_command', '请使用以下命令安装rich库:'))
     print("\npip install rich")
-    print("\n如果你使用的是虚拟环境，请确保在虚拟环境中安装:")
+    print(_('ui_manager.venv_notice', '\n如果你使用的是虚拟环境，请确保在虚拟环境中安装:'))
     print("python -m pip install rich")
-    print("\n安装完成后再次运行程序。")
+    print(_('ui_manager.restart_notice', '\n安装完成后再次运行程序。'))
     print("==================================")
     sys.exit(1)  # 退出程序
+
+# 导入i18n模块
+from src.utils.i18n import get_text as _
 
 
 class RichUIManager:
@@ -77,7 +88,7 @@ class RichUIManager:
                 self.progress.update(self.task_id, advance=advance)
         except Exception as e:
             # 如果更新失败，记录错误并尝试重新创建进度条
-            print(f"进度条更新失败: {e}")
+            print(f"{_('ui_manager.progress_update_failed', '进度条更新失败')}: {e}")
             # 如果任务已完成但进度条未关闭，则尝试停止
             try:
                 if self.progress:
@@ -96,25 +107,26 @@ class RichUIManager:
         self.authors_data = {}  # 存储各作者的数据
 
         # 创建表格
-        table = Table(title=f"FC2 多作者分析 (共{total_authors}个)")
-        table.add_column("序号", justify="right", style="cyan", width=5)
-        table.add_column("作者ID", style="green", width=10)
-        table.add_column("作者名称", style="yellow", width=15)
-        table.add_column("总视频数", justify="right", style="blue", width=10)
-        table.add_column("已流出", justify="right", style="red", width=10)
-        table.add_column("流出比例", justify="right", style="magenta", width=10)
-        table.add_column("状态", style="bold", width=10)
+        table = Table(title=f"{_('ui_manager.multi_author_analysis', 'FC2 多作者分析')} ({_('ui_manager.total', '共')}{total_authors}{_('ui_manager.count_unit', '个')})")
+        table.add_column(_('ui_manager.idx', '序号'), justify="right", style="cyan", width=5)
+        table.add_column(_('ui_manager.author_id', '作者ID'), style="green", width=10)
+        table.add_column(_('ui_manager.author_name', '作者名称'), style="yellow", width=15)
+        table.add_column(_('ui_manager.total_videos', '总视频数'), justify="right", style="blue", width=10)
+        table.add_column(_('ui_manager.leaked', '已流出'), justify="right", style="red", width=10)
+        table.add_column(_('ui_manager.leak_ratio', '流出比例'), justify="right", style="magenta", width=10)
+        table.add_column(_('ui_manager.status', '状态'), style="bold", width=10)
 
         # 初始化每个作者的行
+        waiting_text = _('ui_manager.waiting', '等待中')
         for i in range(1, total_authors + 1):
-            table.add_row(f"{i}", "等待中...", "", "", "", "", "等待中")
+            table.add_row(f"{i}", f"{waiting_text}...", "", "", "", "", waiting_text)
             self.authors_data[i] = {
                 "idx": i,
                 "id": None,
                 "name": None,
                 "total": 0,
                 "leaked": 0,
-                "status": "等待中",
+                "status": waiting_text,
             }
 
         self.console.print(table)
@@ -130,7 +142,7 @@ class RichUIManager:
         )
 
         self.multi_author_task = self.progress.add_task(
-            f"[bold]总进度 (0/{total_authors})", total=total_authors, completed=0
+            f"[bold]{_('ui_manager.total_progress', '总进度')} (0/{total_authors})", total=total_authors, completed=0
         )
         self.current_video_task = None
         self.progress.start()
@@ -141,7 +153,7 @@ class RichUIManager:
         self.total_leaked = 0
 
         # 日志区域
-        self.console.print(Panel("日志信息", title="处理日志", border_style="blue"))
+        self.console.print(Panel(_('ui_manager.log_info', '日志信息'), title=_('ui_manager.processing_log', '处理日志'), border_style="blue"))
 
     def update_multi_author_total_videos(self, total_videos):
         """更新多作者模式下的总视频数
@@ -150,13 +162,13 @@ class RichUIManager:
             total_videos: 总视频数
         """
         if not self.multi_author_mode:
-            print(f"当前作者共有 {total_videos} 个视频")
+            print(f"{_('ui_manager.current_author_videos', '当前作者共有')} {total_videos} {_('ui_manager.videos', '个视频')}")
             return
 
         # 为当前作者创建视频处理进度条
         if self.current_video_task is None:
             self.current_video_task = self.progress.add_task(
-                f"[bold yellow]处理视频 (0/{total_videos})", total=total_videos, completed=0
+                f"[bold yellow]{_('ui_manager.processing_videos', '处理视频')} (0/{total_videos})", total=total_videos, completed=0
             )
         else:
             # 重置现有任务
@@ -164,10 +176,10 @@ class RichUIManager:
                 self.current_video_task,
                 total=total_videos,
                 completed=0,
-                description=f"[bold yellow]处理视频 (0/{total_videos})",
+                description=f"[bold yellow]{_('ui_manager.processing_videos', '处理视频')} (0/{total_videos})",
             )
 
-        self.console.print(f"当前作者共有 {total_videos} 个视频")
+        self.console.print(f"{_('ui_manager.current_author_videos', '当前作者共有')} {total_videos} {_('ui_manager.videos', '个视频')}")
 
     def update_author_progress(self, author_idx, author_id, author_name=None):
         """更新作者进度
@@ -180,10 +192,10 @@ class RichUIManager:
         if not self.multi_author_mode:
             if author_name:
                 print(
-                    f"处理作者 ({author_idx}/{self.multi_author_total}): {author_id} [{author_name}]"
+                    f"{_('ui_manager.processing_author', '处理作者')} ({author_idx}/{self.multi_author_total}): {author_id} [{author_name}]"
                 )
             else:
-                print(f"处理作者 ({author_idx}/{self.multi_author_total}): {author_id}")
+                print(f"{_('ui_manager.processing_author', '处理作者')} ({author_idx}/{self.multi_author_total}): {author_id}")
             return
 
         # 更新作者数据
@@ -191,12 +203,12 @@ class RichUIManager:
             self.authors_data[author_idx]["id"] = author_id
             if author_name:
                 self.authors_data[author_idx]["name"] = author_name
-            self.authors_data[author_idx]["status"] = "处理中"
+            self.authors_data[author_idx]["status"] = _('ui_manager.processing', '处理中')
 
         # 更新表格
         name_display = f"{author_name}" if author_name else ""
         self.console.print(
-            f"开始处理作者 ({author_idx}/{self.multi_author_total}): {author_id}"
+            f"{_('ui_manager.start_processing_author', '开始处理作者')} ({author_idx}/{self.multi_author_total}): {author_id}"
             + (f" [{name_display}]" if name_display else "")
         )
 
@@ -204,7 +216,7 @@ class RichUIManager:
         if self.multi_author_task is not None:
             self.progress.update(
                 self.multi_author_task,
-                description=f"[bold]总进度 ({self.total_processed_authors}/{self.multi_author_total})",
+                description=f"[bold]{_('ui_manager.total_progress', '总进度')} ({self.total_processed_authors}/{self.multi_author_total})",
             )
 
     def update_status(self, status_data):
@@ -215,16 +227,16 @@ class RichUIManager:
         """
         # 更新状态面板
         status_table = Table(show_header=False, box=None)
-        status_table.add_column("名称", style="bold")
-        status_table.add_column("值", style="yellow")
+        status_table.add_column(_('ui_manager.name', '名称'), style="bold")
+        status_table.add_column(_('ui_manager.value', '值'), style="yellow")
 
-        status_table.add_row("总视频数", str(status_data.get("total", 0)))
-        status_table.add_row("已处理", str(status_data.get("processed", 0)))
-        status_table.add_row("进度", f"{status_data.get('percentage', 0):.1f}%")
-        status_table.add_row("已流出", str(status_data.get("leaked", 0)))
-        status_table.add_row("流出比例", f"{status_data.get('leak_ratio', 0):.2f}%")
+        status_table.add_row(_('ui_manager.total_videos', '总视频数'), str(status_data.get("total", 0)))
+        status_table.add_row(_('ui_manager.processed', '已处理'), str(status_data.get("processed", 0)))
+        status_table.add_row(_('ui_manager.progress', '进度'), f"{status_data.get('percentage', 0):.1f}%")
+        status_table.add_row(_('ui_manager.leaked', '已流出'), str(status_data.get("leaked", 0)))
+        status_table.add_row(_('ui_manager.leak_ratio', '流出比例'), f"{status_data.get('leak_ratio', 0):.2f}%")
 
-        self.console.print(Panel(status_table, title="处理状态", border_style="green"))
+        self.console.print(Panel(status_table, title=_('ui_manager.processing_status', '处理状态'), border_style="green"))
 
     def mark_author_completed(self, author_id, total, leaked, author_name=None):
         """标记作者处理完成
@@ -239,7 +251,7 @@ class RichUIManager:
             leak_ratio = (leaked / max(total, 1)) * 100
             name_display = f" [{author_name}]" if author_name else ""
             print(
-                f"作者 {author_id}{name_display} 处理完成: {leaked}/{total} ({leak_ratio:.2f}%)"
+                f"{_('ui_manager.author', '作者')} {author_id}{name_display} {_('ui_manager.processing_completed', '处理完成')}: {leaked}/{total} ({leak_ratio:.2f}%)"
             )
             return
 
@@ -252,7 +264,7 @@ class RichUIManager:
                 author_data["total"] = total
                 author_data["leaked"] = leaked
                 author_data["name"] = author_name or author_data["name"]
-                author_data["status"] = "已完成"
+                author_data["status"] = _('ui_manager.completed', '已完成')
                 break
 
         # 更新总体统计
@@ -263,7 +275,7 @@ class RichUIManager:
         # 更新UI显示
         name_display = f" [{author_name}]" if author_name else ""
         self.console.print(
-            f"[bold green]作者 {author_id}{name_display} 处理完成: {leaked}/{total} ({leak_ratio:.2f}%)[/bold green]"
+            f"[bold green]{_('ui_manager.author', '作者')} {author_id}{name_display} {_('ui_manager.processing_completed', '处理完成')}: {leaked}/{total} ({leak_ratio:.2f}%)[/bold green]"
         )
 
         # 更新进度条
@@ -271,7 +283,7 @@ class RichUIManager:
             self.progress.update(
                 self.multi_author_task,
                 advance=1,
-                description=f"[bold]总进度 ({self.total_processed_authors}/{self.multi_author_total})",
+                description=f"[bold]{_('ui_manager.total_progress', '总进度')} ({self.total_processed_authors}/{self.multi_author_total})",
             )
 
         # 如果有当前视频任务，则重置
@@ -285,14 +297,14 @@ class RichUIManager:
         if self.total_videos > 0:
             total_ratio = (self.total_leaked / self.total_videos) * 100
             self.console.print(
-                f"当前总进度: 共处理 {self.total_processed_authors}/{self.multi_author_total} 个作者, "
-                f"总视频 {self.total_videos} 个, 流出 {self.total_leaked} 个 ({total_ratio:.2f}%)"
+                f"{_('ui_manager.current_progress', '当前总进度')}: {_('ui_manager.total_processed_authors', '共处理')} {self.total_processed_authors}/{self.multi_author_total} {_('ui_manager.authors', '个作者')}, "
+                f"{_('ui_manager.total_videos', '总视频')} {self.total_videos} {_('ui_manager.videos', '个')}, {_('ui_manager.leaked', '流出')} {self.total_leaked} {_('ui_manager.videos', '个')} ({total_ratio:.2f}%)"
             )
 
         # 更新日志
         self.add_log(
-            f"完成作者 {author_id} {name_display} 的处理: "
-            f"总视频 {total}, 流出 {leaked} ({leak_ratio:.2f}%)",
+            f"{_('ui_manager.completed_author', '完成作者')} {author_id}{name_display} {_('ui_manager.processing_completed', '处理完成')}: "
+            f"{_('ui_manager.total_videos', '总视频')} {total}, {_('ui_manager.leaked', '流出')} {leaked} ({leak_ratio:.2f}%)",
             False,
         )
 
@@ -311,11 +323,11 @@ class RichUIManager:
         # 使用rich打印日志
         if is_error:
             self.console.print(
-                f"[bold red][错误][/bold red] [dim]{timestamp}[/dim] - {message}"
+                f"[bold red][{_('ui_manager.error', '错误')}][/bold red] [dim]{timestamp}[/dim] - {message}"
             )
         else:
             self.console.print(
-                f"[bold green][信息][/bold green] [dim]{timestamp}[/dim] - {message}"
+                f"[bold green][{_('general.info', '信息')}][/bold green] [dim]{timestamp}[/dim] - {message}"
             )
 
     def finish(self):
@@ -328,28 +340,28 @@ class RichUIManager:
             total_ratio = (self.total_leaked / self.total_videos) * 100
 
             # 创建统计表格
-            stats_table = Table(title="处理统计")
-            stats_table.add_column("项目", style="cyan")
-            stats_table.add_column("数值", style="green")
+            stats_table = Table(title=_('ui_manager.summary_statistics', '处理统计'))
+            stats_table.add_column(_('ui_manager.name', '项目'), style="cyan")
+            stats_table.add_column(_('ui_manager.value', '数值'), style="green")
 
-            stats_table.add_row("总作者数", str(self.multi_author_total))
-            stats_table.add_row("成功处理作者数", str(self.total_processed_authors))
-            stats_table.add_row("总视频数", str(self.total_videos))
-            stats_table.add_row("总流出数", str(self.total_leaked))
-            stats_table.add_row("总流出比例", f"{total_ratio:.2f}%")
+            stats_table.add_row(_('ui_manager.total_authors', '总作者数'), str(self.multi_author_total))
+            stats_table.add_row(_('ui_manager.total_processed_authors', '成功处理作者数'), str(self.total_processed_authors))
+            stats_table.add_row(_('ui_manager.total_videos', '总视频数'), str(self.total_videos))
+            stats_table.add_row(_('ui_manager.total_leaked_videos', '总流出数'), str(self.total_leaked))
+            stats_table.add_row(_('ui_manager.leak_ratio', '总流出比例'), f"{total_ratio:.2f}%")
 
             # 添加更详细的统计信息
             if hasattr(self, "total_with_magnet"):
-                stats_table.add_row("有磁力链接数", str(self.total_with_magnet))
+                stats_table.add_row(_('ui_manager.with_magnet', '有磁力链接数'), str(self.total_with_magnet))
                 magnet_ratio = (
                     self.total_with_magnet / max(self.total_leaked, 1)
                 ) * 100
-                stats_table.add_row("磁链获取率", f"{magnet_ratio:.2f}%")
+                stats_table.add_row(_('ui_manager.magnet_ratio', '磁链获取率'), f"{magnet_ratio:.2f}%")
 
             if hasattr(self, "total_image_downloaded"):
-                stats_table.add_row("已下载图片数", str(self.total_image_downloaded))
+                stats_table.add_row(_('ui_manager.image_downloaded', '已下载图片数'), str(self.total_image_downloaded))
                 image_ratio = (self.total_image_downloaded / self.total_videos) * 100
-                stats_table.add_row("图片下载率", f"{image_ratio:.2f}%")
+                stats_table.add_row(_('ui_manager.image_ratio', '图片下载率'), f"{image_ratio:.2f}%")
 
             if hasattr(self, "magnet_retries") and hasattr(
                 self, "magnet_retry_success"
@@ -359,13 +371,13 @@ class RichUIManager:
                     retry_success_ratio = (
                         self.magnet_retry_success / self.magnet_retries
                     ) * 100
-                stats_table.add_row("磁链重试次数", str(self.magnet_retries))
-                stats_table.add_row("磁链重试成功数", str(self.magnet_retry_success))
-                stats_table.add_row("磁链重试成功率", f"{retry_success_ratio:.2f}%")
+                stats_table.add_row(_('analyzer.magnet_retries', '磁链重试次数'), str(self.magnet_retries))
+                stats_table.add_row(_('analyzer.magnet_retry_success', '磁链重试成功数'), str(self.magnet_retry_success))
+                stats_table.add_row(_('analyzer.retry_success_ratio', '磁链重试成功率'), f"{retry_success_ratio:.2f}%")
 
             self.console.print(stats_table)
 
-        self.console.print("[bold green]处理完成！[/bold green]")
+        self.console.print(f"[bold green]{_('ui_manager.finish_msg', '处理完成')}！[/bold green]")
 
     def setup_videos_progress(self, total_videos):
         """设置视频进度显示
@@ -383,6 +395,8 @@ class RichUIManager:
             TextColumn("{task.fields[status]}"),
         )
         self.task = self.progress.add_task(
-            f"处理 {total_videos} 个视频", total=total_videos, status="准备中..."
+            f"{_('ui_manager.processing_videos', '处理')} {total_videos} {_('ui_manager.videos', '个视频')}", 
+            total=total_videos, 
+            status=_('ui_manager.preparing', '准备中...')
         )
         self.progress.start()

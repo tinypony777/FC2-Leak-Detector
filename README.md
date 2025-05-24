@@ -100,6 +100,7 @@ python run.py [选项]
   -t NUM, --threads NUM     设置并行线程数 (默认值见配置)
   --no-magnet               不获取磁力链接
   --no-image                不下载视频缩略图
+  -l LANG, --lang LANG      设置界面语言 (支持: zh, en, ja)
 ```
 
 #### 示例
@@ -128,6 +129,9 @@ python run.py -a 5711 --no-magnet
 
 # 分析作者视频但不下载缩略图
 python run.py -w 5656 --no-image
+
+# 使用英文界面
+python run.py -l en
 ```
 
 ### 配置说明
@@ -170,6 +174,7 @@ FC2-Leak-Detector/
 │   └── logs/            # 日志目录
 ├── i18n/                # 国际化语言文件
 │   ├── en.json          # 英文语言文件
+│   ├── ja.json          # 日文语言文件
 │   └── zh.json          # 中文语言文件
 ├── .github/             # GitHub配置
 │   └── workflows/       # GitHub工作流
@@ -320,6 +325,7 @@ Options:
   -t NUM, --threads NUM     Set parallel thread count (default in config)
   --no-magnet               Don't fetch magnet links
   --no-image                Don't download video thumbnails
+  -l LANG, --lang LANG      Set interface language (supported: zh, en, ja)
 ```
 
 #### Examples
@@ -348,6 +354,9 @@ python run.py -a 5711 --no-magnet
 
 # Analyze author videos without thumbnails
 python run.py -w 5656 --no-image
+
+# Use Japanese interface
+python run.py -l ja
 ```
 
 ### Configuration
@@ -390,6 +399,7 @@ FC2-Leak-Detector/
 │   └── logs/            # Log directory
 ├── i18n/                # Internationalization language files
 │   ├── en.json          # English language file
+│   ├── ja.json          # Japanese language file
 │   └── zh.json          # Chinese language file
 ├── .github/             # GitHub configuration
 │   └── workflows/       # GitHub workflows
@@ -540,6 +550,7 @@ python run.py [オプション]
   -t NUM, --threads NUM     並列スレッド数を設定（デフォルトは設定ファイルを参照）
   --no-magnet               マグネットリンクを取得しない
   --no-image                ビデオサムネイルをダウンロードしない
+  -l LANG, --lang LANG      インターフェース言語を設定（対応: zh, en, ja）
 ```
 
 #### 使用例
@@ -568,6 +579,9 @@ python run.py -a 5711 --no-magnet
 
 # サムネイルなしで作者のビデオを分析
 python run.py -w 5656 --no-image
+
+# 中国語インターフェースを使用
+python run.py -l zh
 ```
 
 ### 設定説明

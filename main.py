@@ -80,7 +80,18 @@ def is_leaked(video_result):
 
 
 def print_usage():
-    """显示程序使用说明"""
+    """打印使用帮助信息"""
+    # 获取当前语言
+    current_lang = get_current_language()
+    
+    # 根据当前语言设置目标语言
+    if current_lang == "zh":
+        target_lang = "en"
+    elif current_lang == "en":
+        target_lang = "ja"
+    else:  # current_lang == "ja" or any other
+        target_lang = "zh"
+    
     usage = f"""
 {_('usage_title', '使用方法')}: python run.py [选项]
 
@@ -90,11 +101,11 @@ def print_usage():
   -s, --sites               {_('usage_sites', '显示检查站点列表')}
   -w ID, --writer ID        {_('usage_writer', '分析作者ID的视频')}
   -a ID, --actress ID       {_('usage_actress', '分析女优ID的视频')}
-  -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID（用英文逗号分隔）')}
-  -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID（用英文逗号分隔）')}
+  -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID (用逗号分隔)')}
+  -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID (用逗号分隔)')}
   -e, --extract             {_('usage_extract', '提取热门作者列表')}
   -v ID, --video ID         {_('usage_video', '通过视频ID查找并分析作者')}
-  -t NUM, --threads NUM     {_('usage_threads', '指定并行线程数（默认30）')}
+  -t NUM, --threads NUM     {_('usage_threads', '指定并行线程数 (默认30)')}
   --no-magnet               {_('usage_no_magnet', '不获取磁力链接')}
   --no-image                {_('usage_no_image', '不下载视频缩略图')}
   -l LANG, --lang LANG      {_('usage_lang', '设置界面语言 (支持: zh, en, ja)')}
@@ -110,7 +121,7 @@ def print_usage():
   python run.py -w 5656 -t 10         # {_('example_threads', '使用10个线程分析作者视频')}
   python run.py -a 5711 --no-magnet   # {_('example_no_magnet', '分析女优视频但不获取磁力链接')}
   python run.py -w 5656 --no-image    # {_('example_no_image', '分析作者视频但不下载缩略图')}
-  python run.py -l en                 # {_('example_lang', '使用英文界面')}
+  python run.py -l {target_lang}                 # {_('example_lang', '使用英文界面')}
 """
     print(usage)
 

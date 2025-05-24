@@ -15,6 +15,7 @@ from requests.exceptions import ConnectionError, RequestException, Timeout
 
 from config import config
 from src.utils.logger import get_logger
+from src.utils.i18n import get_text as _  # 添加i18n翻译函数
 
 # 使用统一的日志记录器
 logger = get_logger("request_handler")
@@ -76,9 +77,12 @@ class RequestHandler:
                 # 使用自定义通知
                 if step_name:
                     retry_suffix = (
-                        f" (重试 {retry_count}/{max_retries})" if retry_count > 0 else ""
+                        _("logger.retry_suffix", " (重试 {retry}/{max})", 
+                          " (重试 {retry}/{max})").format(retry=retry_count, max=max_retries) if retry_count > 0 else ""
                     )
-                    logger.info(f"{step_name}{retry_suffix}")
+                    logger.info(_("logger.request_step", "{step_name}{retry_suffix}").format(
+                        step_name=step_name, retry_suffix=retry_suffix
+                    ))
 
                 # 发送请求
                 response = requests.get(
@@ -94,18 +98,18 @@ class RequestHandler:
 
             except (requests.RequestException, ConnectionError, TimeoutError) as e:
                 # 记录日志
-                logger.error(f"请求失败: {str(e)}")
+                logger.error(_("logger.request_failed", "请求失败: {error}").format(error=str(e)))
 
                 retry_count += 1
 
                 # 如果达到最大重试次数，则返回None
                 if retry_count > max_retries:
-                    logger.error(f"达到最大重试次数，请求失败: {url}")
+                    logger.error(_("logger.max_retries", "达到最大重试次数，请求失败: {url}").format(url=url))
                     return None
 
                 # 计算退避时间
                 wait_time = (2**retry_count) + random.uniform(0, 1)
-                logger.info(f"等待 {wait_time:.2f} 秒后重试...")
+                logger.info(_("logger.wait_retry", "等待 {wait_time:.2f} 秒后重试...").format(wait_time=wait_time))
                 time.sleep(wait_time)
 
     @classmethod
@@ -148,7 +152,7 @@ class RequestHandler:
         check_sites.sort(key=lambda x: x["priority"])
 
         for site in check_sites:
-            site_name = site.get("name", "未知站点")
+            site_name = site.get("name", _("sites.unknown", "未知站点"))
             # 兼容两种URL格式：使用{video_id}或{vid}
             site_url = site.get("url", "")
             if "{video_id}" in site_url:
@@ -160,10 +164,14 @@ class RequestHandler:
                 continue
 
             # 使用统一的请求功能
-            logger.info(f"检查视频 {video_id} 是否在 {site_name} 流出")
+            logger.info(_("logger.video_check", "检查视频 {video_id} 是否在 {site_name} 流出").format(
+                video_id=video_id, site_name=site_name
+            ))
             response = cls.make_request(
                 site_url,
-                step_name=f"检查视频 {video_id} 在 {site_name}",
+                step_name=_("logger.checking_video", "检查视频 {video_id} 在 {site_name}").format(
+                    video_id=video_id, site_name=site_name
+                ),
                 max_retries=1,  # 减少重试次数以加快速度
                 timeout=config.timeout,  # 使用配置的超时时间
             )
@@ -171,14 +179,20 @@ class RequestHandler:
             if response:
                 # 根据状态码判断视频是否存在
                 if response.status_code == 200:
-                    logger.info(f"视频 {video_id} 在 {site_name} 已流出")
+                    logger.info(_("logger.video_leaked", "视频 {video_id} 在 {site_name} 已流出").format(
+                        video_id=video_id, site_name=site_name
+                    ))
                     return True, site_name, response.status_code
 
                 elif response.status_code == 404:
-                    logger.info(f"视频 {video_id} 在 {site_name} 未找到")
+                    logger.info(_("logger.video_not_found", "视频 {video_id} 在 {site_name} 未找到").format(
+                        video_id=video_id, site_name=site_name
+                    ))
                 else:
                     logger.warning(
-                        f"检查视频 {video_id} 在 {site_name} 时状态码异常: {response.status_code}"
+                        _("logger.video_check_abnormal", "检查视频 {video_id} 在 {site_name} 时状态码异常: {status_code}").format(
+                            video_id=video_id, site_name=site_name, status_code=response.status_code
+                        )
                     )
 
         # 所有站点都未找到，视为未流出
@@ -205,29 +219,31 @@ class RequestHandler:
 
             # 构建错误信息
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            status_code = response.status_code if response else "No Response"
+            status_code = response.status_code if response else _("logger.no_response", "无响应")
 
             # 记录基本错误信息到日志
-            logger.error(f"{step_name} 请求失败: URL={url}, 状态码={status_code}")
+            logger.error(_("logger.request_error_basic", "{step_name} 请求失败: URL={url}, 状态码={status_code}").format(
+                step_name=step_name, url=url, status_code=status_code
+            ))
 
             # 记录详细信息到错误日志文件
             with open(error_log_path, "a", encoding="utf-8") as f:
                 f.write(f"\n{'='*50}\n")
-                f.write(f"时间: {timestamp}\n")
-                f.write(f"步骤: {step_name}\n")
-                f.write(f"请求URL: {url}\n")
-                f.write(f"响应状态: {status_code}\n")
+                f.write(_("reports.error_time", "时间: {timestamp}\n").format(timestamp=timestamp))
+                f.write(_("logger.error_step", "步骤: {step_name}\n").format(step_name=step_name))
+                f.write(_("reports.error_request_url", "请求URL: {url}\n").format(url=url))
+                f.write(_("reports.error_response_status", "响应状态: {status}\n").format(status=status_code))
 
                 if error_msg:
-                    f.write(f"错误信息: {error_msg}\n")
+                    f.write(_("reports.error_message", "错误信息: {message}\n").format(message=error_msg))
 
                 # 记录部分响应内容，避免日志文件过大
                 if response and response.text:
                     content_preview = response.text[:1000] + (
-                        "..." if len(response.text) > 1000 else ""
+                        _("reports.content_truncated", "...") if len(response.text) > 1000 else ""
                     )
-                    f.write(f"\n响应内容预览:\n{content_preview}\n")
+                    f.write(_("logger.response_preview", "\n响应内容预览:\n{content}\n").format(content=content_preview))
                 else:
-                    f.write("\n无响应内容\n")
+                    f.write(_("reports.no_response_content", "\n无响应内容\n"))
         except Exception as e:
-            logger.error(f"保存错误日志失败: {str(e)}")
+            logger.error(_("logger.error_log_failed", "保存错误日志失败: {error}").format(error=str(e)))
