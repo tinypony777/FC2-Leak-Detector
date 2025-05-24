@@ -101,8 +101,8 @@ def print_usage():
   -s, --sites               {_('usage_sites', '显示检查站点列表')}
   -w ID, --writer ID        {_('usage_writer', '分析作者ID的视频')}
   -a ID, --actress ID       {_('usage_actress', '分析女优ID的视频')}
-  -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID (用逗号分隔)')}
-  -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID (用逗号分隔)')}
+  -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID (用英文逗号分隔)')}
+  -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID (用英文逗号分隔)')}
   -e, --extract             {_('usage_extract', '提取热门作者列表')}
   -v ID, --video ID         {_('usage_video', '通过视频ID查找并分析作者')}
   -t NUM, --threads NUM     {_('usage_threads', '指定并行线程数 (默认30)')}
