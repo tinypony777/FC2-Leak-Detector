@@ -9,7 +9,7 @@
 
 # FC2流出检测器 | FC2 Leak Detector
 
-[简体中文](#简体中文) | [English](#english)
+[简体中文](#简体中文) | [English](#english) | [日本語](#日本語)
 
 ## 简体中文
 
@@ -48,7 +48,9 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
 - Python 3.8 或更高版本
 - 支持的操作系统: Windows, macOS, Linux
 
-#### 步骤一: 安装Python
+#### 安装步骤
+
+**步骤一: 安装Python**
 
 确保您的系统已安装Python 3.8或更高版本。您可以从[Python官网](https://www.python.org/downloads/)下载并安装适合您操作系统的版本。
 
@@ -57,23 +59,23 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
 python --version
 ```
 
-#### 步骤二: 获取代码
+**步骤二: 获取代码**
 
-**方法1: 使用Git克隆**
+选项1: 使用Git克隆
 
 ```bash
 git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
 cd FC2-Leak-Detector
 ```
 
-**方法2: 直接下载发布版本**
+选项2: 直接下载发布版本
 
 1. 访问[GitHub Releases页面](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
 2. 下载最新版本的源代码
 3. 解压下载的文件
 4. 通过命令行进入解压后的目录
 
-#### 步骤三: 安装依赖
+**步骤三: 安装依赖**
 
 ```bash
 pip install -r requirements.txt
@@ -266,7 +268,9 @@ FC2 Leak Detector is a professional content status analysis tool built on the fc
 - Python 3.8 or higher
 - Supported Operating Systems: Windows, macOS, Linux
 
-#### Step 1: Install Python
+#### Installation Steps
+
+**Step 1: Install Python**
 
 Ensure Python 3.8 or higher is installed on your system. You can download and install the appropriate version for your operating system from the [Python official website](https://www.python.org/downloads/).
 
@@ -275,23 +279,23 @@ You can verify your Python version with:
 python --version
 ```
 
-#### Step 2: Get the Code
+**Step 2: Get the Code**
 
-**Method 1: Using Git **
+Option 1: Using Git
 
 ```bash
 git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
 cd FC2-Leak-Detector
 ```
 
-**Method 2: Direct Download from Releases**
+Option 2: Direct Download from Releases
 
 1. Visit the [GitHub Releases page](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
 2. Download the latest version source code 
 3. Extract the downloaded file
 4. Navigate to the extracted directory via command line
 
-#### Step 3: Install Dependencies
+**Step 3: Install Dependencies**
 
 ```bash
 pip install -r requirements.txt
@@ -446,4 +450,225 @@ python run.py --clear-cache
 ### Star History
 
 [![Star History Chart](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
+
+## 日本語
+
+FC2流出チェッカーは、fc2ppvdb.comのデータベースに基づいて構築された専門的なコンテンツステータス分析ツールです。ユーザーは、特定の作者のFC2ビデオIDを提供するだけで、fc2.comで公開されている作品の完全な流出ステータスレポートを迅速に取得でき、同時に高品質のプレビュー画像とマグネットリンク情報を自動的に統合します。このツールには強力な統計分析機能が組み込まれており、ユーザーに直感的で詳細なデータ視覚化結果を提供します。軽量なコマンドラインインターフェース設計を採用し、操作はシンプルで直感的でありながら、さまざまなシナリオでの分析ニーズを満たすための豊富なカスタム設定オプションも提供しています。
+
+### プロジェクト声明
+
+**重要：本ツールを使用する前に、以下の声明をよくお読みください**
+
+1. **プロジェクトの目的**：本プロジェクトは技術研究ツールであり、学術研究、データ分析、技術学習のみを目的としています。主な目的は、Pythonを使用したネットワークデータ分析、マルチスレッド処理、構造化データ抽出などの技術的実装方法を示すことです。
+
+2. **合法的な使用**：ユーザーは、所在地域の法律法規を遵守することを前提として本ツールを使用しなければなりません。本ツールは、いかなる著作権コンテンツも提供、保存、配布せず、公開されているインデックスへのメタデータ情報のみを提供します。
+
+3. **ユーザーの責任**：使用者は自身の行動に責任を負うものとします。作者および貢献者は、本ツールの使用に起因するいかなる法的問題または損失についても責任を負いません。本ツールを使用することにより、使用過程におけるすべての責任を理解し、同意したものとみなされます。
+
+4. **著作権の尊重**：本ツールはコンテンツのステータスを確認するためにのみ使用され、著作権を侵害するコンテンツの取得や共有を奨励するものではありません。コンテンツ作成者の権利を尊重し、正規のコンテンツを支持してください。
+
+5. **データソース**：本ツールは公開APIを使用してデータを取得し、いかなるウェブサイトのアクセス制限も解読または回避しません。ツール内のすべてのリンクは公開チャネルからのものであり、私的または未承認のデータソースは一切含まれていません。
+
+6. **ライセンス**：本プロジェクトはGNU一般公衆利用許諾契約書v3（GNU GPL v3）に基づいて公開されています。これは、GPL契約の関連規定に従うことを条件に、本ソフトウェアを自由に使用、変更、配布できることを意味します。詳細については、プロジェクトのルートディレクトリにあるLICENSEファイルを参照してください。
+
+### 主な機能
+
+- **ビデオ流出状態確認** - 動画が他のサイトに流出しているかどうかを素早く確認
+- **作者/女優作品分析** - 特定の作者または女優のすべての動画状態を分析
+- **バッチ処理** - 複数の作者または女優IDを同時に処理
+- **マグネットリンク検索** - 動画のマグネットリンクを自動的に検索して抽出
+- **画像ダウンロード** - 動画のサムネイル画像を自動的にダウンロード
+- **詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成
+- **効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ
+
+### インストールガイド
+
+#### システム要件
+
+- Python 3.8以上
+- 対応OS: Windows, macOS, Linux
+
+#### インストール手順
+
+**ステップ1: Pythonのインストール**
+
+システムにPython 3.8以上がインストールされていることを確認してください。[Python公式サイト](https://www.python.org/downloads/)から、お使いのOSに適したバージョンをダウンロードしてインストールできます。
+
+以下のコマンドでPythonのバージョンを確認できます：
+```bash
+python --version
+```
+
+**ステップ2: コードの取得**
+
+オプション1: Gitを使用してクローン
+
+```bash
+git clone https://github.com/FC2-Research-Club/FC2-Leak-Detector.git
+cd FC2-Leak-Detector
+```
+
+オプション2: リリースから直接ダウンロード
+
+1. [GitHubリリースページ](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)にアクセス
+2. 最新バージョンのソースコードをダウンロード
+3. ダウンロードしたファイルを解凍
+4. コマンドラインで解凍したディレクトリに移動
+
+**ステップ3: 依存関係のインストール**
+
+```bash
+pip install -r requirements.txt
+```
+
+### 使用方法
+
+#### コマンドライン引数
+
+```bash
+python run.py [オプション]
+
+オプション:
+  -h, --help                ヘルプ情報を表示
+  -c, --config              現在の設定を表示
+  -s, --sites               チェックサイトリストを表示
+  -w ID, --writer ID        作者IDのビデオを分析
+  -a ID, --actress ID       女優IDのビデオを分析
+  -b IDS, --batch IDS       複数の作者IDをバッチ処理（カンマ区切り）
+  -ba IDS, --batch-actress  複数の女優IDをバッチ処理（カンマ区切り）
+  -e, --extract             人気作者リストを抽出
+  -t NUM, --threads NUM     並列スレッド数を設定（デフォルトは設定ファイルを参照）
+  --no-magnet               マグネットリンクを取得しない
+  --no-image                ビデオサムネイルをダウンロードしない
+```
+
+#### 使用例
+
+```bash
+# 単一の作者の作品を分析
+python run.py -w 5656
+
+# 単一の女優の作品を分析
+python run.py -a 5711
+
+# 複数の作者をバッチ分析
+python run.py -b 5656,3524,4461
+
+# 複数の女優をバッチ分析
+python run.py -ba 5711,3986,4219
+
+# 人気作者リストを抽出
+python run.py -e
+
+# 10スレッドで作者のビデオを分析
+python run.py -w 5656 -t 10
+
+# マグネットリンクなしで女優のビデオを分析
+python run.py -a 5711 --no-magnet
+
+# サムネイルなしで作者のビデオを分析
+python run.py -w 5656 --no-image
+```
+
+### 設定説明
+
+設定システムは`config.py`の`Config`クラスを使用したクラスベースのモデルに更新されました：
+
+| カテゴリ | パラメータ | 説明 | デフォルト値 |
+|--------|------|------|--------|
+| **ネットワーク設定** | max_workers | 最大並列スレッド数 | 30 |
+| | timeout | リクエストタイムアウト（秒） | 15 |
+| | max_retries | 最大再試行回数 | 4 |
+| | page_interval | ページリクエスト間隔範囲（秒） | (0.5, 1.2) |
+| | request_interval | 通常リクエスト間隔範囲（秒） | (0.5, 1.0) |
+| | retry_base | 再試行間隔の基数 | 2.0 |
+| **キャッシュ設定** | cache_ttl | キャッシュ有効期間（秒） | 172800 (48時間) |
+| **ストレージパス** | cache_dir | ID キャッシュディレクトリ | data/id_cache |
+| | image_dir | 画像保存ディレクトリ | data/img |
+| | result_dir | 結果保存ディレクトリ | data/results |
+| | magnet_dir | マグネットキャッシュディレクトリ | data/magnets |
+| | log_dir | ログディレクトリ | data/logs |
+| **出力設定** | save_format | 保存形式 | ["text", "json"] |
+| | report_batch_size | レポート内の1バッチあたりのビデオ数 | 100 |
+| **高度な設定** | log_level | ログレベル | INFO |
+| | enable_proxy | プロキシを使用するかどうか | false |
+| | user_agents | ブラウザユーザーエージェントローテーションリスト | [複数のエージェント] |
+
+### ディレクトリ構造
+
+```
+FC2-Leak-Detector/
+├── src/                 # ソースコードディレクトリ
+│   ├── checkers/        # ビデオチェックモジュール
+│   ├── writers/         # 作者情報モジュール
+│   └── utils/           # ユーティリティモジュール
+├── data/                # データストレージディレクトリ（自動作成）
+│   ├── id_cache/        # IDキャッシュディレクトリ
+│   ├── results/         # 結果保存ディレクトリ
+│   ├── img/             # 画像保存ディレクトリ
+│   ├── magnets/         # マグネットキャッシュディレクトリ
+│   └── logs/            # ログディレクトリ
+├── i18n/                # 国際化言語ファイル
+│   ├── en.json          # 英語言語ファイル
+│   ├── ja.json          # 日本語言語ファイル
+│   └── zh.json          # 中国語言語ファイル
+├── .github/             # GitHub設定
+│   └── workflows/       # GitHubワークフロー
+├── logs/                # ルートレベルログディレクトリ
+├── run.py               # プログラムエントリーポイント
+├── main.py              # メインプログラムコード
+├── config.py            # 設定ファイル
+├── setup.py             # パッケージインストール設定
+├── requirements.txt     # 基本依存関係リスト
+├── pyproject.toml       # プロジェクト設定ファイル
+├── .gitignore           # Git無視ファイル
+├── .editorconfig        # エディタ設定
+├── .python-version      # Pythonバージョン設定
+├── CHANGELOG.md         # 更新ログ
+├── LICENSE              # ライセンスファイル
+└── README.md            # ドキュメント
+```
+
+### よくある質問
+
+#### 作者IDや女優IDはどうやって見つけるの？
+
+女優IDはfc2ppvdb.comウェブサイトのURLから見つけることができます。例えば：
+- 女優ページURL: `.../actress/6789` の `6789` が女優IDです
+- 作者IDはウェブページに明示的に表示されていません。ユーザーは、その作者のFC2ビデオIDを選択し、-v idコマンドライン形式を使用して、特定のIDを提供せずに直接その作者のビデオを取得できます。
+
+#### 分析が遅い場合はどうすればいいですか？
+
+- 並列スレッド数を増やす（`-t`パラメータまたは設定ファイルの`max_workers`値を変更）
+- 分析するビデオの数を減らす
+- ネットワーク接続が安定していることを確認する
+- マグネットリンク検索と画像ダウンロードを無効にする（`--no-magnet --no-image`パラメータ）
+
+#### 一部のビデオが「チェック失敗」と表示されるのはなぜですか？
+
+チェック失敗は以下の原因で発生する可能性があります：
+- ネットワーク接続の問題
+- チェックサイトが一時的に利用できない
+- リクエストがターゲットサイトによって拒否された
+- ビデオIDのフォーマットが正しくない
+
+#### キャッシュをクリアするには？
+
+`data`ディレクトリ内の対応するキャッシュフォルダを手動で削除するか、次のコマンドを使用します：
+
+```bash
+python run.py --clear-cache
+```
+
+### 注意事項
+
+1. 本ツールは学術研究と個人学習のみを目的としており、商業目的や違法な目的には使用しないでください
+2. IPブロックを避けるため、頻繁な大量リクエストは避けてください
+3. 関連法規を遵守し、コンテンツの著作権を尊重してください
+4. 本ツールを通じて取得した著作権を侵害する可能性のあるコンテンツを共有または配布しないでください
+5. **特別な注意：日本以外のユーザーは、このツールが依存するオンラインサービスに接続するために、適切なインターネットアクセス環境を確保する必要があります**
+
+### スター履歴
+
+[![スター履歴チャート](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
 
