@@ -27,14 +27,10 @@ from src.utils.logger import get_logger
 from src.utils.report_generator import ReportGenerator
 from src.utils.ui_manager import RichUIManager
 from src.writers.writer_extractor import WriterExtractor
-from src.utils.i18n import initialize as init_i18n, get_text as _, switch_language, get_current_language, SUPPORTED_LANGUAGES
-
-# 初始化国际化模块
-init_i18n()
+from src.utils.i18n import get_text as _, switch_language, get_current_language, SUPPORTED_LANGUAGES
 
 # 获取主程序日志记录器
 logger = get_logger("main")
-
 
 # 定义自定义异常类型
 class FC2AnalyzerError(Exception):
@@ -49,7 +45,7 @@ class NetworkError(FC2AnalyzerError):
     pass
 
 
-class DataParsingError(FC2AnalyzerError):
+class DataParseError(FC2AnalyzerError):
     """数据解析错误"""
 
     pass
@@ -121,12 +117,12 @@ def print_usage():
 
 def show_config_info():
     """显示当前配置信息"""
-    print(f"=== {_('config_info_title', '当前配置信息')} ===")
-    print(f"{_('config_data_dir', '数据目录')}: {config.cache_dir}")
-    print(f"{_('config_max_workers', '最大线程数')}: {config.max_workers}")
-    print(f"{_('config_max_retries', '最大重试次数')}: {config.max_retries}")
-    print(f"{_('config_cache_ttl', '缓存有效期')}: {config.cache_ttl/3600:.1f}{_('config_hours', '小时')}")
-    print(f"{_('config_language', '当前语言')}: {get_current_language()}")
+    print(f"=== {_('config.config_info_title', '当前配置信息')} ===")
+    print(f"{_('config.config_data_dir', '数据目录')}: {config.cache_dir}")
+    print(f"{_('config.config_max_workers', '最大线程数')}: {config.max_workers}")
+    print(f"{_('config.config_max_retries', '最大重试次数')}: {config.max_retries}")
+    print(f"{_('config.config_cache_ttl', '缓存有效期')}: {config.cache_ttl/3600:.1f} {_('config.config_hours', '小时')}")
+    print(f"{_('config.config_language', '当前语言')}: {get_current_language()}")
 
     # 显示检查站点配置
     show_check_sites()
@@ -158,13 +154,13 @@ def extract_writer_info():
     """
     extractor = WriterExtractor()
 
-    print("开始获取热门作者列表...")
+    print(_("extract_writers.start", "开始获取热门作者列表..."))
     writer_data = extractor.extract_all_writers()
     if writer_data:
-        print(f"✅ 已获取 {len(writer_data)} 个热门作者信息")
+        print(f"✅ {_('extract_writers.success', '已获取 {count} 个热门作者信息').format(count=len(writer_data))}")
         return True
     else:
-        print("❌ 无法获取热门作者列表")
+        print(f"❌ {_('extract_writers.failure', '无法获取热门作者列表')}")
         return False
 
 
@@ -186,7 +182,7 @@ def check_videos(
         bool: 操作是否成功
     """
     # 根据类型确定显示文本
-    entity_type = "女优" if is_actress else "作者"
+    entity_type = _("check_videos.entity_type_actress", "女优") if is_actress else _("check_videos.entity_type_writer", "作者")
 
     try:
         # 创建分析器
@@ -210,18 +206,18 @@ def check_videos(
         try:
             author_name = analyzer.fetch_author_name()
             if author_name:
-                print(f"✅ {entity_type}名称: {author_name}")
+                print(f"✅ {_('check_videos.author_name_success', '{entity_type}名称: {name}').format(entity_type=entity_type, name=author_name)}")
         except ConnectionError as e:
             logger.error(f"获取{entity_type}名称时连接错误: {e}")
-            print(f"⚠️ 获取{entity_type}名称时连接错误: {e}")
+            print(f"⚠️ {_('check_videos.author_name_error_connection', '获取{entity_type}名称时连接错误: {error}').format(entity_type=entity_type, error=e)}")
             author_name = None
         except Timeout as e:
             logger.error(f"获取{entity_type}名称时连接超时: {e}")
-            print(f"⚠️ 获取{entity_type}名称时连接超时: {e}")
+            print(f"⚠️ {_('check_videos.author_name_error_timeout', '获取{entity_type}名称时连接超时: {error}').format(entity_type=entity_type, error=e)}")
             author_name = None
         except HTTPError as e:
             logger.error(f"获取{entity_type}名称时HTTP错误: {e.code} - {e.reason}")
-            print(f"⚠️ 获取{entity_type}名称时HTTP错误: {e.code} - {e.reason}")
+            print(f"⚠️ {_('check_videos.author_name_error_http', '获取{entity_type}名称时HTTP错误: {code} - {reason}').format(entity_type=entity_type, code=e.code, reason=e.reason)}")
             author_name = None
 
         # 获取视频列表
@@ -229,28 +225,28 @@ def check_videos(
             videos = analyzer.fetch_video_ids()
             if not videos:
                 logger.warning(f"未找到{entity_type} {target_id} 的视频")
-                print(f"❌ 未找到{entity_type} {target_id} 的视频")
+                print(f"❌ {_('check_videos.videos_not_found', '未找到{entity_type} {id} 的视频').format(entity_type=entity_type, id=target_id)}")
                 return False
         except ConnectionError as e:
             logger.error(f"获取视频列表时连接错误: {e}")
-            print(f"❌ 获取视频列表时连接错误: {e}")
+            print(f"❌ {_('check_videos.videos_error_connection', '获取视频列表时连接错误: {error}').format(error=e)}")
             return False
         except Timeout as e:
             logger.error(f"获取视频列表时连接超时: {e}")
-            print(f"❌ 获取视频列表时连接超时: {e}")
+            print(f"❌ {_('check_videos.videos_error_timeout', '获取视频列表时连接超时: {error}').format(error=e)}")
             return False
         except HTTPError as e:
             logger.error(f"获取视频列表时HTTP错误: {e.code} - {e.reason}")
-            print(f"❌ 获取视频列表时HTTP错误: {e.code} - {e.reason}")
+            print(f"❌ {_('check_videos.videos_error_http', '获取视频列表时HTTP错误: {code} - {reason}').format(code=e.code, reason=e.reason)}")
             return False
         except JSONDecodeError as e:
             logger.error(f"解析视频数据时格式错误: {e}")
-            print(f"❌ 解析视频数据时格式错误: {e}")
+            print(f"❌ {_('check_videos.videos_error_json', '解析视频数据时格式错误: {error}').format(error=e)}")
             return False
 
         # 显示进度信息
         total_videos = len(videos)
-        print(f"总共找到 {total_videos} 个视频，开始分析...")
+        print(_("check_videos.videos_found", "总共找到 {count} 个视频，开始分析...").format(count=total_videos))
 
         # 分析视频时明确指定线程数和超时设置
         try:
@@ -259,7 +255,7 @@ def check_videos(
             results, stats = analyzer.analyze_videos(videos)
         except Exception as e:
             logger.error(f"分析视频时出错: {type(e).__name__}: {e}")
-            print(f"❌ 分析视频时出错: {e}")
+            print(f"❌ {_('check_videos.analyze_error', '分析视频时出错: {error}').format(error=e)}")
             return False
 
         try:
@@ -268,11 +264,11 @@ def check_videos(
                 os.makedirs(config.result_dir, exist_ok=True)
             except PermissionError as e:
                 logger.error(f"创建结果目录时权限不足: {e}")
-                print(f"❌ 创建结果目录时权限不足: {e}")
+                print(f"❌ {_('check_videos.dir_error_permission', '创建结果目录时权限不足: {error}').format(error=e)}")
                 return False
             except OSError as e:
                 logger.error(f"创建结果目录时系统错误: {e}")
-                print(f"❌ 创建结果目录时系统错误: {e}")
+                print(f"❌ {_('check_videos.dir_error_system', '创建结果目录时系统错误: {error}').format(error=e)}")
                 return False
 
             # 生成自定义的保存路径
@@ -288,7 +284,7 @@ def check_videos(
 
             if has_special_chars or not author_name:
                 # 如果包含特殊字符或名称为空，只使用ID
-                print(f"⚠️ {entity_type}名称包含特殊字符或为空，仅使用ID作为文件名")
+                print(f"⚠️ {_('check_videos.name_special_chars', '{entity_type}名称包含特殊字符或为空，仅使用ID作为文件名').format(entity_type=entity_type)}")
                 save_path = os.path.join(
                     config.result_dir,
                     f"{target_id}_{timestamp}.txt",
@@ -337,13 +333,13 @@ def check_videos(
                             f"{video_id} - {status}{magnet_info}{image_info} - {title}\n"
                         )
 
-                print(f"✅ 结果已保存到: {save_path}")
+                print(f"✅ {_('check_videos.result_saved', '结果已保存到: {path}').format(path=save_path)}")
             except PermissionError as e:
                 logger.error(f"写入结果文件时权限不足: {e}")
-                print(f"❌ 写入结果文件时权限不足: {e}")
+                print(f"❌ {_('check_videos.write_error_permission', '写入结果文件时权限不足: {error}').format(error=e)}")
             except IOError as e:
                 logger.error(f"写入结果文件时I/O错误: {e}")
-                print(f"❌ 写入结果文件时I/O错误: {e}")
+                print(f"❌ {_('check_videos.write_error_io', '写入结果文件时I/O错误: {error}').format(error=e)}")
 
             # 显示详细统计信息
             analyzer.display_results(results, stats)
@@ -352,21 +348,21 @@ def check_videos(
             try:
                 reports = analyzer.generate_reports(target_id, results, author_name)
                 if reports:
-                    print(f"✅ 成功为{entity_type} {target_id} 生成 {len(reports)} 个分类报告")
+                    print(f"✅ {_('check_videos.report_success', '成功为{entity_type} {id} 生成 {count} 个分类报告').format(entity_type=entity_type, id=target_id, count=len(reports))}")
                     for report_type, report_path in reports.items():
                         print(f"  - {report_type}: {report_path}")
             except Exception as e:
                 logger.error(f"生成分类报告时出错: {type(e).__name__}: {e}")
-                print(f"⚠️ 生成分类报告时出错: {e}")
+                print(f"⚠️ {_('check_videos.report_error', '生成分类报告时出错: {error}').format(error=e)}")
 
         except Exception as e:
             logger.error(f"保存结果时出错: {type(e).__name__}: {e}\n{traceback.format_exc()}")
             print(f"⚠️ 保存结果时出错: {e}")
             return False
 
-        print(f"总视频数: {total}")
-        print(f"已流出数: {leaked}")
-        print(f"流出比例: {leak_ratio:.2f}%")
+        print(_("check_videos.total_videos", "总视频数: {count}").format(count=total))
+        print(_("check_videos.leaked_videos", "已流出数: {count}").format(count=leaked))
+        print(_("check_videos.leaked_ratio", "流出比例: {ratio}%").format(ratio=f"{leak_ratio:.2f}"))
 
         return True
     except KeyboardInterrupt:
@@ -695,7 +691,7 @@ def find_writer_by_video_id(
     Returns:
         bool: 操作是否成功
     """
-    print(f"开始通过视频ID {video_id} 查找作者信息...")
+    print(_("find_writer.start", "开始通过视频ID {id} 查找作者信息...").format(id=video_id))
 
     try:
         # 设置请求超时
@@ -706,13 +702,13 @@ def find_writer_by_video_id(
 
         if not writer_id:
             if writer_username:
-                print(f"❌ 已找到作者用户名 {writer_username}，但无法获取其ID")
+                print(_("find_writer.found_username_no_id", "已找到作者用户名 {username}，但无法获取其ID").format(username=writer_username))
             else:
-                print(f"❌ 无法通过视频ID {video_id} 找到作者信息")
+                print(_("find_writer.not_found", "无法通过视频ID {id} 找到作者信息").format(id=video_id))
             return False
 
-        print(f"✅ 已找到作者: ID={writer_id}, 用户名={writer_username}")
-        print(f"开始分析作者 {writer_id} 的所有视频...")
+        print(_("find_writer.found", "已找到作者: ID={id}, 用户名={username}").format(id=writer_id, username=writer_username))
+        print(_("find_writer.analyze_start", "开始分析作者 {id} 的所有视频...").format(id=writer_id))
 
         # 使用找到的作者ID进行分析
         return check_videos(
@@ -724,23 +720,23 @@ def find_writer_by_video_id(
         )
     except ConnectionError as e:
         logger.error(f"查找作者时连接错误: {e}")
-        print(f"❌ 查找作者时连接错误: {e}")
+        print(_("find_writer.error_connection", "查找作者时连接错误: {error}").format(error=e))
         return False
     except Timeout as e:
         logger.error(f"查找作者时连接超时: {e}")
-        print(f"❌ 查找作者时连接超时: {e}")
+        print(_("find_writer.error_timeout", "查找作者时连接超时: {error}").format(error=e))
         return False
     except JSONDecodeError as e:
         logger.error(f"解析作者数据时格式错误: {e}")
-        print(f"❌ 解析作者数据时格式错误: {e}")
+        print(_("find_writer.error_json", "解析作者数据时格式错误: {error}").format(error=e))
         return False
     except ValueError as e:
         logger.error(f"查找作者参数错误: {e}")
-        print(f"❌ 查找作者参数错误: {e}")
+        print(_("find_writer.error_value", "查找作者参数错误: {error}").format(error=e))
         return False
     except Exception as e:
         logger.error(f"查找作者时未知错误: {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        print(f"❌ 查找作者时出错: {type(e).__name__}: {e}")
+        print(_("find_writer.error_unknown", "查找作者时出错: {error}").format(error=f"{type(e).__name__}: {e}"))
         return False
 
 

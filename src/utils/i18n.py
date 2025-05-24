@@ -8,6 +8,8 @@ FC2 视频分析器 - 国际化支持模块
 import json
 import locale
 import os
+import logging
+from pathlib import Path
 
 from loguru import logger
 
@@ -22,6 +24,16 @@ current_language = None
 
 # 翻译字典
 translations = {}
+
+# 语言偏好文件路径
+USER_PREFS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data"
+)
+USER_PREFS_FILE = os.path.join(USER_PREFS_DIR, "user_preferences.json")
+
+# 确保目录存在
+os.makedirs(USER_PREFS_DIR, exist_ok=True)
 
 
 def load_language_file(lang_code):
@@ -53,9 +65,133 @@ def load_language_file(lang_code):
         with open(lang_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
+    except json.JSONDecodeError as e:
+        logger.error(f"语言文件格式错误: {lang_code}.json - {e}")
+        return {}
     except Exception as e:
         logger.error(f"加载语言文件失败: {e}")
         return {}
+
+
+def save_language_preference(language):
+    """
+    保存用户语言偏好
+
+    参数:
+        language: 语言代码
+
+    返回:
+        bool: 是否成功保存
+    """
+    try:
+        # 读取现有偏好(如果存在)
+        user_prefs = {}
+        if os.path.exists(USER_PREFS_FILE):
+            try:
+                with open(USER_PREFS_FILE, "r", encoding="utf-8") as f:
+                    user_prefs = json.load(f)
+            except:
+                user_prefs = {}
+        
+        # 更新语言偏好
+        user_prefs["language"] = language
+        
+        # 保存偏好
+        with open(USER_PREFS_FILE, "w", encoding="utf-8") as f:
+            json.dump(user_prefs, f, ensure_ascii=False, indent=2)
+        
+        logger.debug(f"已保存语言偏好: {language}")
+        return True
+    except Exception as e:
+        logger.error(f"保存语言偏好失败: {e}")
+        return False
+
+
+def load_language_preference():
+    """
+    加载用户语言偏好
+
+    返回:
+        str: 偏好的语言代码，如果没有保存则返回None
+    """
+    try:
+        if os.path.exists(USER_PREFS_FILE):
+            with open(USER_PREFS_FILE, "r", encoding="utf-8") as f:
+                prefs = json.load(f)
+            language = prefs.get("language")
+            if language in SUPPORTED_LANGUAGES:
+                logger.debug(f"已加载语言偏好: {language}")
+                return language
+    except Exception as e:
+        logger.debug(f"加载语言偏好失败: {e}")
+    
+    return None
+
+
+def check_translation_completeness():
+    """
+    检查所有语言文件的完整性，输出缺失的键
+
+    返回:
+        dict: 各语言缺失的键的统计
+    """
+    try:
+        # 获取所有语言文件
+        i18n_dir = os.path.join(
+            os.path.dirname(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            ),
+            "i18n"
+        )
+        
+        # 加载所有语言文件
+        lang_files = {}
+        all_keys = set()
+        
+        for lang in SUPPORTED_LANGUAGES:
+            lang_file = os.path.join(i18n_dir, f"{lang}.json")
+            if os.path.exists(lang_file):
+                with open(lang_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    lang_files[lang] = data
+                    
+                    # 收集所有键
+                    keys = _extract_all_keys(data)
+                    all_keys.update(keys)
+        
+        # 检查每个语言文件是否包含所有键
+        missing_keys = {}
+        for lang, data in lang_files.items():
+            lang_keys = set(_extract_all_keys(data))
+            missing = all_keys - lang_keys
+            if missing:
+                missing_keys[lang] = list(missing)
+        
+        return missing_keys
+    except Exception as e:
+        logger.error(f"检查翻译完整性失败: {e}")
+        return {}
+
+
+def _extract_all_keys(data, prefix=""):
+    """
+    递归提取翻译字典中的所有键
+
+    参数:
+        data: 翻译字典
+        prefix: 键前缀
+
+    返回:
+        list: 所有键列表
+    """
+    keys = []
+    for key, value in data.items():
+        full_key = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, dict):
+            keys.extend(_extract_all_keys(value, full_key))
+        else:
+            keys.append(full_key)
+    return keys
 
 
 def initialize(language=None):
@@ -69,6 +205,12 @@ def initialize(language=None):
         str: 当前使用的语言代码
     """
     global current_language, translations
+
+    # 首先尝试加载用户偏好的语言
+    if language is None:
+        lang_pref = load_language_preference()
+        if lang_pref:
+            language = lang_pref
 
     # 如果未指定语言，尝试获取系统语言
     if language is None:
@@ -89,16 +231,27 @@ def initialize(language=None):
     translations = load_language_file(language)
     current_language = language
 
-    logger.info(f"已加载语言: {language}")
+    # 如果加载失败，尝试加载默认语言
+    if not translations and language != DEFAULT_LANGUAGE:
+        logger.warning(f"加载语言 {language} 失败，尝试加载默认语言 {DEFAULT_LANGUAGE}")
+        translations = load_language_file(DEFAULT_LANGUAGE)
+        current_language = DEFAULT_LANGUAGE
+    
+    # 如果还是加载失败，使用空字典
+    if not translations:
+        logger.error(f"加载默认语言 {DEFAULT_LANGUAGE} 失败，使用空翻译字典")
+        translations = {}
+
+    logger.info(f"已加载语言: {current_language}")
     return current_language
 
 
 def get_text(key, default=None):
     """
-    获取指定键的翻译文本
+    获取指定键的翻译文本，支持嵌套对象的点表示法
 
     参数:
-        key: 翻译键
+        key: 翻译键，如'config.max_workers'或'main_menu.title'
         default: 如果翻译不存在，返回的默认值
 
     返回:
@@ -108,8 +261,30 @@ def get_text(key, default=None):
     if current_language is None:
         initialize()
 
-    # 获取翻译
-    return translations.get(key, default if default is not None else key)
+    # 处理嵌套键
+    if '.' in key:
+        parts = key.split('.')
+        current = translations
+        
+        # 逐级查找嵌套对象
+        for part in parts:
+            if isinstance(current, dict) and part in current:
+                current = current[part]
+            else:
+                # 如果任何一级查找失败，记录日志并返回默认值
+                if default is None:
+                    logger.debug(f"翻译键不存在: {key} (语言: {current_language})")
+                return default if default is not None else key
+        
+        return current
+    else:
+        # 直接查找键
+        result = translations.get(key)
+        if result is None:
+            if default is None:
+                logger.debug(f"翻译键不存在: {key} (语言: {current_language})")
+            return default if default is not None else key
+        return result
 
 
 def get_current_language():
@@ -156,6 +331,9 @@ def switch_language(language):
     # 更新全局变量
     translations = new_translations
     current_language = language
+    
+    # 保存用户语言偏好
+    save_language_preference(language)
 
     logger.info(f"已切换语言: {language}")
     return True
@@ -163,3 +341,18 @@ def switch_language(language):
 
 # 简写函数 - 更简洁的调用方式
 _ = get_text
+
+# 在模块加载时检查翻译完整性(仅在调试模式下)
+if os.environ.get("FC2_DEBUG") == "1":
+    missing_keys = check_translation_completeness()
+    if missing_keys:
+        logger.warning("翻译文件不完整:")
+        for lang, keys in missing_keys.items():
+            logger.warning(f"  {lang}: 缺少 {len(keys)} 个键")
+            if len(keys) <= 10:
+                for key in keys:
+                    logger.warning(f"    - {key}")
+            else:
+                for key in keys[:10]:
+                    logger.warning(f"    - {key}")
+                logger.warning(f"    ... 以及其他 {len(keys) - 10} 个键")

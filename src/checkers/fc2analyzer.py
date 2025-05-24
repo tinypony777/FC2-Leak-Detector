@@ -38,6 +38,7 @@ from config import config
 from src.utils import get_logger
 from src.utils.cache_manager import CacheManager
 from src.utils.request_handler import RequestHandler
+from src.utils.i18n import get_text as _
 
 # 创建console实例
 console = Console()
@@ -1864,4 +1865,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
