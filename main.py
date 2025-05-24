@@ -27,6 +27,10 @@ from src.utils.logger import get_logger
 from src.utils.report_generator import ReportGenerator
 from src.utils.ui_manager import RichUIManager
 from src.writers.writer_extractor import WriterExtractor
+from src.utils.i18n import initialize as init_i18n, get_text as _, switch_language, get_current_language, SUPPORTED_LANGUAGES
+
+# 初始化国际化模块
+init_i18n()
 
 # 获取主程序日志记录器
 logger = get_logger("main")
@@ -81,45 +85,48 @@ def is_leaked(video_result):
 
 def print_usage():
     """显示程序使用说明"""
-    usage = """
-使用方法: python run.py [选项]
+    usage = f"""
+{_('usage_title', '使用方法')}: python run.py [选项]
 
-选项:
-  -h, --help                显示此帮助信息
-  -c, --config              显示配置信息
-  -s, --sites               显示检查站点列表
-  -w ID, --writer ID        分析作者ID的视频
-  -a ID, --actress ID       分析女优ID的视频
-  -b IDs, --batch IDs       批量处理多个作者ID（用英文逗号分隔）
-  -ba IDs, --batch-actress IDs  批量处理多个女优ID（用英文逗号分隔）
-  -e, --extract             提取热门作者列表
-  -v ID, --video ID         通过视频ID查找并分析作者
-  -t NUM, --threads NUM     指定并行线程数（默认30）   
-  --no-magnet               不获取磁力链接
-  --no-image                不下载视频缩略图
+{_('usage_options', '选项')}:
+  -h, --help                {_('usage_help', '显示此帮助信息')}
+  -c, --config              {_('usage_config', '显示配置信息')}
+  -s, --sites               {_('usage_sites', '显示检查站点列表')}
+  -w ID, --writer ID        {_('usage_writer', '分析作者ID的视频')}
+  -a ID, --actress ID       {_('usage_actress', '分析女优ID的视频')}
+  -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID（用英文逗号分隔）')}
+  -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID（用英文逗号分隔）')}
+  -e, --extract             {_('usage_extract', '提取热门作者列表')}
+  -v ID, --video ID         {_('usage_video', '通过视频ID查找并分析作者')}
+  -t NUM, --threads NUM     {_('usage_threads', '指定并行线程数（默认30）')}
+  --no-magnet               {_('usage_no_magnet', '不获取磁力链接')}
+  --no-image                {_('usage_no_image', '不下载视频缩略图')}
+  -l LANG, --lang LANG      {_('usage_lang', '设置界面语言 (支持: zh, en, ja)')}
 
-示例:
-  python run.py -w 5656               # 分析作者ID 5656 的视频
-  python run.py -a 5711               # 分析女优ID 5711 的视频
-  python run.py -b 5656,3524,4461     # 批量处理多个作者
-  python run.py -ba 5711,3986,4219    # 批量处理多个女优
-  python run.py -e                    # 提取热门作者列表
-  python run.py -v 1248860            # 通过视频ID查找并分析作者
-  python run.py -c                    # 显示配置信息
-  python run.py -w 5656 -t 10         # 使用10个线程分析作者视频
-  python run.py -a 5711 --no-magnet   # 分析女优视频但不获取磁力链接
-  python run.py -w 5656 --no-image    # 分析作者视频但不下载缩略图
+{_('usage_examples', '示例')}:
+  python run.py -w 5656               # {_('example_writer', '分析作者ID 5656 的视频')}
+  python run.py -a 5711               # {_('example_actress', '分析女优ID 5711 的视频')}
+  python run.py -b 5656,3524,4461     # {_('example_batch', '批量处理多个作者')}
+  python run.py -ba 5711,3986,4219    # {_('example_batch_actress', '批量处理多个女优')}
+  python run.py -e                    # {_('example_extract', '提取热门作者列表')}
+  python run.py -v 1248860            # {_('example_video', '通过视频ID查找并分析作者')}
+  python run.py -c                    # {_('example_config', '显示配置信息')}
+  python run.py -w 5656 -t 10         # {_('example_threads', '使用10个线程分析作者视频')}
+  python run.py -a 5711 --no-magnet   # {_('example_no_magnet', '分析女优视频但不获取磁力链接')}
+  python run.py -w 5656 --no-image    # {_('example_no_image', '分析作者视频但不下载缩略图')}
+  python run.py -l en                 # {_('example_lang', '使用英文界面')}
 """
     print(usage)
 
 
 def show_config_info():
     """显示当前配置信息"""
-    print("=== 当前配置信息 ===")
-    print(f"数据目录: {config.cache_dir}")
-    print(f"最大线程数: {config.max_workers}")
-    print(f"最大重试次数: {config.max_retries}")
-    print(f"缓存有效期: {config.cache_ttl/3600:.1f}小时")
+    print(f"=== {_('config_info_title', '当前配置信息')} ===")
+    print(f"{_('config_data_dir', '数据目录')}: {config.cache_dir}")
+    print(f"{_('config_max_workers', '最大线程数')}: {config.max_workers}")
+    print(f"{_('config_max_retries', '最大重试次数')}: {config.max_retries}")
+    print(f"{_('config_cache_ttl', '缓存有效期')}: {config.cache_ttl/3600:.1f}{_('config_hours', '小时')}")
+    print(f"{_('config_language', '当前语言')}: {get_current_language()}")
 
     # 显示检查站点配置
     show_check_sites()
@@ -130,15 +137,15 @@ def show_check_sites():
     check_sites = sorted(config.check_sites, key=lambda x: x["priority"])
 
     if not check_sites:
-        print("⚠️ 未配置任何检查站点，将使用默认站点")
+        print(f"⚠️ {_('sites_none', '未配置任何检查站点，将使用默认站点')}")
         return
 
-    print("\n=== 视频检查站点 (按优先级排序) ===")
+    print(f"\n=== {_('sites_title', '视频检查站点 (按优先级排序)')} ===")
     for idx, site in enumerate(check_sites, 1):
         site_name = site.get("name", site["url"].split("/")[2])
-        print(f"{idx}. 站点: {site_name}")
-        print(f"   网址模板: {site['url']}")
-        print(f"   优先级: {site['priority']}")
+        print(f"{idx}. {_('sites_name', '站点')}: {site_name}")
+        print(f"   {_('sites_url', '网址模板')}: {site['url']}")
+        print(f"   {_('sites_priority', '优先级')}: {site['priority']}")
 
 
 def extract_writer_info():
@@ -740,22 +747,33 @@ def find_writer_by_video_id(
 def main():
     """程序主入口"""
     # 解析命令行参数
-    parser = argparse.ArgumentParser(description="FC2流出检测器", add_help=False)
-    parser.add_argument("-h", "--help", action="store_true", help="显示帮助信息")
-    parser.add_argument("-c", "--config", action="store_true", help="显示配置信息")
-    parser.add_argument("-s", "--sites", action="store_true", help="显示检查站点列表")
-    parser.add_argument("-w", "--writer", type=str, help="分析作者ID的视频")
-    parser.add_argument("-a", "--actress", type=str, help="分析女优ID的视频")
-    parser.add_argument("-b", "--batch", type=str, help="批量处理多个作者ID（用英文逗号分隔）")
-    parser.add_argument("-ba", "--batch-actress", type=str, help="批量处理多个女优ID（用英文逗号分隔）")
-    parser.add_argument("-e", "--extract", action="store_true", help="提取热门作者列表")
-    parser.add_argument("-v", "--video", type=str, help="通过视频ID查找并分析作者")
-    parser.add_argument("-t", "--threads", type=int, help="指定并行线程数")
-    parser.add_argument("--no-magnet", action="store_true", help="不获取磁力链接")
-    parser.add_argument("--no-image", action="store_true", help="不下载视频缩略图")
+    parser = argparse.ArgumentParser(description=_("app_description", "FC2流出检测器"), add_help=False)
+    parser.add_argument("-h", "--help", action="store_true", help=_("usage_help", "显示帮助信息"))
+    parser.add_argument("-c", "--config", action="store_true", help=_("usage_config", "显示配置信息"))
+    parser.add_argument("-s", "--sites", action="store_true", help=_("usage_sites", "显示检查站点列表"))
+    parser.add_argument("-w", "--writer", type=str, help=_("usage_writer", "分析作者ID的视频"))
+    parser.add_argument("-a", "--actress", type=str, help=_("usage_actress", "分析女优ID的视频"))
+    parser.add_argument("-b", "--batch", type=str, help=_("usage_batch", "批量处理多个作者ID（用英文逗号分隔）"))
+    parser.add_argument("-ba", "--batch-actress", type=str, help=_("usage_batch_actress", "批量处理多个女优ID（用英文逗号分隔）"))
+    parser.add_argument("-e", "--extract", action="store_true", help=_("usage_extract", "提取热门作者列表"))
+    parser.add_argument("-v", "--video", type=str, help=_("usage_video", "通过视频ID查找并分析作者"))
+    parser.add_argument("-t", "--threads", type=int, help=_("usage_threads", "指定并行线程数"))
+    parser.add_argument("--no-magnet", action="store_true", help=_("usage_no_magnet", "不获取磁力链接"))
+    parser.add_argument("--no-image", action="store_true", help=_("usage_no_image", "不下载视频缩略图"))
+    parser.add_argument("-l", "--lang", type=str, help=_("usage_lang", "设置界面语言 (支持: zh, en, ja)"))
 
     try:
         args, unknown = parser.parse_known_args()
+        
+        # 处理语言设置
+        if args.lang:
+            if args.lang in SUPPORTED_LANGUAGES:
+                switch_language(args.lang)
+                print(f"{_('language_switched', '已切换语言为')}: {args.lang}")
+            else:
+                print(f"{_('language_unsupported', '不支持的语言')}: {args.lang}")
+                print(f"{_('language_supported', '支持的语言')}: {', '.join(SUPPORTED_LANGUAGES)}")
+                return 1
 
         # 显示帮助信息
         if args.help or len(sys.argv) == 1:
@@ -782,7 +800,7 @@ def main():
         # 如果设置了线程数参数，更新全局配置
         if args.threads is not None:
             config.max_workers = threads
-            print(f"已设置并行线程数为: {threads}")
+            print(f"{_('threads_set', '已设置并行线程数为')}: {threads}")
 
         # 提取热门作者列表
         if args.extract:
@@ -838,15 +856,15 @@ def main():
 
         return 0
     except KeyboardInterrupt:
-        print("\n⚠️ 程序已被用户中断")
+        print(f"\n⚠️ {_('error_interrupted', '程序已被用户中断')}")
         return 1
     except argparse.ArgumentError as e:
-        print(f"❌ 命令行参数错误: {e}")
+        print(f"❌ {_('error_argument', '命令行参数错误')}: {e}")
         print_usage()
         return 1
     except Exception as e:
-        logger.critical(f"程序运行时出错: {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        print(f"❌ 程序运行时出错: {type(e).__name__}: {e}")
+        logger.critical(f"{_('error_runtime', '程序运行时出错')}: {type(e).__name__}: {e}\n{traceback.format_exc()}")
+        print(f"❌ {_('error_runtime', '程序运行时出错')}: {type(e).__name__}: {e}")
         return 1
 
 

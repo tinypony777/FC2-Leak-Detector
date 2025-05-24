@@ -1,0 +1,142 @@
+{
+  "app_name": "FC2ビデオアナライザー",
+  "app_description": "FC2ビデオステータス検出ツール",
+  
+  "main_menu": {
+    "title": "メインメニュー",
+    "options": {
+      "analyze_writer": "作者作品分析",
+      "analyze_actress": "女優作品分析",
+      "batch_process": "バッチ処理",
+      "extract_writers": "人気作者抽出",
+      "show_config": "設定表示",
+      "exit": "プログラム終了"
+    }
+  },
+  
+  "general": {
+    "yes": "はい",
+    "no": "いいえ",
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "back": "戻る",
+    "continue": "続行",
+    "success": "成功",
+    "error": "エラー",
+    "warning": "警告",
+    "info": "情報",
+    "loading": "読み込み中",
+    "processing": "処理中",
+    "completed": "完了",
+    "unknown": "不明"
+  },
+  
+  "analyzer": {
+    "fetch_author": "作者情報取得中",
+    "fetch_videos": "ビデオリスト取得中",
+    "check_status": "ビデオステータス確認中",
+    "get_magnets": "マグネットリンク取得中",
+    "download_images": "サムネイル画像ダウンロード中",
+    "generate_report": "レポート生成中",
+    "analyze_complete": "分析完了",
+    "total_videos": "総ビデオ数",
+    "leaked_videos": "流出ビデオ数",
+    "leaked_ratio": "流出率",
+    "check_failed": "確認失敗",
+    "video_id": "ビデオID",
+    "status": "ステータス",
+    "leaked": "流出済み",
+    "not_leaked": "未流出"
+  },
+  
+  "input_prompts": {
+    "writer_id": "作者IDを入力してください",
+    "actress_id": "女優IDを入力してください",
+    "batch_ids": "IDリストを入力してください（カンマ区切り）",
+    "threads": "スレッド数を入力してください",
+    "confirm_continue": "続行しますか？"
+  },
+  
+  "errors": {
+    "invalid_id": "無効なID",
+    "not_found": "見つかりません",
+    "connection_error": "接続エラー",
+    "timeout": "リクエストタイムアウト",
+    "rate_limited": "レート制限に達しました",
+    "server_error": "サーバーエラー",
+    "missing_dependency": "依存パッケージがありません: {lib}",
+    "python_version": "エラー: Python 3.8以上が必要です",
+    "error_interrupted": "プログラムがユーザーによって中断されました",
+    "error_argument": "コマンドライン引数エラー",
+    "error_runtime": "実行時エラーが発生しました",
+    "error_startup": "プログラム起動エラー"
+  },
+  
+  "config": {
+    "max_workers": "最大スレッド数",
+    "timeout": "タイムアウト（秒）",
+    "max_retries": "最大再試行回数",
+    "cache_ttl": "キャッシュ有効期間（時間）",
+    "check_sites": "チェックサイト",
+    "config_info_title": "現在の設定情報",
+    "config_data_dir": "データディレクトリ",
+    "config_max_workers": "最大スレッド数",
+    "config_max_retries": "最大再試行回数",
+    "config_cache_ttl": "キャッシュ有効期間",
+    "config_hours": "時間",
+    "config_language": "現在の言語"
+  },
+  
+  "reports": {
+    "summary": "概要",
+    "details": "詳細",
+    "statistics": "統計情報",
+    "save_path": "保存パス",
+    "report_saved": "レポートは次の場所に保存されました: {path}"
+  },
+  
+  "usage_title": "使用方法",
+  "usage_options": "オプション",
+  "usage_help": "このヘルプ情報を表示",
+  "usage_config": "設定情報を表示",
+  "usage_sites": "チェックサイトリストを表示",
+  "usage_writer": "作者IDのビデオを分析",
+  "usage_actress": "女優IDのビデオを分析",
+  "usage_batch": "複数の作者IDをバッチ処理（カンマ区切り）",
+  "usage_batch_actress": "複数の女優IDをバッチ処理（カンマ区切り）",
+  "usage_extract": "人気作者リストを抽出",
+  "usage_video": "ビデオIDから作者を検索して分析",
+  "usage_threads": "並列スレッド数を指定（デフォルト30）",
+  "usage_no_magnet": "マグネットリンクを取得しない",
+  "usage_no_image": "ビデオサムネイルをダウンロードしない",
+  "usage_lang": "インターフェース言語を設定（対応: zh, en, ja）",
+  "usage_examples": "例",
+  "example_writer": "作者ID 5656のビデオを分析",
+  "example_actress": "女優ID 5711のビデオを分析",
+  "example_batch": "複数の作者をバッチ処理",
+  "example_batch_actress": "複数の女優をバッチ処理",
+  "example_extract": "人気作者リストを抽出",
+  "example_video": "ビデオIDから作者を検索して分析",
+  "example_config": "設定情報を表示",
+  "example_threads": "10スレッドで作者のビデオを分析",
+  "example_no_magnet": "マグネットリンクなしで女優のビデオを分析",
+  "example_no_image": "サムネイルなしで作者のビデオを分析",
+  "example_lang": "日本語インターフェースを使用",
+  
+  "sites_none": "チェックサイトが設定されていません。デフォルトサイトを使用します",
+  "sites_title": "ビデオチェックサイト（優先度順）",
+  "sites_name": "サイト",
+  "sites_url": "URLテンプレート",
+  "sites_priority": "優先度",
+  
+  "threads_set": "並列スレッド数を設定しました：",
+  "language_switched": "言語を切り替えました：",
+  "language_unsupported": "サポートされていない言語：",
+  "language_supported": "サポートされている言語：",
+  
+  "startup_time": "起動時刻",
+  "program_end": "プログラム実行完了",
+  "time_spent": "所要時間",
+  "time_minutes": "分",
+  "time_seconds": "秒"
+}

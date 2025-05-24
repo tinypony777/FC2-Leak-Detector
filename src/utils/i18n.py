@@ -2,7 +2,7 @@
 FC2 视频分析器 - 国际化支持模块
 
 此模块提供多语言支持功能，使程序能够根据用户设置显示不同语言的界面。
-目前支持中文和英文两种语言。
+目前支持中文、英文和日文三种语言。
 """
 
 import json
@@ -15,7 +15,7 @@ from loguru import logger
 DEFAULT_LANGUAGE = "zh"
 
 # 支持的语言列表
-SUPPORTED_LANGUAGES = ["zh", "en"]
+SUPPORTED_LANGUAGES = ["zh", "en", "ja"]
 
 # 当前语言
 current_language = None
@@ -29,7 +29,7 @@ def load_language_file(lang_code):
     加载指定语言的翻译文件
 
     参数:
-        lang_code: 语言代码，如'zh', 'en'
+        lang_code: 语言代码，如'zh', 'en', 'ja'
 
     返回:
         dict: 翻译字典，如果加载失败则返回空字典

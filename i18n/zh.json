@@ -65,7 +65,11 @@
     "rate_limited": "请求频率受限",
     "server_error": "服务器错误",
     "missing_dependency": "缺少依赖库: {lib}",
-    "python_version": "需要Python 3.8或更高版本"
+    "python_version": "错误: 需要Python 3.8或更高版本",
+    "error_interrupted": "程序已被用户中断",
+    "error_argument": "命令行参数错误",
+    "error_runtime": "程序运行时出错",
+    "error_startup": "程序启动错误"
   },
   
   "config": {
@@ -73,7 +77,14 @@
     "timeout": "超时时间(秒)",
     "max_retries": "最大重试次数",
     "cache_ttl": "缓存有效期(小时)",
-    "check_sites": "检查站点"
+    "check_sites": "检查站点",
+    "config_info_title": "当前配置信息",
+    "config_data_dir": "数据目录",
+    "config_max_workers": "最大线程数",
+    "config_max_retries": "最大重试次数",
+    "config_cache_ttl": "缓存有效期",
+    "config_hours": "小时",
+    "config_language": "当前语言"
   },
   
   "reports": {
@@ -82,5 +93,50 @@
     "statistics": "统计数据",
     "save_path": "保存路径",
     "report_saved": "报告已保存至: {path}"
-  }
+  },
+  
+  "usage_title": "使用方法",
+  "usage_options": "选项",
+  "usage_help": "显示此帮助信息",
+  "usage_config": "显示配置信息",
+  "usage_sites": "显示检查站点列表",
+  "usage_writer": "分析作者ID的视频",
+  "usage_actress": "分析女优ID的视频",
+  "usage_batch": "批量处理多个作者ID（用英文逗号分隔）",
+  "usage_batch_actress": "批量处理多个女优ID（用英文逗号分隔）",
+  "usage_extract": "提取热门作者列表",
+  "usage_video": "通过视频ID查找并分析作者",
+  "usage_threads": "指定并行线程数（默认30）",
+  "usage_no_magnet": "不获取磁力链接",
+  "usage_no_image": "不下载视频缩略图",
+  "usage_lang": "设置界面语言 (支持: zh, en, ja)",
+  "usage_examples": "示例",
+  "example_writer": "分析作者ID 5656 的视频",
+  "example_actress": "分析女优ID 5711 的视频",
+  "example_batch": "批量处理多个作者",
+  "example_batch_actress": "批量处理多个女优",
+  "example_extract": "提取热门作者列表",
+  "example_video": "通过视频ID查找并分析作者",
+  "example_config": "显示配置信息",
+  "example_threads": "使用10个线程分析作者视频",
+  "example_no_magnet": "分析女优视频但不获取磁力链接",
+  "example_no_image": "分析作者视频但不下载缩略图",
+  "example_lang": "使用英文界面",
+  
+  "sites_none": "未配置任何检查站点，将使用默认站点",
+  "sites_title": "视频检查站点 (按优先级排序)",
+  "sites_name": "站点",
+  "sites_url": "网址模板",
+  "sites_priority": "优先级",
+  
+  "threads_set": "已设置并行线程数为",
+  "language_switched": "已切换语言为",
+  "language_unsupported": "不支持的语言",
+  "language_supported": "支持的语言",
+  
+  "startup_time": "启动于",
+  "program_end": "程序运行结束",
+  "time_spent": "耗时",
+  "time_minutes": "分",
+  "time_seconds": "秒"
 } 

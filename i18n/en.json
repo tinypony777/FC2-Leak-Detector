@@ -65,7 +65,11 @@
     "rate_limited": "Rate limited",
     "server_error": "Server error",
     "missing_dependency": "Missing dependency: {lib}",
-    "python_version": "Python 3.8 or higher required"
+    "python_version": "Error: Python 3.8 or higher required",
+    "error_interrupted": "Program interrupted by user",
+    "error_argument": "Command line argument error",
+    "error_runtime": "Runtime error occurred",
+    "error_startup": "Program startup error"
   },
   
   "config": {
@@ -73,7 +77,14 @@
     "timeout": "Timeout (seconds)",
     "max_retries": "Max retries",
     "cache_ttl": "Cache validity (hours)",
-    "check_sites": "Check sites"
+    "check_sites": "Check sites",
+    "config_info_title": "Current Configuration",
+    "config_data_dir": "Data directory",
+    "config_max_workers": "Max threads",
+    "config_max_retries": "Max retries",
+    "config_cache_ttl": "Cache validity",
+    "config_hours": "hours",
+    "config_language": "Current language"
   },
   
   "reports": {
@@ -82,5 +93,50 @@
     "statistics": "Statistics",
     "save_path": "Save path",
     "report_saved": "Report saved to: {path}"
-  }
+  },
+  
+  "usage_title": "Usage",
+  "usage_options": "Options",
+  "usage_help": "Show this help information",
+  "usage_config": "Show configuration",
+  "usage_sites": "Show check site list",
+  "usage_writer": "Analyze videos by author ID",
+  "usage_actress": "Analyze videos by actress ID",
+  "usage_batch": "Batch process multiple author IDs (comma separated)",
+  "usage_batch_actress": "Batch process multiple actress IDs (comma separated)",
+  "usage_extract": "Extract popular author list",
+  "usage_video": "Find and analyze author by video ID",
+  "usage_threads": "Specify parallel thread count (default 30)",
+  "usage_no_magnet": "Don't fetch magnet links",
+  "usage_no_image": "Don't download video thumbnails",
+  "usage_lang": "Set interface language (supported: zh, en, ja)",
+  "usage_examples": "Examples",
+  "example_writer": "Analyze author ID 5656 videos",
+  "example_actress": "Analyze actress ID 5711 videos",
+  "example_batch": "Batch process multiple authors",
+  "example_batch_actress": "Batch process multiple actresses",
+  "example_extract": "Extract popular author list",
+  "example_video": "Find and analyze author by video ID",
+  "example_config": "Show configuration",
+  "example_threads": "Analyze author videos with 10 threads",
+  "example_no_magnet": "Analyze actress videos without magnet links",
+  "example_no_image": "Analyze author videos without thumbnails",
+  "example_lang": "Use English interface",
+  
+  "sites_none": "No check sites configured, will use default sites",
+  "sites_title": "Video Check Sites (sorted by priority)",
+  "sites_name": "Site",
+  "sites_url": "URL template",
+  "sites_priority": "Priority",
+  
+  "threads_set": "Parallel thread count set to",
+  "language_switched": "Language switched to",
+  "language_unsupported": "Unsupported language",
+  "language_supported": "Supported languages",
+  
+  "startup_time": "started at",
+  "program_end": "Program execution completed",
+  "time_spent": "time spent",
+  "time_minutes": "min",
+  "time_seconds": "sec"
 } 
