@@ -21,8 +21,8 @@ profile = "black"
 line_length = 88
 
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=7.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.13.0", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 # 添加项目元数据
 [project]
@@ -31,8 +31,26 @@ dynamic = ["version"]
 description = "FC2流出检测器，用于查询和分析FC2视频流出状态"
 readme = "README.md"
 requires-python = ">=3.8"
+license = {file = "LICENSE"}
 authors = [
-    {name = "soundstarrain", email = "114404785+soundstarrain@users.noreply.github.com"}
+    {name = "FC2 Research Club", email = "fc2researchclub@gmail.com"}
+]
+maintainers = [
+    {name = "FC2 Research Club", email = "fc2researchclub@gmail.com"}
+]
+keywords = ["fc2", "video", "analyzer", "leak", "detector"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
 ]
 dependencies = [
     "requests>=2.25.0",
@@ -46,6 +64,8 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector"
 "Bug Tracker" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector/issues"
+"Source Code" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector"
+"Documentation" = "https://github.com/FC2-Research-Club/FC2-Leak-Detector/blob/main/README.md"
 
 [tool.flake8]
 max-line-length = 88
@@ -61,8 +81,8 @@ exclude = [
     "env"
 ] 
 
-[tool.setuptools.dynamic]
-version = {attr = "src.__version__"}
+[tool.hatch.version]
+source = "vcs"
 
-[tool.setuptools]
+[tool.hatch.build.targets.wheel]
 packages = ["src"] 
