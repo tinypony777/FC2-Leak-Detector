@@ -87,5 +87,8 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# 用户偏好设置
+preference.json
+i18n/preference.json
 
 .pytest_cache/
