@@ -1217,6 +1217,7 @@ class FC2Analyzer:
             # 判断视频是否流出
             if status == "available":
                 result["exists"] = True
+                result["leaked"] = True  # 添加leaked字段，与exists保持一致
 
                 # 显示视频类型
                 entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
@@ -1273,6 +1274,7 @@ class FC2Analyzer:
             else:
                 # 视频不可用，在控制台显示状态
                 result["exists"] = False  # 确保一致性
+                result["leaked"] = False  # 确保一致性
 
                 # 显示视频类型和状态
                 entity_type = _("analyzer.entity_type_actress", "女优") if self.is_actress else _("analyzer.entity_type_writer", "作者")
@@ -1441,7 +1443,7 @@ class FC2Analyzer:
         if not self.quiet_mode:
             # 计算统计信息
             total = len(results)
-            leaked = sum(1 for r in results if r.get("leaked", False))
+            leaked = sum(1 for r in results if r.get("exists", False))
             leak_ratio = (leaked / total) * 100 if total > 0 else 0
             console.print(
                 _("analyzer.analysis_complete", "\n[bold green]✅ 分析完成！总共 {total} 个视频，已流出 {leaked} 个 (流出比例: {ratio:.1f}%)[/bold green]").format(
