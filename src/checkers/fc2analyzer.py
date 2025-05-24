@@ -1852,7 +1852,146 @@ class FC2Analyzer:
             ]:
                 if key not in self.stats:
                     self.stats[key] = 0
-
+    
+    def save_results(self):
+        """
+        保存分析结果到多个文件，包括磁链文件和日志文件
+        
+        磁链文件格式：ID_作者名_日期时间_magnet.txt，内容只包含纯磁链
+        日志文件格式：爬取类型_ID_日期时间.txt
+        """
+        if not hasattr(self, "results") or not self.results:
+            self.logger.warning("没有分析结果可保存")
+            if not self.quiet_mode:
+                console.print("[bold yellow]⚠️ 没有分析结果可保存[/bold yellow]")
+            return {}
+        
+        reports = {}
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # 获取ID和名称
+        entity_id = self.write_id
+        entity_type = "actress" if self.is_actress else "writer"
+        entity_name = self.name or f"{entity_type}_{entity_id}"
+        clean_name = self.clean_filename(entity_name)
+        
+        try:
+            # 1. 保存磁链文件
+            # 查找有磁链的视频
+            leaked_with_magnet = []
+            for r in self.results:
+                # 检查是否有磁链 - 兼容多种格式
+                has_magnet = False
+                if r.get("has_magnet", False):
+                    has_magnet = True
+                elif r.get("magnets") and len(r.get("magnets")) > 0:
+                    has_magnet = True
+                elif r.get("magnet"):
+                    has_magnet = True
+                
+                # 检查是否已流出
+                is_leaked = r.get("exists", False) or r.get("leaked", False) or r.get("status") == "available"
+                
+                if has_magnet and is_leaked:
+                    leaked_with_magnet.append(r)
+            
+            # 如果有磁链，保存到磁链目录
+            if leaked_with_magnet and self.with_magnet:
+                # 确保磁链目录存在
+                os.makedirs(self.magnet_dir, exist_ok=True)
+                
+                # 按照指定格式构建文件名: ID_作者名_日期时间_magnet.txt
+                magnet_filename = f"{entity_id}_{clean_name}_{timestamp}_magnet.txt"
+                magnet_filepath = os.path.join(self.magnet_dir, magnet_filename)
+                
+                with open(magnet_filepath, "w", encoding="utf-8") as f:
+                    # 只写入纯磁链，不包含其他任何文字
+                    for video in leaked_with_magnet:
+                        # 获取磁链 - 兼容多种格式
+                        magnets = []
+                        if video.get("magnets"):
+                            magnets.extend(video.get("magnets"))
+                        if video.get("magnet") and video.get("magnet") not in magnets:
+                            magnets.append(video.get("magnet"))
+                        
+                        # 每个磁链占一行
+                        for magnet in magnets:
+                            if magnet and isinstance(magnet, str):
+                                f.write(f"{magnet}\n")
+                
+                reports["magnet_file"] = magnet_filepath
+                self.logger.info(f"已将磁链保存到: {magnet_filepath}")
+                
+                if not self.quiet_mode:
+                    console.print(f"[bold green]✅ 磁链已保存到: {magnet_filepath}[/bold green]")
+            
+            # 2. 保存控制台日志
+            # 确保日志目录存在
+            os.makedirs(config.log_dir, exist_ok=True)
+            
+            # 打印日志目录以便调试
+            self.logger.info(f"日志目录: {config.log_dir}")
+            
+            # 按照指定格式构建文件名: 爬取类型_ID_日期时间.txt
+            # 正确格式：writer_5656_20250525_123456.txt 或 actress_5711_20250525_123456.txt
+            log_filename = f"{entity_type}_{entity_id}_{timestamp}.txt"
+            log_filepath = os.path.join(config.log_dir, log_filename)
+            
+            # 打印日志文件路径以便调试
+            self.logger.info(f"日志文件路径: {log_filepath}")
+            
+            # 获取统计信息
+            total = len(self.results)
+            leaked = sum(1 for r in self.results if r.get("exists", False) or r.get("leaked", False) or r.get("status") == "available")
+            unleaked = total - leaked
+            error_count = sum(1 for r in self.results if r.get("status") == "error")
+            leak_ratio = (leaked / total) * 100 if total > 0 else 0
+            
+            with open(log_filepath, "w", encoding="utf-8") as f:
+                f.write(f"=== FC2视频分析日志 ===\n")
+                f.write(f"类型: {entity_type}\n")
+                f.write(f"ID: {entity_id}\n")
+                f.write(f"名称: {clean_name}\n")
+                f.write(f"分析时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                
+                f.write(f"=== 统计信息 ===\n")
+                f.write(f"总视频数: {total}\n")
+                f.write(f"已流出数: {leaked}\n")
+                f.write(f"未流出数: {unleaked}\n")
+                f.write(f"错误数: {error_count}\n")
+                f.write(f"流出比例: {leak_ratio:.2f}%\n\n")
+                
+                f.write(f"=== 详细统计 ===\n")
+                for key, value in self.stats.items():
+                    f.write(f"{key}: {value}\n")
+            
+            reports["log_file"] = log_filepath
+            self.logger.info(f"已保存分析日志: {log_filepath}")
+            
+            if not self.quiet_mode:
+                console.print(f"[bold green]✅ 分析日志已保存到: {log_filepath}[/bold green]")
+            
+            # 3. 保存标准报告
+            try:
+                standard_reports = self.generate_reports(entity_id, self.results, entity_name)
+                reports.update(standard_reports)
+            except Exception as e:
+                self.logger.error(f"生成标准报告时出错: {str(e)}")
+                if not self.quiet_mode:
+                    console.print(f"[bold red]❌ 生成标准报告时出错: {str(e)}[/bold red]")
+            
+            # 在控制台显示保存结果
+            if not self.quiet_mode:
+                file_count = len(reports)
+                console.print(f"\n[bold green]✅ 已生成 {file_count} 个结果文件[/bold green]")
+            
+            return reports
+            
+        except Exception as e:
+            self.logger.error(f"保存结果时出错: {str(e)}")
+            if not self.quiet_mode:
+                console.print(f"[bold red]❌ 保存结果时出错: {str(e)}[/bold red]")
+            return {}
 
 def main():
     """程序主入口

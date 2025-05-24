@@ -269,6 +269,13 @@ def check_videos(
             print(f"❌ {_('check_videos.analyze_error', '分析视频时出错: {error}').format(error=e)}")
             return False
 
+        # 保存分析结果
+        try:
+            analyzer.save_results()
+        except Exception as e:
+            logger.error(f"保存分析结果时出错: {type(e).__name__}: {e}")
+            print(f"❌ 保存分析结果时出错: {e}")
+
         try:
             # 确保目录存在
             try:
@@ -527,6 +534,13 @@ def process_multiple_ids(
 
                 # 分析视频，明确指定线程数
                 results, stats = analyzer.analyze_videos(videos)
+
+                # 保存结果
+                try:
+                    analyzer.save_results()
+                except Exception as e:
+                    ui_manager.add_log(f"保存分析结果时出错: {e}", True)
+                    logger.error(f"保存分析结果时出错: {type(e).__name__}: {e}")
 
                 # 生成分类报告
                 reports = analyzer.generate_reports(item_id, results, author_name)
