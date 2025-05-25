@@ -119,7 +119,8 @@
     "retry_ratio_row": "Magnet retry success rate:",
     "image_retry_row": "Image retry count:",
     "image_retry_value": "[bold]{retries}[/bold] times, Success: [bold green]{success}[/bold green] times",
-    "image_retry_ratio_row": "Image retry success rate:"
+    "image_retry_ratio_row": "Image retry success rate:",
+    "writer_video_debug": "[Debug] Author video: Using field '{field}' to get ID={id}"
   },
   
   "input_prompts": {
@@ -419,6 +420,7 @@
     "report_failed": "Failed to generate report: {error}",
     "display_error": "Error displaying results: {error}",
     "video_check": "Checking video {video_id} if leaked on {site_name}",
+    "checking_video": "Checking video {video_id} on {site_name}",
     "video_leaked": "Video {video_id} is leaked on {site_name}",
     "video_not_found": "Video {video_id} not found on {site_name}",
     "video_check_abnormal": "Abnormal status code when checking video {video_id} on {site_name}: {status_code}",

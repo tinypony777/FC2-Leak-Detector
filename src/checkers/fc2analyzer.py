@@ -382,7 +382,9 @@ class FC2Analyzer:
                                 if id_field in video:
                                     video_id = str(video[id_field])
                                     print(
-                                        f"[调试] 作者视频: 使用字段 '{id_field}' 获取ID={video_id}"
+                                        _("analyzer.writer_video_debug", "[调试] 作者视频: 使用字段 '{field}' 获取ID={id}").format(
+                                            field=id_field, id=video_id
+                                        )
                                     )
                                     break
 
@@ -395,7 +397,9 @@ class FC2Analyzer:
                                     ):
                                         video_id = str(value)
                                         print(
-                                            f"[调试] 作者视频: 使用字段 '{key}' 作为ID={video_id}"
+                                            _("analyzer.writer_video_debug", "[调试] 作者视频: 使用字段 '{field}' 作为ID={id}").format(
+                                                field=key, id=video_id
+                                            )
                                         )
                                         break
 

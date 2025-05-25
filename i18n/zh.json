@@ -119,7 +119,8 @@
     "retry_ratio_row": "磁链重试成功率:",
     "image_retry_row": "图片重试次数:",
     "image_retry_value": "[bold]{retries}[/bold] 次，成功: [bold green]{success}[/bold green] 次",
-    "image_retry_ratio_row": "图片重试成功率:"
+    "image_retry_ratio_row": "图片重试成功率:",
+    "writer_video_debug": "[调试] 作者视频: 使用字段 '{field}' 获取ID={id}"
   },
   
   "input_prompts": {
@@ -329,7 +330,12 @@
     "total_leaked_videos": "总流出视频数",
     "leak_ratio": "流出比例",
     "with_magnet": "有磁链数",
-    "setup_progress": "设置进度"
+    "setup_progress": "设置进度",
+    "image_downloaded": "已下载图片数",
+    "image_ratio": "图片下载率",
+    "preparing": "准备中...",
+    "retry_success_ratio": "重试成功率",
+    "magnet_ratio": "磁链比率"
   },
   
   "check_videos": {
@@ -394,6 +400,19 @@
     "error_details_saved": "已保存错误详情: {filepath}",
     "error_log_failed": "保存错误日志失败: {error}",
     "invalid_video_id": "无效的视频ID: {video_id}",
+    "video_check": "检查视频 {video_id} 是否在 {site_name} 流出",
+    "checking_video": "检查视频 {video_id} 在 {site_name}",
+    "video_leaked": "视频 {video_id} 在 {site_name} 已流出",
+    "video_not_found": "视频 {video_id} 在 {site_name} 未找到",
+    "video_check_abnormal": "检查视频 {video_id} 在 {site_name} 时状态码异常: {status_code}",
+    "request_step": "{step_name}{retry_suffix}",
+    "retry_suffix": " (重试 {retry}/{max})",
+    "request_failed": "请求失败: {error}",
+    "max_retries": "达到最大重试次数，请求失败: {url}",
+    "request_error_basic": "{step_name} 请求失败: URL={url}, 状态码={status_code}",
+    "no_response": "无响应",
+    "error_step": "步骤: {step_name}",
+    "response_preview": "\n响应内容预览:\n{content}\n",
     "image_save_path": "图片保存路径: {save_path}, 流出状态: {status_desc}",
     "image_exists": "缩略图已存在，跳过下载: {save_path}",
     "image_retry": "正在重试下载图片({attempt}/{max_retries}): {video_id}",
@@ -413,7 +432,9 @@
     "magnet_file_failed": "生成磁链专用文件失败: {error}",
     "reports_generated": "已生成{count}个报告文件",
     "report_failed": "生成报告失败: {error}",
-    "display_error": "显示结果出错: {error}"
+    "display_error": "显示结果出错: {error}",
+    "debug_video_object": "[调试] 输入是视频对象，提取video_id: {id}",
+    "debug_video_string": "[调试] 输入是ID字符串: {id}"
   },
   
   "find_writer": {
@@ -431,5 +452,12 @@
   
   "checker": {
     "program_completed": "✅ 程序执行完毕！结果已保存"
+  },
+  
+  "sites": {
+    "unknown": "未知站点",
+    "24av": "24AV",
+    "missav": "MissAV",
+    "javbus": "JavBus"
   }
 } 

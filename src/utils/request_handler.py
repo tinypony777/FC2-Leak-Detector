@@ -164,12 +164,12 @@ class RequestHandler:
                 continue
 
             # 使用统一的请求功能
-            logger.info(_("logger.video_check", "检查视频 {video_id} 是否在 {site_name} 流出").format(
+            logger.info(_("logger.video_check").format(
                 video_id=video_id, site_name=site_name
             ))
             response = cls.make_request(
                 site_url,
-                step_name=_("logger.checking_video", "检查视频 {video_id} 在 {site_name}").format(
+                step_name=_("logger.checking_video").format(
                     video_id=video_id, site_name=site_name
                 ),
                 max_retries=1,  # 减少重试次数以加快速度
@@ -190,7 +190,7 @@ class RequestHandler:
                     ))
                 else:
                     logger.warning(
-                        _("logger.video_check_abnormal", "检查视频 {video_id} 在 {site_name} 时状态码异常: {status_code}").format(
+                        _("logger.video_check_abnormal").format(
                             video_id=video_id, site_name=site_name, status_code=response.status_code
                         )
                     )
