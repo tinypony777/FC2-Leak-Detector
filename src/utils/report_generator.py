@@ -9,6 +9,7 @@ import json
 import os
 
 from config import config
+from src.utils.i18n import get_text as _  # 添加国际化支持
 
 
 class ReportGenerator:

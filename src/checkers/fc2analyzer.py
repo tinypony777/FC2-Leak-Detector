@@ -203,7 +203,7 @@ class FC2Analyzer:
                                 ):
                                     self.name = article[entity_key]["name"]
                                     console.print(
-                                        f"[bold green]✅ {_('analyzer.author_name_success', '从API获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
+                                        f"[bold green]✅ {_('analyzer.author_name_success').format(entity_desc=entity_desc, name=self.name)}[/bold green]"
                                     )
                                     return self.name
                     except Exception as e:
@@ -226,7 +226,7 @@ class FC2Analyzer:
                     if info_elem and info_elem.text.strip():
                         self.name = info_elem.text.strip()
                         console.print(
-                            f"[bold green]✅ {_('analyzer.author_name_success', '从页面信息获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
+                            f"[bold green]✅ {_('analyzer.author_name_success').format(entity_desc=entity_desc, name=self.name)}[/bold green]"
                         )
                         return self.name
 
@@ -238,7 +238,7 @@ class FC2Analyzer:
                         if " - " in title_text:
                             self.name = title_text.split(" - ")[0].strip()
                             console.print(
-                                f"[bold green]✅ {_('analyzer.author_name_success', '从页面标题获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
+                                f"[bold green]✅ {_('analyzer.author_name_success').format(entity_desc=entity_desc, name=self.name)}[/bold green]"
                             )
                             return self.name
 
@@ -251,7 +251,7 @@ class FC2Analyzer:
                         if text and len(text) < 30:  # 假设名称不会太长
                             self.name = text
                             console.print(
-                                f"[bold green]✅ {_('analyzer.author_name_success', '从页面元素获取到{entity_desc}名称:')}</[bold green] [cyan]{self.name}[/cyan]"
+                                f"[bold green]✅ {_('analyzer.author_name_success').format(entity_desc=entity_desc, name=self.name)}[/bold green]"
                             )
                             return self.name
 
@@ -655,7 +655,7 @@ class FC2Analyzer:
                             # 在非安静模式下输出
                             if not hasattr(self, "quiet_mode") or not self.quiet_mode:
                                 console.print(
-                                    f"[green]找到 {len(selected_entries)} 个磁力链接，选择体积最大的[/green]"
+                                    f"[green]{_('analyzer.found_magnets', '找到 {len} 个磁力链接，选择体积最大的').format(len=len(selected_entries))}[/green]"
                                 )
 
                             with self.lock:
@@ -1386,7 +1386,7 @@ class FC2Analyzer:
         # 显示开始分析消息
         if not self.quiet_mode:
             console.print(
-                _("analyzer.start_analysis", "\n[bold cyan]开始分析{entity_type} {id} [{name}] 的 {count} 个视频[/bold cyan]").format(
+                _("analyzer.start_analysis").format(
                     entity_type=entity_type, id=entity_id, name=clean_entity_name, count=len(videos)
                 )
             )
@@ -1405,7 +1405,7 @@ class FC2Analyzer:
             console=console,
         ) as progress:
             # 创建主任务
-            task_desc = _("analyzer.progress_task", "{entity_type}视频分析进度").format(entity_type=entity_type)
+            task_desc = _("analyzer.progress_task").format(entity_type=entity_type)
             task = progress.add_task(task_desc, total=len(videos))
 
             # 使用线程池并发处理视频
@@ -1446,7 +1446,7 @@ class FC2Analyzer:
             leaked = sum(1 for r in results if r.get("exists", False))
             leak_ratio = (leaked / total) * 100 if total > 0 else 0
             console.print(
-                _("analyzer.analysis_complete", "\n[bold green]✅ 分析完成！总共 {total} 个视频，已流出 {leaked} 个 (流出比例: {ratio:.1f}%)[/bold green]").format(
+                _("analyzer.analysis_complete").format(
                     total=total, leaked=leaked, ratio=leak_ratio
                 )
             )
@@ -1495,12 +1495,12 @@ class FC2Analyzer:
             clean_entity_name = self.clean_filename(entity_name)
 
             console.print(
-                _("analyzer.results_header", "\n[bold cyan]━━━━━━━━━━━━━━ {entity_type}分析结果 ━━━━━━━━━━━━━━[/bold cyan]").format(entity_type=entity_type)
+                _("analyzer.results_header").format(entity_type=entity_type)
             )
 
             # 创建更美观的主表格
             table = Table(
-                title=_("analyzer.results_title", "[bold magenta]{entity_type} {id} [{name}][/bold magenta]").format(
+                title=_("analyzer.results_title").format(
                     entity_type=entity_type, id=entity_id, name=clean_entity_name
                 ),
                 box=box.ROUNDED,
@@ -1510,10 +1510,10 @@ class FC2Analyzer:
             )
 
             # 添加列
-            table.add_column(_("analyzer.category_column", "[bold]分类[/bold]"), style="cyan")
-            table.add_column(_("analyzer.count_column", "[bold]数量[/bold]"), justify="right", style="green")
-            table.add_column(_("analyzer.percent_column", "[bold]百分比[/bold]"), justify="right", style="yellow")
-            table.add_column(_("analyzer.bar_column", "[bold]状态条[/bold]"), justify="left")
+            table.add_column(_("analyzer.category_column"), style="cyan")
+            table.add_column(_("analyzer.count_column"), justify="right", style="green")
+            table.add_column(_("analyzer.percent_column"), justify="right", style="yellow")
+            table.add_column(_("analyzer.bar_column"), justify="left")
 
             # 添加行
             table.add_row(_("analyzer.total_videos", "总视频数"), f"{total}", "100%", "━" * 20)
@@ -1554,7 +1554,7 @@ class FC2Analyzer:
 
             # 显示详细统计信息
             console.print(
-                _("analyzer.details_header", "\n[bold cyan]━━━━━━━━━━━━━━ 详细统计信息 ━━━━━━━━━━━━━━[/bold cyan]")
+                _("analyzer.details_header")
             )
 
             details_table = Table(
@@ -1566,10 +1566,10 @@ class FC2Analyzer:
             )
 
             # 添加列
-            details_table.add_column(_("analyzer.category_column", "[bold]类别[/bold]"), style="cyan")
-            details_table.add_column(_("analyzer.count_column", "[bold]数量[/bold]"), justify="right", style="green")
-            details_table.add_column(_("analyzer.percent_column", "[bold]比例[/bold]"), justify="right", style="yellow")
-            details_table.add_column(_("analyzer.bar_column", "[bold]状态条[/bold]"), justify="left")
+            details_table.add_column(_("analyzer.category_column"), style="cyan")
+            details_table.add_column(_("analyzer.count_column"), justify="right", style="green")
+            details_table.add_column(_("analyzer.percent_column"), justify="right", style="yellow")
+            details_table.add_column(_("analyzer.bar_column"), justify="left")
 
             # 添加磁力链接统计
             if self.with_magnet:
@@ -1588,16 +1588,16 @@ class FC2Analyzer:
                 no_magnet_bar = "█" * int((100 - magnet_ratio) / 5)
 
                 details_table.add_row(
-                    _("analyzer.magnet_stats_header", "[bold magenta]== 磁链统计 ==[/bold magenta]"), "", "", ""
+                    _("analyzer.magnet_stats_header"), "", "", ""
                 )
                 details_table.add_row(
-                    _("analyzer.leaked_with_magnet", "流出视频中有磁链"),
+                    _("analyzer.leaked_with_magnet"),
                     f"[bold]{with_magnet}[/bold]",
                     f"[{magnet_color}]{magnet_ratio:.1f}%[/{magnet_color}]",
                     f"[{magnet_color}]{magnet_bar}[/{magnet_color}]",
                 )
                 details_table.add_row(
-                    _("analyzer.leaked_without_magnet", "流出视频中无磁链"),
+                    _("analyzer.leaked_without_magnet"),
                     f"{without_magnet}",
                     f"[{no_magnet_color}]{100-magnet_ratio:.1f}%[/{no_magnet_color}]",
                     f"[{no_magnet_color}]{no_magnet_bar}[/{no_magnet_color}]",
@@ -1637,16 +1637,16 @@ class FC2Analyzer:
 
                 details_table.add_row("", "", "", "")
                 details_table.add_row(
-                    _("analyzer.image_stats_header", "[bold magenta]== 图片统计 ==[/bold magenta]"), "", "", ""
+                    _("analyzer.image_stats_header"), "", "", ""
                 )
                 details_table.add_row(
-                    _("analyzer.image_success", "成功下载图片"),
+                    _("analyzer.image_success"),
                     f"[bold]{image_success}[/bold]",
                     f"[{image_color}]{image_ratio:.1f}%[/{image_color}]",
                     f"[{image_color}]{image_bar}[/{image_color}]",
                 )
                 details_table.add_row(
-                    _("analyzer.image_fail", "图片下载失败"),
+                    _("analyzer.image_fail"),
                     f"{image_fail}",
                     f"[{fail_color}]{100-image_ratio:.1f}%[/{fail_color}]",
                     f"[{fail_color}]{fail_bar}[/{fail_color}]",
@@ -1656,7 +1656,7 @@ class FC2Analyzer:
             console.print(details_table)
 
             # 显示结果摘要
-            console.print(_("analyzer.summary_header", "\n[bold cyan]━━━━━━━━━━━━━━ 结果摘要 ━━━━━━━━━━━━━━[/bold cyan]"))
+            console.print(_("analyzer.summary_header"))
 
             summary = Table(
                 show_header=False,
@@ -1667,26 +1667,26 @@ class FC2Analyzer:
             )
 
             # 添加列
-            summary.add_column(_("analyzer.item_column", "项目"), style="cyan", justify="right")
-            summary.add_column(_("analyzer.value_column", "值"), style="bold green", justify="left")
+            summary.add_column(_("analyzer.item_column"), style="cyan", justify="right")
+            summary.add_column(_("analyzer.value_column"), style="bold green", justify="left")
 
             # 添加行 - 删除emoji图标
-            summary.add_row(_("analyzer.total_videos_row", "总计视频:"), f"[bold]{total}[/bold] {_('analyzer.count_unit', '个')}")
+            summary.add_row(_("analyzer.total_videos_row"), f"[bold]{total}[/bold] {_('analyzer.count_unit')}")
             summary.add_row(
-                _("analyzer.leaked_videos_row", "已泄漏:"),
-                _("analyzer.leaked_count", "[bold green]{count}[/bold green] 个 (含磁链: [bold]{with_magnet}[/bold])").format(
+                _("analyzer.leaked_videos_row"),
+                _("analyzer.leaked_count").format(
                     count=available, with_magnet=stats.get("with_magnet", 0)
                 ),
             )
-            summary.add_row(_("analyzer.unleaked_videos_row", "未泄漏:"), f"[bold red]{unavailable}[/bold red] {_('analyzer.count_unit', '个')}")
-            summary.add_row(_("analyzer.error_count_row", "检查失败:"), f"[bold yellow]{errors}[/bold yellow] {_('analyzer.count_unit', '个')}")
+            summary.add_row(_("analyzer.unleaked_videos_row"), f"[bold red]{unavailable}[/bold red] {_('analyzer.count_unit')}")
+            summary.add_row(_("analyzer.error_count_row"), f"[bold yellow]{errors}[/bold yellow] {_('analyzer.count_unit')}")
 
             # 根据比例选择颜色
             ratio_color = (
                 "green" if avail_ratio > 70 else "yellow" if avail_ratio > 40 else "red"
             )
             summary.add_row(
-                _("analyzer.leak_ratio_row", "流出比例:"), f"[bold {ratio_color}]{avail_ratio:.1f}%[/bold {ratio_color}]"
+                _("analyzer.leak_ratio_row"), f"[bold {ratio_color}]{avail_ratio:.1f}%[/bold {ratio_color}]"
             )
 
             # 添加图片下载统计 - 删除emoji图标
@@ -1708,13 +1708,13 @@ class FC2Analyzer:
                 )
                 summary.add_row("", "")
                 summary.add_row(
-                    _("analyzer.image_stats_row", "图片下载:"),
-                    _("analyzer.image_stats_value", "成功: [bold green]{success}[/bold green]，失败: [bold red]{fail}[/bold red]").format(
+                    _("analyzer.image_stats_row"),
+                    _("analyzer.image_stats_value").format(
                         success=image_success, fail=image_fail
                     ),
                 )
                 summary.add_row(
-                    _("analyzer.image_ratio_row", "图片下载成功率:"),
+                    _("analyzer.image_ratio_row"),
                     f"[bold {image_color}]{image_ratio:.1f}%[/bold {image_color}]",
                 )
 
@@ -1737,13 +1737,13 @@ class FC2Analyzer:
                 )
                 summary.add_row("", "")
                 summary.add_row(
-                    _("analyzer.magnet_stats_row", "磁链统计:"),
-                    _("analyzer.magnet_stats_value", "有磁链: [bold green]{with_magnet}[/bold green]，无磁链: [bold red]{without_magnet}[/bold red]").format(
+                    _("analyzer.magnet_stats_row"),
+                    _("analyzer.magnet_stats_value").format(
                         with_magnet=with_magnet, without_magnet=without_magnet
                     ),
                 )
                 summary.add_row(
-                    _("analyzer.magnet_ratio_row", "磁链获取成功率:"),
+                    _("analyzer.magnet_ratio_row"),
                     f"[bold {magnet_color}]{magnet_ratio:.1f}%[/bold {magnet_color}]",
                 )
 
@@ -1764,13 +1764,13 @@ class FC2Analyzer:
                         else "red"
                     )
                     summary.add_row(
-                        _("analyzer.magnet_retry_row", "磁链重试次数:"),
-                        _("analyzer.magnet_retry_value", "[bold]{retries}[/bold] 次，成功: [bold green]{success}[/bold green] 次").format(
+                        _("analyzer.magnet_retry_row"),
+                        _("analyzer.magnet_retry_value").format(
                             retries=magnet_retries, success=magnet_retry_success
                         ),
                     )
                     summary.add_row(
-                        _("analyzer.retry_ratio_row", "磁链重试成功率:"),
+                        _("analyzer.retry_ratio_row"),
                         f"[bold {retry_color}]{retry_success_ratio:.1f}%[/bold {retry_color}]",
                     )
 
@@ -1793,13 +1793,13 @@ class FC2Analyzer:
                     )
                     summary.add_row("", "")
                     summary.add_row(
-                        _("analyzer.image_retry_row", "图片重试次数:"),
-                        _("analyzer.image_retry_value", "[bold]{retries}[/bold] 次，成功: [bold green]{success}[/bold green] 次").format(
+                        _("analyzer.image_retry_row"),
+                        _("analyzer.image_retry_value").format(
                             retries=image_retries, success=image_retry_success
                         ),
                     )
                     summary.add_row(
-                        _("analyzer.image_retry_ratio_row", "图片重试成功率:"),
+                        _("analyzer.image_retry_ratio_row"),
                         f"[bold {retry_img_color}]{image_retry_ratio:.1f}%[/bold {retry_img_color}]",
                     )
 
