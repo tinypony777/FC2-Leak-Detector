@@ -7,7 +7,7 @@
 [![代码大小](https://img.shields.io/github/languages/code-size/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector)
 [![最后提交](https://img.shields.io/github/last-commit/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/commits/main)
 
-# FC2流出检测器 | FC2 Leak Detector
+# FC2流出检测器 | FC2 Leak Detector | FC2流出チェッカー
 
 [简体中文](#简体中文) | [English](#english) | [日本語](#日本語)
 
@@ -359,6 +359,8 @@ python run.py -w 5656 --no-image
 python run.py -l ja
 ```
 
+> **Note**: The default language for this project is Chinese (zh). If you prefer English or Japanese, you can use the `-l` parameter once to set your preferred language. This setting will be saved in `i18n/preference.json` and will be used for all future runs until you change it again.
+
 ### Configuration
 
 The configuration system has been updated to a class-based model using the `Config` class in `config.py`:
@@ -583,6 +585,8 @@ python run.py -w 5656 --no-image
 # 中国語インターフェースを使用
 python run.py -l zh
 ```
+
+> **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。日本語または英語を使用したい場合は、`-l`パラメータを一度使用すれば設定が`i18n/preference.json`ファイルに保存され、変更するまで全ての起動時にその言語が使用されます。
 
 ### 設定説明
 
