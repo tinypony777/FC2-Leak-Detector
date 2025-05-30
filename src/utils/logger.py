@@ -7,6 +7,7 @@
 3. 支持日志去重过滤
 4. 支持不同类型的日志（应用、分析、错误）分别存储
 """
+# Fixed logging issue to ensure all log records are properly written to files
 import logging
 import os
 import sys
@@ -92,6 +93,9 @@ class MemoryBufferHandler(logging.Handler):
         # 如果缓冲区非空且尚未创建文件处理器，则创建
         if self.buffer and not self.file_handler:
             self._create_file_handler()
+        # 如果文件处理器已存在，直接写入当前记录
+        elif self.file_handler:
+            self.file_handler.emit(record)
     
     def _create_file_handler(self):
         """
@@ -124,21 +128,7 @@ class MemoryBufferHandler(logging.Handler):
         
         # 将缓冲区中的日志输出到文件
         for buffered_record in self.buffer:
-            formatted_message = self.formatter.format(buffered_record)
-            try:
-                self.file_handler.stream.write(formatted_message + '\n')
-                self.file_handler.stream.flush()
-            except Exception:
-                # 写入失败时，尝试重新打开文件
-                try:
-                    if hasattr(self.file_handler, 'stream') and self.file_handler.stream:
-                        self.file_handler.stream.close()
-                    self.file_handler.stream = open(self.target_filename, 'a', encoding="utf-8")
-                    self.file_handler.stream.write(formatted_message + '\n')
-                    self.file_handler.stream.flush()
-                except Exception as e:
-                    # 如果仍然失败，记录到控制台
-                    print(f"无法写入日志文件: {e}")
+            self.file_handler.emit(buffered_record)
     
     def flush(self):
         """
