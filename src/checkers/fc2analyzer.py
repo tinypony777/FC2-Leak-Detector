@@ -890,8 +890,6 @@ class FC2Analyzer:
             # 调试输出 - 不再输出重复日志
             self.logger.info(_("logger.generate_report", "=== 生成报告 ==="))
             self.logger.info(_("logger.original_writer_name", "原始writer_name: '{writer_name}'").format(writer_name=writer_name))
-            self.logger.info(_("logger.original_self_name", "原始self.name: '{name}'").format(name=self.name))
-            self.logger.info(_("logger.entity_name_used", "使用的entity_name: '{entity_name}'").format(entity_name=entity_name))
 
             # 创建唯一前缀，区分作者和女优，但保持文件名结构一致
             # 修改：无论是作者还是女优，统一使用"author"为前缀格式，保持一致性
@@ -910,7 +908,6 @@ class FC2Analyzer:
             else:
                 # 清理名称并使用
                 clean_name = self.clean_filename(entity_name)
-                self.logger.info(_("logger.cleaned_name", "清理后的名称: '{clean_name}'").format(clean_name=clean_name))
                 file_prefix = f"{entity_type}_{writer_id}_{clean_name}"
 
             self.logger.info(_("logger.file_prefix", "生成的文件前缀: '{file_prefix}'").format(file_prefix=file_prefix))
