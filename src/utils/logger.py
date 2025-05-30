@@ -1,5 +1,11 @@
 """
 日志工具模块，提供统一的日志记录功能
+
+特性：
+1. 支持控制台彩色日志输出
+2. 支持文件日志记录（按日期自动轮转）
+3. 支持日志去重过滤
+4. 支持不同类型的日志（应用、分析、错误）分别存储
 """
 import logging
 import os
@@ -12,20 +18,24 @@ from rich.logging import RichHandler
 
 from config import config
 
+# 创建Rich控制台对象
 console = Console()
 
-# 配置日志目录结构
+# 从配置中获取日志目录结构
 LOG_BASE_DIR = config.log_dir
-LOG_APP_DIR = os.path.join(LOG_BASE_DIR, "app")
-LOG_ANALYSIS_DIR = os.path.join(LOG_BASE_DIR, "analysis")
-LOG_ERROR_DIR = os.path.join(LOG_BASE_DIR, "errors")
+LOG_APP_DIR = config.log_app_dir
+LOG_ANALYSIS_DIR = config.log_analysis_dir
+LOG_ERROR_DIR = config.log_error_dir
 
-# 确保所有日志目录存在
-for log_dir in [LOG_BASE_DIR, LOG_APP_DIR, LOG_ANALYSIS_DIR, LOG_ERROR_DIR]:
-    os.makedirs(log_dir, exist_ok=True)
+# 日志格式从配置中获取
+CONSOLE_FORMAT = config.log_console_format
+FILE_FORMAT = config.log_file_format
+ERROR_FORMAT = config.log_error_format
+ANALYSIS_FORMAT = config.log_analysis_format
 
-# 日志格式
-FORMAT = "%(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
+# 日志日期格式从配置中获取
+LOG_DATE_FORMAT = config.log_date_format
+LOG_TIMESTAMP_FORMAT = config.log_timestamp_format
 
 # 日志级别映射
 LOG_LEVEL_MAP = {
@@ -39,7 +49,7 @@ LOG_LEVEL_MAP = {
 
 # 自定义过滤器类，用于过滤重复日志
 class DuplicateFilter(logging.Filter):
-    """过滤重复的日志记录"""
+    """过滤重复的日志记录，避免日志文件中出现大量重复内容"""
 
     def __init__(self):
         super().__init__()
@@ -58,15 +68,25 @@ class DuplicateFilter(logging.Filter):
         return True
 
 
-def configure_logging(log_level="info", log_file=None, enable_duplicate_filter=True):
+def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=None):
     """
-    配置日志记录
+    配置日志记录系统
 
     参数:
-        log_level: 日志级别，默认为info
-        log_file: 日志文件路径，默认为None，即不记录到文件
-        enable_duplicate_filter: 是否启用日志去重过滤
+        log_level: 日志级别，默认从配置获取
+        log_file: 日志文件路径，默认为None时使用自动生成的路径
+        enable_duplicate_filter: 是否启用日志去重过滤，默认从配置获取
+    
+    返回:
+        Logger: 配置好的根日志记录器
     """
+    # 使用默认配置（如果未指定参数）
+    if log_level is None:
+        log_level = config.log_level.lower()
+    
+    if enable_duplicate_filter is None:
+        enable_duplicate_filter = config.log_enable_duplicate_filter
+    
     # 获取根记录器
     root_logger = logging.getLogger()
 
@@ -74,49 +94,50 @@ def configure_logging(log_level="info", log_file=None, enable_duplicate_filter=T
     level = LOG_LEVEL_MAP.get(log_level.lower(), logging.INFO)
     root_logger.setLevel(level)
 
-    # 移除所有处理器
+    # 移除所有处理器（避免重复）
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # 添加控制台处理器
-    console_handler = RichHandler(
-        rich_tracebacks=True,
-        markup=True,
-        console=console,
-        show_path=False,
-        enable_link_path=False,
-    )
-    console_handler.setFormatter(logging.Formatter(FORMAT))
-    console_handler.setLevel(level)
+    # 添加控制台处理器（如果配置允许）
+    if config.log_enable_console:
+        console_handler = RichHandler(
+            rich_tracebacks=True,
+            markup=True,
+            console=console,
+            show_path=False,
+            enable_link_path=False,
+        )
+        console_handler.setFormatter(logging.Formatter(CONSOLE_FORMAT))
+        console_handler.setLevel(level)
 
-    # 添加日志去重过滤器
-    if enable_duplicate_filter:
-        console_handler.addFilter(DuplicateFilter())
+        # 添加日志去重过滤器（如果启用）
+        if enable_duplicate_filter:
+            console_handler.addFilter(DuplicateFilter())
 
-    root_logger.addHandler(console_handler)
+        root_logger.addHandler(console_handler)
 
     # 如果未指定日志文件，使用默认的应用程序日志文件
     if not log_file:
         # 创建带有日期的日志文件名
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now().strftime(LOG_DATE_FORMAT)
         log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{today}.log")
 
     # 添加文件处理器
     # 使用日期轮换处理器
     file_handler = TimedRotatingFileHandler(
         log_file,
-        when='midnight',  # 每天午夜轮换
-        interval=1,       # 每1天
-        backupCount=30,   # 保留30天
+        when=config.log_rotation,     # 轮转时间点（从配置获取）
+        interval=1,                   # 每1个时间单位
+        backupCount=config.log_backup_count,  # 保留的备份数量
         encoding="utf-8",
     )
     file_formatter = logging.Formatter(
-        "%(asctime)s - " + FORMAT, datefmt="%Y-%m-%d %H:%M:%S"
+        FILE_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
     )
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(level)
 
-    # 添加日志去重过滤器
+    # 添加日志去重过滤器（如果启用）
     if enable_duplicate_filter:
         file_handler.addFilter(DuplicateFilter())
 
@@ -144,7 +165,7 @@ def get_analysis_logger(name, entity_id=None):
     获取用于记录分析结果的日志记录器
     
     参数:
-        name: 日志记录器名称
+        name: 日志记录器名称（通常是'writer'或'actress'）
         entity_id: 实体ID（作者ID或女优ID）
         
     返回:
@@ -155,7 +176,7 @@ def get_analysis_logger(name, entity_id=None):
     # 检查是否已经有处理器，避免重复添加
     if not logger.handlers:
         # 创建分析日志文件名
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now().strftime(LOG_DATE_FORMAT)
         if entity_id:
             log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{entity_id}_{today}.log")
         else:
@@ -164,7 +185,7 @@ def get_analysis_logger(name, entity_id=None):
         # 创建文件处理器
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_formatter = logging.Formatter(
-            "%(asctime)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+            ANALYSIS_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
@@ -177,7 +198,7 @@ def get_error_logger(name):
     获取用于记录错误的日志记录器
     
     参数:
-        name: 日志记录器名称
+        name: 日志记录器名称（通常是组件名如'magnetfetch'）
         
     返回:
         Logger: 错误日志记录器实例
@@ -187,13 +208,13 @@ def get_error_logger(name):
     # 检查是否已经有处理器，避免重复添加
     if not logger.handlers:
         # 创建错误日志文件名
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now().strftime(LOG_DATE_FORMAT)
         log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{today}.log")
         
         # 创建文件处理器
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_formatter = logging.Formatter(
-            "%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+            ERROR_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
         file_handler.setFormatter(file_formatter)
         file_handler.setLevel(logging.ERROR)  # 只记录错误及以上级别

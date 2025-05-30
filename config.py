@@ -41,7 +41,7 @@ class Config:
         # -------------------------
         # 基本信息
         # -------------------------
-        self.version = "1.1.0"  # 程序版本号
+        self.version = "1.2.0"  # 程序版本号
         
         # -------------------------
         # 网络请求设置
@@ -65,11 +65,23 @@ class Config:
         # -------------------------
         # 数据存储目录设置
         # -------------------------
+        # 基础缓存和数据目录
         self.cache_dir = os.path.join(BASE_CACHE_DIR, "id_cache")  # 作者和女优ID缓存目录
         self.image_dir = os.path.join(BASE_CACHE_DIR, "img")  # 视频缩略图存储目录
         self.result_dir = os.path.join(BASE_CACHE_DIR, "results")  # 分析结果存储目录
         self.magnet_dir = os.path.join(BASE_CACHE_DIR, "magnets")  # 磁链信息存储目录
-        self.log_dir = os.path.join(BASE_CACHE_DIR, "logs")  # 日志文件存储目录
+        
+        # 日志目录设置
+        self.log_dir = os.path.join(BASE_CACHE_DIR, "logs")  # 主日志目录
+        self.log_app_dir = os.path.join(self.log_dir, "app")  # 应用程序日志目录
+        self.log_analysis_dir = os.path.join(self.log_dir, "analysis")  # 分析结果日志目录
+        self.log_error_dir = os.path.join(self.log_dir, "errors")  # 错误日志目录
+        
+        # 日志文件保留设置
+        self.log_backup_count = 30  # 保留日志文件的天数
+        self.log_rotation = "midnight"  # 日志轮转时间：midnight(每天午夜)、W0-W6(每周)、h(每小时)
+        
+        # 报告设置
         self.summary_report = os.path.join(
             BASE_CACHE_DIR, "fc2_multi_author_summary.txt"
         )  # 多作者汇总报告路径
@@ -117,9 +129,29 @@ class Config:
         self.report_batch_size = 100  # 报告中每批显示的视频数量
         
         # -------------------------
-        # 高级设置
+        # 日志设置
         # -------------------------
-        self.log_level = "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR
+        self.log_level = "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
+        
+        # 日志文件命名格式
+        self.log_date_format = "%Y%m%d"  # 日志文件日期格式，默认为年月日(20250531)
+        self.log_timestamp_format = "%Y-%m-%d %H:%M:%S"  # 日志记录时间戳格式
+        
+        # 日志过滤设置
+        self.log_enable_duplicate_filter = True  # 是否启用日志去重过滤
+        
+        # 控制台日志设置
+        self.log_enable_console = True  # 是否在控制台显示日志
+        self.log_console_format = "%(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"  # 控制台日志格式
+        
+        # 文件日志设置
+        self.log_file_format = "%(asctime)s - %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"  # 文件日志格式
+        self.log_error_format = "%(asctime)s - %(levelname)s - %(message)s"  # 错误日志格式
+        self.log_analysis_format = "%(asctime)s - %(message)s"  # 分析日志格式
+        
+        # -------------------------
+        # 高级网络设置
+        # -------------------------
         self.enable_proxy = False  # 是否启用代理
         self.proxy = {  # 代理设置 (仅当enable_proxy为True时生效)
             "http": "",  # HTTP代理地址
@@ -185,16 +217,17 @@ class Config:
     def _create_directories(self):
         """创建所需的目录"""
         directories = [
+            # 数据目录
             self.cache_dir,
             self.result_dir,
             self.image_dir,
-            self.log_dir,
             self.magnet_dir,
-            # 添加日志子目录
-            os.path.join(self.log_dir, "app"),
-            os.path.join(self.log_dir, "analysis"),
-            os.path.join(self.log_dir, "errors"),
-            # 添加基础数据目录
+            # 日志目录结构
+            self.log_dir,
+            self.log_app_dir,      # 应用程序日志
+            self.log_analysis_dir, # 分析结果日志
+            self.log_error_dir,    # 错误日志
+            # 基础数据目录
             BASE_CACHE_DIR
         ]
         
