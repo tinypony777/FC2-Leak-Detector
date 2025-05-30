@@ -64,14 +64,11 @@
     "request_url": "请求URL: {url}",
     "api_request_failed": "API请求失败: {status_code}",
     "api_empty_data": "API返回数据为空，可能该{entity_desc}没有视频",
-    "api_data_example": "\n[调试] {entity_desc}API返回的视频数据示例:",
     "actress_no_video_id": "女优视频数据中找不到video_id字段，跳过",
-    "actress_video_debug": "[调试] 女优视频: ID={id}, 图片URL={url}",
     "author_no_video_id": "无法确定作者视频ID，跳过此视频数据",
     "process_video_error": "处理单个视频数据时出错: {error}",
     "fetch_page_error": "获取视频列表页面 {page} 时出错: {error}",
     "fetch_complete": "已获取 {count} 个视频，开始保存缓存...",
-    "video_debug_sample": "\n[调试] 前5个视频ID和图片URL示例:",
     "no_videos_found": "未找到任何视频，请检查{entity_desc}ID是否正确",
     "no_videos": "⚠️ 未找到视频，无法进行分析",
     "display_error": "显示结果出错: {error}",
@@ -80,8 +77,6 @@
     "author_name_success": "✅ {entity_desc}名称: [cyan]{name}[/cyan]",
     "entity_type_actress": "女优",
     "entity_type_writer": "作者",
-    "debug_video_object": "[调试] 输入是视频对象，提取video_id: {id}",
-    "debug_video_string": "[调试] 输入是ID字符串: {id}",
     "progress_task": "{entity_type}视频分析进度",
     "start_analysis": "\n[bold cyan]开始分析{entity_type} {id} [{name}] 的 {count} 个视频[/bold cyan]",
     "analysis_complete": "\n[bold green]✅ 分析完成！总共 {total} 个视频，已流出 {leaked} 个 (流出比例: {ratio:.1f}%)[/bold green]",
@@ -437,9 +432,7 @@
     "magnet_file_failed": "生成磁链专用文件失败: {error}",
     "reports_generated": "已生成{count}个报告文件",
     "report_failed": "生成报告失败: {error}",
-    "display_error": "显示结果出错: {error}",
-    "debug_video_object": "[调试] 输入是视频对象，提取video_id: {id}",
-    "debug_video_string": "[调试] 输入是ID字符串: {id}"
+    "display_error": "显示结果出错: {error}"
   },
   
   "find_writer": {

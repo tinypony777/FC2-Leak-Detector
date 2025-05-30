@@ -64,14 +64,11 @@
     "request_url": "Request URL: {url}",
     "api_request_failed": "API request failed: {status_code}",
     "api_empty_data": "API returned empty data, the {entity_desc} may not have videos",
-    "api_data_example": "\n[Debug] {entity_desc} API video data example:",
     "actress_no_video_id": "No video_id field found in actress video data, skipping",
-    "actress_video_debug": "[Debug] Actress video: ID={id}, Image URL={url}",
     "author_no_video_id": "Could not determine author video ID, skipping this video data",
     "process_video_error": "Error processing single video data: {error}",
     "fetch_page_error": "Error getting video list page {page}: {error}",
     "fetch_complete": "Retrieved {count} videos, starting to save cache...",
-    "video_debug_sample": "\n[Debug] First 5 video IDs and image URLs example:",
     "no_videos_found": "No videos found, please check if {entity_desc} ID is correct",
     "no_videos": "⚠️ No videos found for analysis",
     "display_error": "Error displaying results: {error}",
@@ -80,8 +77,6 @@
     "author_name_success": "✅ {entity_desc} name: [cyan]{name}[/cyan]",
     "entity_type_actress": "Actress",
     "entity_type_writer": "Author",
-    "debug_video_object": "[Debug] Input is video object, extracting video_id: {id}",
-    "debug_video_string": "[Debug] Input is ID string: {id}",
     "progress_task": "{entity_type} video analysis progress",
     "start_analysis": "\n[bold cyan]Starting analysis for {entity_type} {id} [{name}] with {count} videos[/bold cyan]",
     "analysis_complete": "\n[bold green]✅ Analysis complete! Total {total} videos, {leaked} leaked (Leak ratio: {ratio:.1f}%)[/bold green]",
@@ -119,8 +114,7 @@
     "retry_ratio_row": "Magnet retry success rate:",
     "image_retry_row": "Image retry count:",
     "image_retry_value": "[bold]{retries}[/bold] times, Success: [bold green]{success}[/bold green] times",
-    "image_retry_ratio_row": "Image retry success rate:",
-    "writer_video_debug": "[Debug] Author video: Using field '{field}' to get ID={id}"
+    "image_retry_ratio_row": "Image retry success rate:"
   },
   
   "input_prompts": {

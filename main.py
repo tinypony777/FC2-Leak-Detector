@@ -451,16 +451,12 @@ def process_multiple_ids(
 
     processed_items = []
 
-    # 创建缓存目录
-    cache_dir = os.path.join(config.cache_dir, "batch_process")
-    os.makedirs(cache_dir, exist_ok=True)
-
     # 处理每个ID
     for idx, item_id in enumerate(id_list, 1):
         try:
             # 检查缓存是否存在且有效
             cache_file = os.path.join(
-                cache_dir, f"{'actress' if is_actress else 'writer'}_{item_id}.json"
+                config.cache_dir, f"{'actress' if is_actress else 'author'}_{item_id}.json"
             )
             cache_valid = False
 
@@ -620,14 +616,6 @@ def process_multiple_ids(
                 }
 
                 processed_items.append(item_result)
-
-                # 保存结果到缓存
-                try:
-                    with open(cache_file, "w", encoding="utf-8") as f:
-                        json.dump(item_result, f, ensure_ascii=False, indent=2)
-                    ui_manager.add_log(f"已将{entity_type} {item_id} 的分析结果保存到缓存", False)
-                except Exception as e:
-                    ui_manager.add_log(f"保存缓存出错: {e}", True)
 
         except Exception as e:
             ui_manager.add_log(f"处理{entity_type} {item_id} 时出错: {e}", True)
