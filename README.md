@@ -22,6 +22,8 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
 - 轻量级命令行界面设计，操作简单直观
 - 丰富的自定义配置选项，满足不同场景下的分析需求
 
+查看[完整版本更新日志](CHANGELOG.md)了解更多详情。
+
 ### 主要功能
 
  **视频流出状态检查** - 快速确认视频是否已经在其他网站流出  
@@ -189,7 +191,7 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git忽略文件
 ├── .editorconfig        # 编辑器配置
 ├── .python-version      # Python版本配置
-├── CHANGELOG.md         # 更新日志
+├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
 ├── LICENSE              # 许可证文件
 └── README.md            # 文档说明
 ```
@@ -257,6 +259,8 @@ FC2 Leak Detector is a professional content status analysis tool built on fc2ppv
 - Powerful statistical analysis functions, providing intuitive and detailed data visualization results
 - Lightweight command-line interface design, simple and intuitive to operate
 - Rich customization options to meet analysis needs in different scenarios
+
+See the [complete changelog](CHANGELOG.md) for more details.
 
 ### Key Features
 
@@ -425,7 +429,7 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git ignore file
 ├── .editorconfig        # Editor configuration
 ├── .python-version      # Python version configuration
-├── CHANGELOG.md         # Update log
+├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
 ├── LICENSE              # License file
 └── README.md            # Documentation
 ```
@@ -493,6 +497,8 @@ FC2流出チェッカーは、fc2ppvdb.comに基づいて構築された専門�
 - 強力な統計分析機能、ユーザーに直感的で詳細なデータ視覚化結果を提供
 - 軽量なコマンドラインインターフェース設計、操作はシンプルで直感的
 - さまざまなシナリオでの分析ニーズを満たすための豊富なカスタム設定オプション
+
+詳細については[完全な変更履歴](CHANGELOG.md)をご覧ください。
 
 ### 主な機能
 
@@ -661,8 +667,8 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git無視ファイル
 ├── .editorconfig        # エディタ設定
 ├── .python-version      # Pythonバージョン設定
-├── CHANGELOG.md         # 更新ログ
-├── LICENSE              # ライセンスファイル
+├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
+├── LICENSE              # License file
 └── README.md            # ドキュメント
 ```
 
