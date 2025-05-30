@@ -32,53 +32,6 @@ from src.utils.i18n import get_text as _, switch_language, get_current_language,
 # 获取主程序日志记录器
 logger = get_logger("main")
 
-# 定义自定义异常类型
-class FC2AnalyzerError(Exception):
-    """FC2分析器基础异常类"""
-
-    pass
-
-
-class NetworkError(FC2AnalyzerError):
-    """网络相关错误"""
-
-    pass
-
-
-class DataParseError(FC2AnalyzerError):
-    """数据解析错误"""
-
-    pass
-
-
-class ResourceNotFoundError(FC2AnalyzerError):
-    """资源未找到错误"""
-
-    pass
-
-
-class FileOperationError(FC2AnalyzerError):
-    """文件操作错误"""
-
-    pass
-
-
-def is_leaked(video_result):
-    """
-    判断视频是否已流出
-
-    参数:
-        video_result: 视频结果字典
-
-    返回:
-        bool: 视频是否已流出
-    """
-    if "exists" in video_result:
-        return video_result["exists"]
-    # 默认视为未流出
-    return False
-
-
 def print_usage():
     """打印使用帮助信息"""
     # 获取当前语言

@@ -478,40 +478,6 @@ class FC2Analyzer:
             # 连接错误、超时等异常情况也应该保守处理为未流出
             return "unavailable"
 
-    def _parse_size(self, size_str):
-        """解析文件大小字符串为字节数"""
-        size_str = size_str.lower().strip()
-        if not size_str:
-            return 0
-
-        multipliers = {
-            "b": 1,
-            "kb": 1024,
-            "k": 1024,
-            "mb": 1024**2,
-            "m": 1024**2,
-            "gb": 1024**3,
-            "g": 1024**3,
-            "tb": 1024**4,
-            "t": 1024**4,
-        }
-
-        # 匹配数字和单位
-        match = re.match(r"([0-9.]+)\s*([a-z]+)", size_str)
-        if not match:
-            return 0
-
-        size, unit = match.groups()
-
-        # 确保单位在我们的映射中
-        if unit not in multipliers:
-            return 0
-
-        try:
-            return float(size) * multipliers[unit]
-        except (ValueError, TypeError):
-            return 0
-
     def fetch_magnet_link(self, video_id):
         """获取视频的磁力链接，按文件大小排序且使用三级重试策略"""
         if not self.with_magnet:
@@ -609,8 +575,33 @@ class FC2Analyzer:
                                 if not raw_size:
                                     continue
 
+                                # 内联原先的_parse_size方法的功能
                                 # 解析大小为字节数
-                                parsed_size = self._parse_size(raw_size)
+                                parsed_size = 0
+                                size_str = raw_size.lower().strip()
+                                if size_str:
+                                    multipliers = {
+                                        "b": 1,
+                                        "kb": 1024,
+                                        "k": 1024,
+                                        "mb": 1024**2,
+                                        "m": 1024**2,
+                                        "gb": 1024**3,
+                                        "g": 1024**3,
+                                        "tb": 1024**4,
+                                        "t": 1024**4,
+                                    }
+                                    
+                                    # 匹配数字和单位
+                                    match = re.match(r"([0-9.]+)\s*([a-z]+)", size_str)
+                                    if match:
+                                        size, unit = match.groups()
+                                        # 确保单位在我们的映射中
+                                        if unit in multipliers:
+                                            try:
+                                                parsed_size = float(size) * multipliers[unit]
+                                            except (ValueError, TypeError):
+                                                parsed_size = 0
 
                                 # 添加到有效条目
                                 valid_entries.append(
@@ -1957,47 +1948,3 @@ class FC2Analyzer:
             if not self.quiet_mode:
                 console.print(f"[bold red]❌ 保存结果时出错: {str(e)}[/bold red]")
             return {}
-
-def main():
-    """程序主入口
-
-    提供命令行交互界面，让用户输入作者ID和线程数，然后执行分析
-    """
-    print(_("app_name", "=== FC2流出检测器 ==="))
-
-    writer_id = input(_("input_prompts.writer_id", "请输入FC2作者ID: ")).strip()
-    if not writer_id:
-        print(_("errors.invalid_id", "❌ 作者ID不能为空"))
-        return
-
-    # 创建分析器
-    analyzer = FC2Analyzer(writer_id)
-
-    # 获取作者名称
-    author_name = analyzer.fetch_author_name()
-    if author_name:
-        print(_("analyzer.author_name_success", "✅ 作者名称: {name}").format(name=author_name))
-
-    # 获取视频列表
-    videos = analyzer.fetch_video_ids()
-    if not videos:
-        print(_("analyzer.no_videos_found", "❌ 未找到视频，程序退出"))
-        return
-
-    # 设置线程数
-    threads = input(_("input_prompts.threads", "请输入并行线程数 (默认{max_workers}): ").format(max_workers=config.max_workers)).strip()
-    max_workers = (
-        config.max_workers if not threads or not threads.isdigit() else int(threads)
-    )
-
-    # 分析视频
-    results, stats = analyzer.analyze_videos(videos)
-
-    # 保存结果
-    analyzer.save_results()
-
-    print(_("checker.program_completed", "✅ 程序执行完毕！结果已保存"))
-
-
-if __name__ == "__main__":
-    main()

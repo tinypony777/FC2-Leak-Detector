@@ -283,26 +283,3 @@ class WriterExtractor:
             print("未找到作者信息，无法保存")
 
         return writer_data
-
-
-def main():
-    """主程序入口"""
-    print("=== FC2 热门作者提取工具 ===")
-
-    try:
-        extractor = WriterExtractor()
-        result = extractor.extract_all_writers()
-
-        if result:
-            print(f"成功提取并保存了 {len(result)} 个热门作者信息")
-        else:
-            print("未能提取到作者信息")
-
-    except KeyboardInterrupt:
-        print("\n程序被用户中断")
-    except Exception as e:
-        print(f"程序运行时出错: {e}")
-
-
-if __name__ == "__main__":
-    main()
