@@ -191,7 +191,7 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git忽略文件
 ├── .editorconfig        # 编辑器配置
 ├── .python-version      # Python版本配置
-├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
+├── CHANGELOG.md         # 更新日志
 ├── LICENSE              # 许可证文件
 └── README.md            # 文档说明
 ```
@@ -429,7 +429,7 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git ignore file
 ├── .editorconfig        # Editor configuration
 ├── .python-version      # Python version configuration
-├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
+├── CHANGELOG.md         # Update log
 ├── LICENSE              # License file
 └── README.md            # Documentation
 ```
@@ -667,8 +667,8 @@ FC2-Leak-Detector/
 ├── .gitignore           # Git無視ファイル
 ├── .editorconfig        # エディタ設定
 ├── .python-version      # Pythonバージョン設定
-├── CHANGELOG.md         # 更新日志 | Changelog | 変更履歴
-├── LICENSE              # License file
+├── CHANGELOG.md         # Update log
+├── LICENSE              # ライセンスファイル
 └── README.md            # ドキュメント
 ```
 
