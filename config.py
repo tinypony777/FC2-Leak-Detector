@@ -190,6 +190,10 @@ class Config:
             self.image_dir,
             self.log_dir,
             self.magnet_dir,
+            # 添加日志子目录
+            os.path.join(self.log_dir, "app"),
+            os.path.join(self.log_dir, "analysis"),
+            os.path.join(self.log_dir, "errors"),
             # 添加基础数据目录
             BASE_CACHE_DIR
         ]

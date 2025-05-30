@@ -684,32 +684,26 @@ class FC2Analyzer:
     def _save_error_log(self, video_id, url, response=None, error_msg=None):
         """保存详细的错误日志"""
         try:
-            error_dir = os.path.join(config.log_dir, "error_details")
-            os.makedirs(error_dir, exist_ok=True)
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"{video_id}_{timestamp}.log"
-            filepath = os.path.join(error_dir, filename)
-
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(_("reports.error_time", "时间: {timestamp}\n").format(timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-                f.write(_("reports.error_video_id", "视频ID: {video_id}\n").format(video_id=video_id))
-                f.write(_("reports.error_request_url", "请求URL: {url}\n").format(url=url))
-                f.write(
-                    _("reports.error_response_status", "响应状态: {status}\n").format(status=response.status_code if response else _("reports.no_response", "无响应"))
-                )
-                if error_msg:
-                    f.write(_("reports.error_message", "错误信息: {message}\n").format(message=error_msg))
-                f.write(_("reports.error_response_content", "\n响应内容:\n"))
-                if response:
-                    f.write(
-                        response.text[:10000]
-                        + (_("reports.content_truncated", "...") if len(response.text) > 10000 else "")
-                    )
-                else:
-                    f.write(_("reports.no_response_content", "无响应内容"))
-
-            self.logger.info(_("logger.error_details_saved", "已保存错误详情: {filepath}").format(filepath=filepath))
+            # 使用错误日志记录器
+            from src.utils import get_error_logger
+            error_logger = get_error_logger("magnetfetch")
+            
+            # 记录基本错误信息
+            error_logger.error(f"视频ID: {video_id}")
+            error_logger.error(f"请求URL: {url}")
+            error_logger.error(f"响应状态: {response.status_code if response else '无响应'}")
+            
+            if error_msg:
+                error_logger.error(f"错误信息: {error_msg}")
+            
+            # 记录响应内容
+            if response:
+                content_preview = response.text[:5000] + ("..." if len(response.text) > 5000 else "")
+                error_logger.error(f"响应内容预览:\n{content_preview}")
+            else:
+                error_logger.error("无响应内容")
+                
+            self.logger.info(f"已记录获取磁链详细错误信息: 视频ID {video_id}")
         except Exception as e:
             self.logger.error(_("logger.error_log_failed", "保存错误日志失败: {error}").format(error=str(e)))
 
@@ -1908,20 +1902,10 @@ class FC2Analyzer:
                 if not self.quiet_mode:
                     console.print(f"[bold green]✅ 磁链已保存到: {magnet_filepath}[/bold green]")
             
-            # 2. 保存控制台日志
-            # 确保日志目录存在
-            os.makedirs(config.log_dir, exist_ok=True)
-            
-            # 打印日志目录以便调试
-            self.logger.info(f"日志目录: {config.log_dir}")
-            
-            # 按照指定格式构建文件名: 爬取类型_ID_日期时间.txt
-            # 正确格式：writer_5656_20250525_123456.txt 或 actress_5711_20250525_123456.txt
-            log_filename = f"{entity_type}_{entity_id}_{timestamp}.txt"
-            log_filepath = os.path.join(config.log_dir, log_filename)
-            
-            # 打印日志文件路径以便调试
-            self.logger.info(f"日志文件路径: {log_filepath}")
+            # 2. 保存分析日志
+            # 使用分析日志记录器
+            from src.utils import get_analysis_logger
+            analysis_logger = get_analysis_logger(entity_type, entity_id)
             
             # 获取统计信息
             total = len(self.results)
@@ -1930,29 +1914,30 @@ class FC2Analyzer:
             error_count = sum(1 for r in self.results if r.get("status") == "error")
             leak_ratio = (leaked / total) * 100 if total > 0 else 0
             
-            with open(log_filepath, "w", encoding="utf-8") as f:
-                f.write(f"=== FC2视频分析日志 ===\n")
-                f.write(f"类型: {entity_type}\n")
-                f.write(f"ID: {entity_id}\n")
-                f.write(f"名称: {clean_name}\n")
-                f.write(f"分析时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-                
-                f.write(f"=== 统计信息 ===\n")
-                f.write(f"总视频数: {total}\n")
-                f.write(f"已流出数: {leaked}\n")
-                f.write(f"未流出数: {unleaked}\n")
-                f.write(f"错误数: {error_count}\n")
-                f.write(f"流出比例: {leak_ratio:.2f}%\n\n")
-                
-                f.write(f"=== 详细统计 ===\n")
-                for key, value in self.stats.items():
-                    f.write(f"{key}: {value}\n")
+            # 记录分析结果
+            analysis_logger.info(f"=== FC2视频分析日志 ===")
+            analysis_logger.info(f"类型: {entity_type}")
+            analysis_logger.info(f"ID: {entity_id}")
+            analysis_logger.info(f"名称: {clean_name}")
+            analysis_logger.info(f"分析时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            analysis_logger.info("")
             
-            reports["log_file"] = log_filepath
-            self.logger.info(f"已保存分析日志: {log_filepath}")
+            analysis_logger.info(f"=== 统计信息 ===")
+            analysis_logger.info(f"总视频数: {total}")
+            analysis_logger.info(f"已流出数: {leaked}")
+            analysis_logger.info(f"未流出数: {unleaked}")
+            analysis_logger.info(f"错误数: {error_count}")
+            analysis_logger.info(f"流出比例: {leak_ratio:.2f}%")
+            analysis_logger.info("")
+            
+            analysis_logger.info(f"=== 详细统计 ===")
+            for key, value in self.stats.items():
+                analysis_logger.info(f"{key}: {value}")
+            
+            self.logger.info(f"已保存分析日志")
             
             if not self.quiet_mode:
-                console.print(f"[bold green]✅ 分析日志已保存到: {log_filepath}[/bold green]")
+                console.print(f"[bold green]✅ 分析日志已保存[/bold green]")
             
             # 3. 保存标准报告
             try:
