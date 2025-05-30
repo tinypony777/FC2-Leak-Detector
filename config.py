@@ -146,10 +146,10 @@ class Config:
         
         # 控制台日志设置
         self.log_enable_console = True  # 是否在控制台显示日志
-        self.log_console_format = "%(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"  # 控制台日志格式
+        self.log_console_format = "%(levelname)s - %(message)s"  # 控制台日志格式
         
         # 文件日志设置
-        self.log_file_format = "%(asctime)s - %(levelname)s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"  # 文件日志格式
+        self.log_file_format = "%(asctime)s - %(levelname)s - %(message)s"  # 文件日志格式
         self.log_error_format = "%(asctime)s - %(levelname)s - %(message)s"  # 错误日志格式
         self.log_analysis_format = "%(asctime)s - %(message)s"  # 分析日志格式
         
