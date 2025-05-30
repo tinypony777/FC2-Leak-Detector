@@ -432,22 +432,56 @@ class CacheManager:
 
     @classmethod
     def clear_all_caches(cls):
-        """清除所有缓存文件的别名方法"""
-        cache_dir = config.cache_dir
+        """清除所有缓存数据
 
+        删除 data 和 logs 文件夹及其所有内容
+        如果日志文件正在使用中，则跳过该文件
+
+        Returns:
+            bool: 是否成功清除所有缓存
+        """
         try:
-            # 确保目录存在
-            if not os.path.exists(cache_dir):
-                return True
-
-            # 清除所有JSON文件
-            for filename in os.listdir(cache_dir):
-                if filename.endswith(".json"):
-                    os.remove(os.path.join(cache_dir, filename))
-            return True
-
+            import shutil
+            from pathlib import Path
+            import logging
+            
+            # 获取项目根目录
+            root_dir = Path(__file__).parent.parent.parent
+            success = True
+            
+            # 删除 data 目录
+            data_dir = root_dir / 'data'
+            if data_dir.exists():
+                shutil.rmtree(data_dir)
+                print(f"✅ 已删除目录: {data_dir}")
+            
+            # 删除 logs 目录中的文件
+            logs_dir = root_dir / 'logs'
+            if logs_dir.exists():
+                # 关闭所有日志处理器
+                for handler in logging.getLogger().handlers[:]:
+                    handler.close()
+                    logging.getLogger().removeHandler(handler)
+                
+                try:
+                    shutil.rmtree(logs_dir)
+                    print(f"✅ 已删除目录: {logs_dir}")
+                except PermissionError:
+                    # 如果无法删除整个目录，尝试逐个删除文件
+                    for file in logs_dir.glob('*'):
+                        try:
+                            if file.is_file():
+                                file.unlink()
+                                print(f"✅ 已删除文件: {file}")
+                        except PermissionError:
+                            print(f"⚠️ 文件正在使用中，跳过: {file}")
+                            success = False
+                            continue
+            
+            return success
+            
         except Exception as e:
-            print(f"清除缓存失败: {str(e)}")
+            print(f"❌ 清除缓存时出错: {e}")
             return False
 
     def _load_caches(self):

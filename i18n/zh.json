@@ -258,6 +258,11 @@
   "example_no_magnet": "分析女优视频但不获取磁力链接",
   "example_no_image": "分析作者视频但不下载缩略图",
   "example_lang": "使用英文界面",
+  "usage_clear_cache": "清除所有缓存数据",
+  "example_clear_cache": "清除所有缓存数据",
+  "clear_cache_start": "开始清除所有缓存数据...",
+  "clear_cache_success": "所有缓存数据已成功清除",
+  "clear_cache_failed": "清除缓存数据失败",
   
   "sites_none": "未配置任何检查站点，将使用默认站点",
   "sites_title": "视频检查站点 (按优先级排序)",

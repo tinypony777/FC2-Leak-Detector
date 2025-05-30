@@ -109,6 +109,7 @@ def print_usage():
   --no-magnet               {_('usage_no_magnet', '不获取磁力链接')}
   --no-image                {_('usage_no_image', '不下载视频缩略图')}
   -l LANG, --lang LANG      {_('usage_lang', '设置界面语言 (支持: zh, en, ja)')}
+  --clear-cache             {_('usage_clear_cache', '清除所有缓存数据')}
 
 {_('usage_examples', '示例')}:
   python run.py -w 5656               # {_('example_writer', '分析作者ID 5656 的视频')}
@@ -122,6 +123,7 @@ def print_usage():
   python run.py -a 5711 --no-magnet   # {_('example_no_magnet', '分析女优视频但不获取磁力链接')}
   python run.py -w 5656 --no-image    # {_('example_no_image', '分析作者视频但不下载缩略图')}
   python run.py -l {target_lang}                 # {_('example_lang', '使用英文界面')}
+  python run.py --clear-cache         # {_('example_clear_cache', '清除所有缓存数据')}
 """
     print(usage)
 
@@ -782,6 +784,7 @@ def main():
     parser.add_argument("--no-magnet", action="store_true", help=_("usage_no_magnet", "不获取磁力链接"))
     parser.add_argument("--no-image", action="store_true", help=_("usage_no_image", "不下载视频缩略图"))
     parser.add_argument("-l", "--lang", type=str, help=_("usage_lang", "设置界面语言 (支持: zh, en, ja)"))
+    parser.add_argument("--clear-cache", action="store_true", help=_("usage_clear_cache", "清除所有缓存数据"))
 
     try:
         args, unknown = parser.parse_known_args()
@@ -810,6 +813,17 @@ def main():
         if args.sites:
             show_check_sites()
             return 0
+
+        # 清除缓存
+        if args.clear_cache:
+            from src.utils.cache_manager import CacheManager
+            print(f"{_('clear_cache_start', '开始清除所有缓存数据...')}")
+            success = CacheManager.clear_all_caches()
+            if success:
+                print(f"✅ {_('clear_cache_success', '所有缓存数据已成功清除')}")
+            else:
+                print(f"❌ {_('clear_cache_failed', '清除缓存数据失败')}")
+            return 0 if success else 1
 
         # 设置并行线程数，优先使用命令行参数，其次使用配置，最后是默认值
         threads = (

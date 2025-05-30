@@ -13,33 +13,24 @@
 
 ## 简体中文
 
-FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.com的数据库构建。用户只需提供某个作者的一个具体fc2视频id，即可快速获取其在fc2.com发布的作品的完整流出状态报告，同时自动整合高质量预览图和磁力链接资源。工具内置强大的统计分析功能，为用户提供直观详细的数据可视化结果。采用轻量级命令行界面设计，操作简单直观，同时提供丰富的自定义配置选项，满足不同场景下的分析需求。
+### 项目概述
 
-### 项目声明
+FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.com构建。用户只需提供某个作者的一个具体fc2视频id，即可快速获取其在fc2.com发布的作品的完整流出状态报告，同时自动整合高质量预览图和磁力链接资源。
 
-**重要：请在使用本工具前仔细阅读以下声明**
-
-1. **项目目的**：本项目是一个技术研究工具，仅用于学术研究、数据分析和技术学习。主要目的是展示如何使用Python进行网络数据分析、多线程处理和结构化数据提取等技术实现。
-
-2. **合法使用**：用户必须在遵守所在地区法律法规的前提下使用本工具。本工具不提供、不存储、不分发任何版权内容，仅提供指向公开索引的元数据信息。
-
-3. **用户责任**：使用者应对自己的行为负责。作者和贡献者不对使用本工具导致的任何法律问题或损失承担责任。使用本工具即表示您已了解并同意承担使用过程中的全部责任。
-
-4. **版权尊重**：本工具仅用于检查内容状态，不鼓励用户获取或分享侵犯版权的内容。请尊重内容创作者的权利，支持正版内容。
-
-5. **数据来源**：本工具使用公开API获取数据，不破解、不绕过任何网站的访问限制。工具中的所有链接均来自公开渠道，不包含任何私密或未经授权的数据源。
-
-6. **许可证**：本项目采用GNU通用公共许可证v3（GNU GPL v3）发布，这意味着您可以自由使用、修改和分发本软件，但需遵循GPL协议的相关规定。详细信息请参阅项目根目录下的LICENSE文件。
+**核心特点：**
+- 强大的统计分析功能，提供直观详细的数据可视化结果
+- 轻量级命令行界面设计，操作简单直观
+- 丰富的自定义配置选项，满足不同场景下的分析需求
 
 ### 主要功能
 
-- **视频流出状态检查** - 快速确认视频是否已经在其他网站流出
-- **作者/女优作品分析** - 分析特定作者或女优的所有视频状态
-- **批量处理** - 同时处理多个作者或女优ID
-- **磁力链接搜索** - 自动搜索并提取视频的磁力链接
-- **图片下载** - 自动下载视频缩略图
-- **详细报告生成** - 生成全面的分析报告，支持文本和JSON格式
-- **高效缓存机制** - 智能缓存减少重复请求
+ **视频流出状态检查** - 快速确认视频是否已经在其他网站流出  
+ **作者/女优作品分析** - 分析特定作者或女优的所有视频状态  
+ **批量处理** - 同时处理多个作者或女优ID  
+ **磁力链接搜索** - 自动搜索并提取视频的磁力链接  
+ **图片下载** - 自动下载视频缩略图  
+ **详细报告生成** - 生成全面的分析报告，支持文本和JSON格式  
+ **高效缓存机制** - 智能缓存减少重复请求  
 
 ### 安装指南
 
@@ -97,10 +88,12 @@ python run.py [选项]
   -b IDS, --batch IDS       批量处理多个作者ID (用逗号分隔)
   -ba IDS, --batch-actress  批量处理多个女优ID (用逗号分隔)
   -e, --extract             提取热门作者列表
+  -v ID, --video ID         通过视频ID获取作者的所有视频
   -t NUM, --threads NUM     设置并行线程数 (默认值见配置)
   --no-magnet               不获取磁力链接
   --no-image                不下载视频缩略图
   -l LANG, --lang LANG      设置界面语言 (支持: zh, en, ja)
+  --clear-cache             清除所有缓存数据
 ```
 
 #### 示例
@@ -130,9 +123,17 @@ python run.py -a 5711 --no-magnet
 # 分析作者视频但不下载缩略图
 python run.py -w 5656 --no-image
 
+# 通过视频ID获取作者的所有视频
+python run.py -v 1234567
+
 # 使用英文界面
 python run.py -l en
+
+# 清除所有缓存
+python run.py --clear-cache
 ```
+
+> **注意**: 本项目默认语言为中文(zh)。如果您希望使用英文或日文界面，只需使用 `-l` 参数设置一次您的首选语言即可。此设置将保存在 `i18n/preference.json` 文件中，并在您更改之前的所有后续运行中使用。
 
 ### 配置说明
 
@@ -232,39 +233,40 @@ python run.py --clear-cache
 4. 不要分享或传播通过本工具获取的任何可能侵犯版权的内容
 5. **特别提示：中国大陆用户需确保网络环境可正常访问国际互联网，以便连接本工具依赖的各项在线服务**
 
+### 免责声明
+
+**重要：请在使用本工具前仔细阅读以下声明**
+
+本项目是一个技术研究工具，仅用于学术研究、数据分析和技术学习。用户必须在遵守所在地区法律法规的前提下使用本工具。本工具不提供、不存储、不分发任何版权内容，仅提供指向公开索引的元数据信息。
+
+使用者应对自己的行为负责，作者和贡献者不对使用本工具导致的任何法律问题或损失承担责任。本工具仅用于检查内容状态，不鼓励用户获取或分享侵犯版权的内容。请尊重内容创作者的权利，支持正版内容。
+
+本项目采用GNU通用公共许可证v3（GNU GPL v3）发布，这意味着您可以自由使用、修改和分发本软件，但需遵循GPL协议的相关规定。详细信息请参阅项目根目录下的LICENSE文件。
+
 ### Star趋势
 
 [![Star历史图表](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
 
 ## English
 
-FC2 Leak Detector is a professional content status analysis tool built on the fc2ppvdb.com database. Users only need to provide an actress ID or author ID to quickly obtain a complete status report of their works, while automatically integrating high-quality preview images and magnet link resources. The tool has built-in powerful statistical analysis functions, providing users with intuitive and detailed data visualization results. Designed with a lightweight command-line interface, it is simple and intuitive to operate, while providing rich customization options to meet analysis needs in different scenarios.
+### Project Overview
 
-### Project Disclaimer
+FC2 Leak Detector is a professional content status analysis tool built on fc2ppvdb.com. Users only need to provide an author's specific FC2 video ID to quickly obtain a complete status report of their works published on fc2.com, while automatically integrating high-quality preview images and magnet link resources.
 
-**Important: Please read the following disclaimer carefully before using this tool**
-
-1. **Project Purpose**: This project is a technical research tool intended solely for academic research, data analysis, and technical learning. Its primary purpose is to demonstrate how to implement technologies such as network data analysis, multi-threading, and structured data extraction using Python.
-
-2. **Legal Use**: Users must comply with all applicable laws and regulations in their jurisdiction when using this tool. This tool does not provide, store, or distribute any copyrighted content, but only offers metadata information pointing to publicly indexed resources.
-
-3. **User Responsibility**: Users are responsible for their own actions. The authors and contributors are not liable for any legal issues or damages resulting from the use of this tool. By using this tool, you acknowledge and agree to assume full responsibility for your actions.
-
-4. **Copyright Respect**: This tool is intended only for checking content status and does not encourage users to obtain or share copyright-infringing content. Please respect the rights of content creators and support official content.
-
-5. **Data Sources**: This tool uses publicly available APIs to obtain data and does not crack or bypass any website's access restrictions. All links in the tool come from public channels and do not contain any private or unauthorized data sources.
-
-6. **License**: This project is released under the GNU General Public License v3 (GNU GPL v3), which means you are free to use, modify, and distribute this software, subject to the terms of the GPL. Please refer to the LICENSE file in the project root directory for detailed information.
+**Core Features:**
+- Powerful statistical analysis functions, providing intuitive and detailed data visualization results
+- Lightweight command-line interface design, simple and intuitive to operate
+- Rich customization options to meet analysis needs in different scenarios
 
 ### Key Features
 
-- **Video Status Check** - Quickly confirm if videos have been leaked on other websites
-- **Author/Actress Works Analysis** - Analyze the status of all videos by specific authors or actresses
-- **Batch Processing** - Process multiple author or actress IDs simultaneously
-- **Magnet Link Search** - Automatically search and extract video magnet links
-- **Image Download** - Automatically download video thumbnails
-- **Detailed Report Generation** - Generate comprehensive analysis reports, supporting text and JSON formats
-- **Efficient Caching** - Smart caching to reduce duplicate requests
+**Video Status Check** - Quickly confirm if videos have been leaked on other websites  
+**Author/Actress Works Analysis** - Analyze the status of all videos by specific authors or actresses  
+**Batch Processing** - Process multiple author or actress IDs simultaneously  
+**Magnet Link Search** - Automatically search and extract video magnet links  
+**Image Download** - Automatically download video thumbnails  
+**Detailed Report Generation** - Generate comprehensive analysis reports, supporting text and JSON formats  
+**Efficient Caching** - Smart caching to reduce duplicate requests  
 
 ### Installation Guide
 
@@ -322,10 +324,12 @@ Options:
   -b IDS, --batch IDS       Batch process multiple author IDs (comma separated)
   -ba IDS, --batch-actress  Batch process multiple actress IDs (comma separated)
   -e, --extract             Extract popular author list
+  -v ID, --video ID         Get all videos from author by video ID
   -t NUM, --threads NUM     Set parallel thread count (default in config)
   --no-magnet               Don't fetch magnet links
   --no-image                Don't download video thumbnails
   -l LANG, --lang LANG      Set interface language (supported: zh, en, ja)
+  --clear-cache             Clear all cache data
 ```
 
 #### Examples
@@ -355,8 +359,14 @@ python run.py -a 5711 --no-magnet
 # Analyze author videos without thumbnails
 python run.py -w 5656 --no-image
 
+# Get all videos from author by video ID
+python run.py -v 1234567
+
 # Use Japanese interface
 python run.py -l ja
+
+# Clear all cache
+python run.py --clear-cache
 ```
 
 > **Note**: The default language for this project is Chinese (zh). If you prefer English or Japanese, you can use the `-l` parameter once to set your preferred language. This setting will be saved in `i18n/preference.json` and will be used for all future runs until you change it again.
@@ -459,39 +469,40 @@ python run.py --clear-cache
 4. Do not share or distribute any potentially copyright-infringing content obtained through this tool
 5. **Important Note: Users in mainland China need to ensure proper access to the global internet to connect with online services required by this tool**
 
+### Disclaimer
+
+**Important: Please read the following disclaimer before using this tool**
+
+This project is a technical research tool intended solely for academic research, data analysis, and technical learning. Users must comply with all applicable laws and regulations in their jurisdiction when using this tool. This tool does not provide, store, or distribute any copyrighted content, but only offers metadata information pointing to publicly indexed resources.
+
+Users are responsible for their own actions. The authors and contributors are not liable for any legal issues or damages resulting from the use of this tool. This tool is intended only for checking content status and does not encourage users to obtain or share copyright-infringing content. Please respect the rights of content creators and support official content.
+
+This project is released under the GNU General Public License v3 (GNU GPL v3), which means you are free to use, modify, and distribute this software, subject to the terms of the GPL. Please refer to the LICENSE file in the project root directory for detailed information.
+
 ### Star History
 
 [![Star History Chart](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
 
 ## 日本語
 
-FC2流出チェッカーは、fc2ppvdb.comのデータベースに基づいて構築された専門的なコンテンツステータス分析ツールです。ユーザーは、特定の作者のFC2ビデオIDを提供するだけで、fc2.comで公開されている作品の完全な流出ステータスレポートを迅速に取得でき、同時に高品質のプレビュー画像とマグネットリンク情報を自動的に統合します。このツールには強力な統計分析機能が組み込まれており、ユーザーに直感的で詳細なデータ視覚化結果を提供します。軽量なコマンドラインインターフェース設計を採用し、操作はシンプルで直感的でありながら、さまざまなシナリオでの分析ニーズを満たすための豊富なカスタム設定オプションも提供しています。
+### プロジェクト概要
 
-### プロジェクト声明
+FC2流出チェッカーは、fc2ppvdb.comに基づいて構築された専門的なコンテンツステータス分析ツールです。ユーザーは、特定の作者のFC2ビデオIDを提供するだけで、fc2.comで公開されている作品の完全な流出ステータスレポートを迅速に取得でき、同時に高品質のプレビュー画像とマグネットリンク情報を自動的に統合します。
 
-**重要：本ツールを使用する前に、以下の声明をよくお読みください**
-
-1. **プロジェクトの目的**：本プロジェクトは技術研究ツールであり、学術研究、データ分析、技術学習のみを目的としています。主な目的は、Pythonを使用したネットワークデータ分析、マルチスレッド処理、構造化データ抽出などの技術的実装方法を示すことです。
-
-2. **合法的な使用**：ユーザーは、所在地域の法律法規を遵守することを前提として本ツールを使用しなければなりません。本ツールは、いかなる著作権コンテンツも提供、保存、配布せず、公開されているインデックスへのメタデータ情報のみを提供します。
-
-3. **ユーザーの責任**：使用者は自身の行動に責任を負うものとします。作者および貢献者は、本ツールの使用に起因するいかなる法的問題または損失についても責任を負いません。本ツールを使用することにより、使用過程におけるすべての責任を理解し、同意したものとみなされます。
-
-4. **著作権の尊重**：本ツールはコンテンツのステータスを確認するためにのみ使用され、著作権を侵害するコンテンツの取得や共有を奨励するものではありません。コンテンツ作成者の権利を尊重し、正規のコンテンツを支持してください。
-
-5. **データソース**：本ツールは公開APIを使用してデータを取得し、いかなるウェブサイトのアクセス制限も解読または回避しません。ツール内のすべてのリンクは公開チャネルからのものであり、私的または未承認のデータソースは一切含まれていません。
-
-6. **ライセンス**：本プロジェクトはGNU一般公衆利用許諾契約書v3（GNU GPL v3）に基づいて公開されています。これは、GPL契約の関連規定に従うことを条件に、本ソフトウェアを自由に使用、変更、配布できることを意味します。詳細については、プロジェクトのルートディレクトリにあるLICENSEファイルを参照してください。
+**主な特徴：**
+- 強力な統計分析機能、ユーザーに直感的で詳細なデータ視覚化結果を提供
+- 軽量なコマンドラインインターフェース設計、操作はシンプルで直感的
+- さまざまなシナリオでの分析ニーズを満たすための豊富なカスタム設定オプション
 
 ### 主な機能
 
-- **ビデオ流出状態確認** - 動画が他のサイトに流出しているかどうかを素早く確認
-- **作者/女優作品分析** - 特定の作者または女優のすべての動画状態を分析
-- **バッチ処理** - 複数の作者または女優IDを同時に処理
-- **マグネットリンク検索** - 動画のマグネットリンクを自動的に検索して抽出
-- **画像ダウンロード** - 動画のサムネイル画像を自動的にダウンロード
-- **詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成
-- **効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ
+**ビデオ流出状態確認** - 動画が他のサイトに流出しているかどうかを素早く確認  
+**作者/女優作品分析** - 特定の作者または女優のすべての動画状態を分析  
+**バッチ処理** - 複数の作者または女優IDを同時に処理  
+**マグネットリンク検索** - 動画のマグネットリンクを自動的に検索して抽出  
+**画像ダウンロード** - 動画のサムネイル画像を自動的にダウンロード  
+**詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成  
+**効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ  
 
 ### インストールガイド
 
@@ -549,10 +560,12 @@ python run.py [オプション]
   -b IDS, --batch IDS       複数の作者IDをバッチ処理（カンマ区切り）
   -ba IDS, --batch-actress  複数の女優IDをバッチ処理（カンマ区切り）
   -e, --extract             人気作者リストを抽出
+  -v ID, --video ID         作者のすべてのビデオを動画IDから取得
   -t NUM, --threads NUM     並列スレッド数を設定（デフォルトは設定ファイルを参照）
   --no-magnet               マグネットリンクを取得しない
   --no-image                ビデオサムネイルをダウンロードしない
   -l LANG, --lang LANG      インターフェース言語を設定（対応: zh, en, ja）
+  --clear-cache             すべてのキャッシュデータをクリア
 ```
 
 #### 使用例
@@ -582,8 +595,14 @@ python run.py -a 5711 --no-magnet
 # サムネイルなしで作者のビデオを分析
 python run.py -w 5656 --no-image
 
+# 動画IDから作者のすべてのビデオを取得
+python run.py -v 1234567
+
 # 中国語インターフェースを使用
 python run.py -l zh
+
+# すべてのキャッシュをクリア
+python run.py --clear-cache
 ```
 
 > **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。日本語または英語を使用したい場合は、`-l`パラメータを一度使用すれば設定が`i18n/preference.json`ファイルに保存され、変更するまで全ての起動時にその言語が使用されます。
@@ -685,6 +704,16 @@ python run.py --clear-cache
 3. 関連法規を遵守し、コンテンツの著作権を尊重してください
 4. 本ツールを通じて取得した著作権を侵害する可能性のあるコンテンツを共有または配布しないでください
 5. **特別な注意：中国大陸のユーザーは、このツールが依存するオンラインサービスに接続するために、適切なインターネットアクセス環境を確保する必要があります**
+
+### 免責事項
+
+**重要：本ツールを使用する前に、以下の声明をよくお読みください**
+
+本プロジェクトは技術研究ツールであり、学術研究、データ分析、技術学習のみを目的としています。ユーザーは、所在地域の法律法規を遵守することを前提として本ツールを使用しなければなりません。本ツールは、いかなる著作権コンテンツも提供、保存、配布せず、公開されているインデックスへのメタデータ情報のみを提供します。
+
+使用者は自身の行動に責任を負うものとします。作者および貢献者は、本ツールの使用に起因するいかなる法的問題または損失についても責任を負いません。本ツールはコンテンツのステータスを確認するためにのみ使用され、著作権を侵害するコンテンツの取得や共有を奨励するものではありません。コンテンツ作成者の権利を尊重し、正規のコンテンツを支持してください。
+
+本プロジェクトはGNU一般公衆利用許諾契約書v3（GNU GPL v3）に基づいて公開されています。これは、GPL契約の関連規定に従うことを条件に、本ソフトウェアを自由に使用、変更、配布できることを意味します。詳細については、プロジェクトのルートディレクトリにあるLICENSEファイルを参照してください。
 
 ### スター履歴
 

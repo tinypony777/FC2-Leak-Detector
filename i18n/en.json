@@ -258,6 +258,11 @@
   "example_no_magnet": "Analyze actress videos without magnet links",
   "example_no_image": "Analyze author videos without thumbnails",
   "example_lang": "Use Japanese interface",
+  "usage_clear_cache": "Clear all cache data",
+  "example_clear_cache": "Clear all cache data",
+  "clear_cache_start": "Starting to clear all cache data...",
+  "clear_cache_success": "All cache data has been successfully cleared",
+  "clear_cache_failed": "Failed to clear cache data",
   
   "sites_none": "No check sites configured, will use default sites",
   "sites_title": "Video Check Sites (sorted by priority)",

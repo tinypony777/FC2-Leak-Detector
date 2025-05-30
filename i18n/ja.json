@@ -274,6 +274,11 @@
   "example_no_magnet": "マグネットリンクなしで女優のビデオを分析",
   "example_no_image": "サムネイルなしで作者のビデオを分析",
   "example_lang": "中国語インターフェースを使用",
+  "usage_clear_cache": "すべてのキャッシュデータをクリア",
+  "example_clear_cache": "すべてのキャッシュデータをクリア",
+  "clear_cache_start": "すべてのキャッシュデータをクリアしています...",
+  "clear_cache_success": "すべてのキャッシュデータが正常にクリアされました",
+  "clear_cache_failed": "キャッシュデータのクリアに失敗しました",
   
   "sites_none": "チェックサイトが設定されていません。デフォルトサイトを使用します",
   "sites_title": "ビデオチェックサイト（優先度順）",
