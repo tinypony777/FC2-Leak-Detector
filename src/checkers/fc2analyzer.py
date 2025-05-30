@@ -187,7 +187,7 @@ class FC2Analyzer:
                 api_response = RequestHandler.make_request(
                     api_url,
                     headers=config.api_headers,
-                    step_name=f"{_('analyzer.fetch_author', '获取{entity_desc}名称')}[第{attempt+1}次]",
+                    step_name=f"获取{entity_desc}名称[第{attempt+1}次]",
                 )
 
                 if api_response and api_response.status_code == 200:
@@ -214,7 +214,7 @@ class FC2Analyzer:
                 response = RequestHandler.make_request(
                     entity_url,
                     headers=config.api_headers,
-                    step_name=f"{_('analyzer.fetch_author', '获取{entity_desc}名称')}[第{attempt+1}次]",
+                    step_name=f"获取{entity_desc}名称[第{attempt+1}次]",
                 )
 
                 if response and response.status_code == 200:
