@@ -334,11 +334,8 @@ class FC2Analyzer:
                 # 记录API返回的第一个视频数据结构（用于调试）
                 if page == 1 and len(data.get("data", [])) > 0:
                     sample_video = data["data"][0]
-                    print(_("analyzer.api_data_example", "\n[调试] {entity_desc}API返回的视频数据示例:").format(entity_desc=entity_desc))
-                    for key, value in sample_video.items():
-                        if key not in ["search_data", "pivot"]:  # 跳过太长的字段
-                            print(f"  - {key}: {value}")
-                    print("")
+                    # 删除调试信息输出
+                    pass
 
                 # 处理视频数据
                 for video in data["data"]:
@@ -360,7 +357,7 @@ class FC2Analyzer:
                             ):
                                 image_url = f"{api_base}/storage/{image_url}"
 
-                            print(_("analyzer.actress_video_debug", "[调试] 女优视频: ID={id}, 图片URL={url}").format(id=video_id, url=image_url))
+                            # 删除调试信息输出
 
                             video_info = {
                                 "video_id": video_id,
@@ -381,11 +378,7 @@ class FC2Analyzer:
                             ]:
                                 if id_field in video:
                                     video_id = str(video[id_field])
-                                    print(
-                                        _("analyzer.writer_video_debug", "[调试] 作者视频: 使用字段 '{field}' 获取ID={id}").format(
-                                            field=id_field, id=video_id
-                                        )
-                                    )
+                                    # 删除调试信息输出
                                     break
 
                             # 如果没有找到，尝试第一个数字类型的字段
@@ -396,11 +389,7 @@ class FC2Analyzer:
                                         and str(value).isdigit()
                                     ):
                                         video_id = str(value)
-                                        print(
-                                            _("analyzer.writer_video_debug", "[调试] 作者视频: 使用字段 '{field}' 作为ID={id}").format(
-                                                field=key, id=video_id
-                                            )
-                                        )
+                                        # 删除调试信息输出
                                         break
 
                             # 如果还是没找到ID，则跳过此视频
@@ -444,14 +433,6 @@ class FC2Analyzer:
             print(_("analyzer.fetch_complete", "已获取 {count} 个视频，开始保存缓存...").format(count=total_videos))
             self.all_videos = all_videos
             self.stats["total"] = total_videos
-
-            # 调试打印前5个视频的ID，确认数据正确
-            print(_("analyzer.video_debug_sample", "\n[调试] 前5个视频ID和图片URL示例:"))
-            for i, v in enumerate(all_videos[: min(5, len(all_videos))]):
-                print(
-                    f"  {i+1}. video_id: {v['video_id']}, image_url: {v['image_url']}"
-                )
-            print("")
 
             # 保存到缓存
             CacheManager.save(self.write_id, all_videos, self.is_actress)
@@ -1185,12 +1166,10 @@ class FC2Analyzer:
                 video_obj = video_id
                 video_id_str = str(video_obj.get("video_id", ""))
                 # 保存视频对象以供后续使用（特别是获取image_url）
-                print(_("analyzer.debug_video_object", "[调试] 输入是视频对象，提取video_id: {id}").format(id=video_id_str))
             else:
                 # 如果只是字符串ID，转换为字符串并创建基本对象
                 video_id_str = str(video_id)
                 video_obj = {"video_id": video_id_str}
-                print(_("analyzer.debug_video_string", "[调试] 输入是ID字符串: {id}").format(id=video_id_str))
 
             # 初始化结果字典
             result = {
