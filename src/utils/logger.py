@@ -70,6 +70,66 @@ class DuplicateFilter(logging.Filter):
         return True
 
 
+class NullHandler(logging.Handler):
+    """空日志处理器，不执行任何操作"""
+    def emit(self, record):
+        pass
+
+class LazyFileHandler(logging.FileHandler):
+    """
+    延迟创建文件的处理器，仅在实际写入日志时创建文件
+    避免创建空的日志文件
+    """
+    def __init__(self, filename, *args, **kwargs):
+        self._file_created = False
+        self._filename = filename
+        # 使用超类的__init__但不立即创建文件
+        logging.Handler.__init__(self)
+        self.encoding = kwargs.get('encoding', 'utf-8')
+        self.mode = kwargs.get('mode', 'a')
+        
+    def emit(self, record):
+        """只有在实际写入日志时才执行文件创建"""
+        if not self._file_created:
+            # 确保目录存在
+            directory = os.path.dirname(self._filename)
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+            
+            # 创建文件流
+            self.stream = open(self._filename, self.mode, encoding=self.encoding)
+            self._file_created = True
+        
+        super().emit(record)
+        
+    def close(self):
+        """关闭文件流"""
+        if hasattr(self, 'stream') and self.stream:
+            self.stream.close()
+            self.stream = None
+
+
+class LazyTimedRotatingFileHandler(TimedRotatingFileHandler):
+    """
+    延迟创建文件的定时轮转处理器，仅在实际写入日志时创建文件
+    避免创建空的日志文件
+    """
+    def __init__(self, filename, *args, **kwargs):
+        self._file_created = False
+        super().__init__(filename, *args, **kwargs)
+        
+    def emit(self, record):
+        """只有在实际写入日志时才执行文件创建"""
+        if not self._file_created:
+            # 确保目录存在
+            directory = os.path.dirname(self.baseFilename)
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory, exist_ok=True)
+            self._file_created = True
+        
+        super().emit(record)
+
+
 def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=None):
     """
     配置日志记录系统
@@ -130,9 +190,8 @@ def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=Non
             today = datetime.now().strftime(LOG_DATE_FORMAT)
             log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{today}.log")
 
-    # 添加文件处理器
-    # 使用日期轮换处理器
-    file_handler = TimedRotatingFileHandler(
+    # 添加文件处理器 - 使用LazyTimedRotatingFileHandler避免创建空日志文件
+    file_handler = LazyTimedRotatingFileHandler(
         log_file,
         when=config.log_rotation,     # 轮转时间点（从配置获取）
         interval=1,                   # 每1个时间单位
@@ -199,8 +258,8 @@ def get_analysis_logger(name, entity_id=None):
             else:
                 log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{today}.log")
         
-        # 创建文件处理器
-        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        # 创建延迟文件处理器，避免创建空日志文件
+        file_handler = LazyFileHandler(log_file, encoding="utf-8")
         file_formatter = logging.Formatter(
             ANALYSIS_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
@@ -234,8 +293,8 @@ def get_error_logger(name):
             today = datetime.now().strftime(LOG_DATE_FORMAT)
             log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{today}.log")
         
-        # 创建文件处理器
-        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        # 创建延迟文件处理器，避免创建空日志文件
+        file_handler = LazyFileHandler(log_file, encoding="utf-8")
         file_formatter = logging.Formatter(
             ERROR_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
