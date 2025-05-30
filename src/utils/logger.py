@@ -70,64 +70,99 @@ class DuplicateFilter(logging.Filter):
         return True
 
 
-class NullHandler(logging.Handler):
-    """空日志处理器，不执行任何操作"""
-    def emit(self, record):
-        pass
-
-class LazyFileHandler(logging.FileHandler):
+class MemoryBufferHandler(logging.Handler):
     """
-    延迟创建文件的处理器，仅在实际写入日志时创建文件
-    避免创建空的日志文件
+    内存缓冲日志处理器
+    - 将日志记录先存储在内存中
+    - 只有在需要实际输出日志时才创建文件
+    - 避免创建空日志文件
     """
-    def __init__(self, filename, *args, **kwargs):
-        self._file_created = False
-        self._filename = filename
-        # 使用超类的__init__但不立即创建文件
-        logging.Handler.__init__(self)
-        self.encoding = kwargs.get('encoding', 'utf-8')
-        self.mode = kwargs.get('mode', 'a')
-        
+    def __init__(self, target_filename, formatter, level=logging.NOTSET):
+        super().__init__(level)
+        self.target_filename = target_filename
+        self.formatter = formatter
+        self.buffer = []
+        self.file_handler = None
+    
     def emit(self, record):
-        """只有在实际写入日志时才执行文件创建"""
-        if not self._file_created:
-            # 确保目录存在
-            directory = os.path.dirname(self._filename)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory, exist_ok=True)
-            
-            # 创建文件流
-            self.stream = open(self._filename, self.mode, encoding=self.encoding)
-            self._file_created = True
+        """
+        发送日志记录，但先存储在内存中
+        """
+        self.buffer.append(record)
+        # 如果缓冲区非空且尚未创建文件处理器，则创建
+        if self.buffer and not self.file_handler:
+            self._create_file_handler()
+    
+    def _create_file_handler(self):
+        """
+        创建实际的文件处理器
+        """
+        # 确保目录存在
+        directory = os.path.dirname(self.target_filename)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
         
-        super().emit(record)
+        # 创建文件处理器
+        if "TimedRotating" in self.__class__.__name__:
+            # 如果是定时轮转处理器
+            self.file_handler = TimedRotatingFileHandler(
+                self.target_filename,
+                when=config.log_rotation,
+                interval=1,
+                backupCount=config.log_backup_count,
+                encoding="utf-8"
+            )
+        else:
+            # 普通文件处理器
+            self.file_handler = logging.FileHandler(
+                self.target_filename,
+                encoding="utf-8"
+            )
         
+        # 设置格式化器
+        self.file_handler.setFormatter(self.formatter)
+        
+        # 将缓冲区中的日志输出到文件
+        for buffered_record in self.buffer:
+            formatted_message = self.formatter.format(buffered_record)
+            try:
+                self.file_handler.stream.write(formatted_message + '\n')
+                self.file_handler.stream.flush()
+            except Exception:
+                # 写入失败时，尝试重新打开文件
+                try:
+                    if hasattr(self.file_handler, 'stream') and self.file_handler.stream:
+                        self.file_handler.stream.close()
+                    self.file_handler.stream = open(self.target_filename, 'a', encoding="utf-8")
+                    self.file_handler.stream.write(formatted_message + '\n')
+                    self.file_handler.stream.flush()
+                except Exception as e:
+                    # 如果仍然失败，记录到控制台
+                    print(f"无法写入日志文件: {e}")
+    
+    def flush(self):
+        """
+        刷新缓冲区内容到文件
+        """
+        if self.buffer and not self.file_handler:
+            self._create_file_handler()
+        elif self.file_handler:
+            self.file_handler.flush()
+    
     def close(self):
-        """关闭文件流"""
-        if hasattr(self, 'stream') and self.stream:
-            self.stream.close()
-            self.stream = None
+        """
+        关闭处理器
+        """
+        if self.file_handler:
+            self.file_handler.close()
+        super().close()
 
 
-class LazyTimedRotatingFileHandler(TimedRotatingFileHandler):
+class MemoryBufferTimedRotatingHandler(MemoryBufferHandler):
     """
-    延迟创建文件的定时轮转处理器，仅在实际写入日志时创建文件
-    避免创建空的日志文件
+    带时间轮转的内存缓冲日志处理器
     """
-    def __init__(self, filename, *args, **kwargs):
-        self._file_created = False
-        super().__init__(filename, *args, **kwargs)
-        
-    def emit(self, record):
-        """只有在实际写入日志时才执行文件创建"""
-        if not self._file_created:
-            # 确保目录存在
-            directory = os.path.dirname(self.baseFilename)
-            if directory and not os.path.exists(directory):
-                os.makedirs(directory, exist_ok=True)
-            self._file_created = True
-        
-        super().emit(record)
+    pass
 
 
 def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=None):
@@ -190,19 +225,16 @@ def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=Non
             today = datetime.now().strftime(LOG_DATE_FORMAT)
             log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{today}.log")
 
-    # 添加文件处理器 - 使用LazyTimedRotatingFileHandler避免创建空日志文件
-    file_handler = LazyTimedRotatingFileHandler(
-        log_file,
-        when=config.log_rotation,     # 轮转时间点（从配置获取）
-        interval=1,                   # 每1个时间单位
-        backupCount=config.log_backup_count,  # 保留的备份数量
-        encoding="utf-8",
-    )
+    # 使用内存缓冲处理器，避免创建空日志文件
     file_formatter = logging.Formatter(
         FILE_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
     )
-    file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(level)
+    
+    file_handler = MemoryBufferTimedRotatingHandler(
+        log_file,
+        formatter=file_formatter,
+        level=level
+    )
 
     # 添加日志去重过滤器（如果启用）
     if enable_duplicate_filter:
@@ -258,12 +290,16 @@ def get_analysis_logger(name, entity_id=None):
             else:
                 log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{today}.log")
         
-        # 创建延迟文件处理器，避免创建空日志文件
-        file_handler = LazyFileHandler(log_file, encoding="utf-8")
+        # 创建内存缓冲处理器，避免创建空日志文件
         file_formatter = logging.Formatter(
             ANALYSIS_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
-        file_handler.setFormatter(file_formatter)
+        
+        file_handler = MemoryBufferHandler(
+            log_file,
+            formatter=file_formatter
+        )
+        
         logger.addHandler(file_handler)
     
     return logger
@@ -293,13 +329,17 @@ def get_error_logger(name):
             today = datetime.now().strftime(LOG_DATE_FORMAT)
             log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{today}.log")
         
-        # 创建延迟文件处理器，避免创建空日志文件
-        file_handler = LazyFileHandler(log_file, encoding="utf-8")
+        # 创建内存缓冲处理器，避免创建空日志文件
         file_formatter = logging.Formatter(
             ERROR_FORMAT, datefmt=LOG_TIMESTAMP_FORMAT
         )
-        file_handler.setFormatter(file_formatter)
-        file_handler.setLevel(logging.ERROR)  # 只记录错误及以上级别
+        
+        file_handler = MemoryBufferHandler(
+            log_file,
+            formatter=file_formatter,
+            level=logging.ERROR  # 只记录错误及以上级别
+        )
+        
         logger.addHandler(file_handler)
     
     return logger
