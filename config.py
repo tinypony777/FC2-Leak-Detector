@@ -93,10 +93,15 @@ class Config:
             {
                 "name": "24AV",
                 "url": "https://24av.net/en/dm1/v/fc2-ppv-{vid}",
+                "priority": 2,
+                "status_codes": [200],
+            },
+            {
+                "name": "missav",
+                "url": "https://missav.ws/dm13/fc2-ppv-{vid}",
                 "priority": 1,
                 "status_codes": [200],
             },
-            # 可添加更多检查站点
         ]
         
         # -------------------------

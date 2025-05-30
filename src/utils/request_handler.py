@@ -164,7 +164,7 @@ class RequestHandler:
                 continue
 
             # 使用统一的请求功能
-            logger.info(_("logger.video_check").format(
+            logger.info(_("logger.checking_video", "检查视频 {video_id} 在 {site_name}").format(
                 video_id=video_id, site_name=site_name
             ))
             response = cls.make_request(
@@ -179,18 +179,18 @@ class RequestHandler:
             if response:
                 # 根据状态码判断视频是否存在
                 if response.status_code == 200:
-                    logger.info(_("logger.video_leaked", "视频 {video_id} 在 {site_name} 已流出").format(
-                        video_id=video_id, site_name=site_name
+                    logger.info(_("logger.video_leaked", "视频 {video_id} 在 {site_name} 已流出 (状态码: {status_code})").format(
+                        video_id=video_id, site_name=site_name, status_code=response.status_code
                     ))
                     return True, site_name, response.status_code
 
                 elif response.status_code == 404:
-                    logger.info(_("logger.video_not_found", "视频 {video_id} 在 {site_name} 未找到").format(
-                        video_id=video_id, site_name=site_name
+                    logger.info(_("logger.video_not_found", "视频 {video_id} 在 {site_name} 未找到 (状态码: {status_code})").format(
+                        video_id=video_id, site_name=site_name, status_code=response.status_code
                     ))
                 else:
                     logger.warning(
-                        _("logger.video_check_abnormal").format(
+                        _("logger.video_check_abnormal", "视频 {video_id} 在 {site_name} 检查异常 (状态码: {status_code})").format(
                             video_id=video_id, site_name=site_name, status_code=response.status_code
                         )
                     )
