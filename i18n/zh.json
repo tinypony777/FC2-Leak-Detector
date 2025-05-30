@@ -401,7 +401,7 @@
     "error_log_failed": "保存错误日志失败: {error}",
     "invalid_video_id": "无效的视频ID: {video_id}",
     "video_check": "检查视频 {video_id} 是否在 {site_name} 流出",
-    "checking_video": "检查视频 {video_id} 在 {site_name}",
+    "checking_video": "检查视频 {video_id} 在 {site_name} 的状态",
     "video_leaked": "视频 {video_id} 在 {site_name} 已流出",
     "video_not_found": "视频 {video_id} 在 {site_name} 未找到",
     "video_check_abnormal": "检查视频 {video_id} 在 {site_name} 时状态码异常: {status_code}",

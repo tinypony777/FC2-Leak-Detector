@@ -96,12 +96,6 @@ class Config:
                 "priority": 2,
                 "status_codes": [200],
             },
-            {
-                "name": "missav",
-                "url": "https://missav.ws/dm13/fc2-ppv-{vid}",
-                "priority": 1,
-                "status_codes": [200],
-            },
         ]
         
         # -------------------------
