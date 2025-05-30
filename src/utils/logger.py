@@ -35,7 +35,9 @@ ANALYSIS_FORMAT = config.log_analysis_format
 
 # 日志日期格式从配置中获取
 LOG_DATE_FORMAT = config.log_date_format
+LOG_DATETIME_FORMAT = config.log_datetime_format
 LOG_TIMESTAMP_FORMAT = config.log_timestamp_format
+LOG_USE_DATETIME = config.log_use_datetime
 
 # 日志级别映射
 LOG_LEVEL_MAP = {
@@ -118,9 +120,15 @@ def configure_logging(log_level=None, log_file=None, enable_duplicate_filter=Non
 
     # 如果未指定日志文件，使用默认的应用程序日志文件
     if not log_file:
-        # 创建带有日期的日志文件名
-        today = datetime.now().strftime(LOG_DATE_FORMAT)
-        log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{today}.log")
+        # 根据配置决定使用日期格式还是日期时间格式
+        if LOG_USE_DATETIME:
+            # 创建带有精确到秒的时间戳的日志文件名
+            timestamp = datetime.now().strftime(LOG_DATETIME_FORMAT)
+            log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{timestamp}.log")
+        else:
+            # 创建只带日期的日志文件名
+            today = datetime.now().strftime(LOG_DATE_FORMAT)
+            log_file = os.path.join(LOG_APP_DIR, f"fc2analyzer_{today}.log")
 
     # 添加文件处理器
     # 使用日期轮换处理器
@@ -175,12 +183,21 @@ def get_analysis_logger(name, entity_id=None):
     
     # 检查是否已经有处理器，避免重复添加
     if not logger.handlers:
-        # 创建分析日志文件名
-        today = datetime.now().strftime(LOG_DATE_FORMAT)
-        if entity_id:
-            log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{entity_id}_{today}.log")
+        # 根据配置决定使用日期格式还是日期时间格式
+        if LOG_USE_DATETIME:
+            # 创建带有精确到秒的时间戳的日志文件名
+            timestamp = datetime.now().strftime(LOG_DATETIME_FORMAT)
+            if entity_id:
+                log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{entity_id}_{timestamp}.log")
+            else:
+                log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{timestamp}.log")
         else:
-            log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{today}.log")
+            # 创建只带日期的日志文件名
+            today = datetime.now().strftime(LOG_DATE_FORMAT)
+            if entity_id:
+                log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{entity_id}_{today}.log")
+            else:
+                log_file = os.path.join(LOG_ANALYSIS_DIR, f"{name}_{today}.log")
         
         # 创建文件处理器
         file_handler = logging.FileHandler(log_file, encoding="utf-8")
@@ -207,9 +224,15 @@ def get_error_logger(name):
     
     # 检查是否已经有处理器，避免重复添加
     if not logger.handlers:
-        # 创建错误日志文件名
-        today = datetime.now().strftime(LOG_DATE_FORMAT)
-        log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{today}.log")
+        # 根据配置决定使用日期格式还是日期时间格式
+        if LOG_USE_DATETIME:
+            # 创建带有精确到秒的时间戳的日志文件名
+            timestamp = datetime.now().strftime(LOG_DATETIME_FORMAT)
+            log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{timestamp}.log")
+        else:
+            # 创建只带日期的日志文件名
+            today = datetime.now().strftime(LOG_DATE_FORMAT)
+            log_file = os.path.join(LOG_ERROR_DIR, f"error_{name}_{today}.log")
         
         # 创建文件处理器
         file_handler = logging.FileHandler(log_file, encoding="utf-8")

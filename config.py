@@ -41,7 +41,7 @@ class Config:
         # -------------------------
         # 基本信息
         # -------------------------
-        self.version = "1.2.0"  # 程序版本号
+        self.version = "1.1.0"  # 程序版本号
         
         # -------------------------
         # 网络请求设置
@@ -135,7 +135,11 @@ class Config:
         
         # 日志文件命名格式
         self.log_date_format = "%Y%m%d"  # 日志文件日期格式，默认为年月日(20250531)
+        self.log_datetime_format = "%Y%m%d_%H%M%S"  # 精确到秒的日志文件日期时间格式(20250531_040816)
         self.log_timestamp_format = "%Y-%m-%d %H:%M:%S"  # 日志记录时间戳格式
+        
+        # 日志文件命名选项
+        self.log_use_datetime = True  # 是否在日志文件名中使用精确到秒的时间戳
         
         # 日志过滤设置
         self.log_enable_duplicate_filter = True  # 是否启用日志去重过滤
