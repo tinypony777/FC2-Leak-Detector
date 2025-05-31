@@ -1,4 +1,4 @@
-# 变更日志 | Changelog | 変更履歴
+# 更新日志 / Changelog / 更新履歴
 
 本文档记录FC2视频分析器的所有重要变更。
 
@@ -16,6 +16,20 @@
 **注意**：本项目的未来开发计划（包括GUI客户端、网页端支持、数据库存储等功能）将在另一个尚未公开的项目中继续进行。当新项目公开时，我们会在此处更新相关信息。
 
 # 简体中文
+
+## [1.2.1] - 2025-05-31
+
+### 新增
+- 改进了Jellyfin元数据生成功能，添加了可点击的链接和按钮
+- 添加了MissAV和123AV观看链接到NFO文件中
+
+### 修复
+- 修复了女优被错误分类到作者目录的问题
+- 优化了海报文件结构以提高Jellyfin兼容性
+
+### 文档
+- 添加了关于Jellyfin元数据占位MP4文件的说明
+- 更新了使用说明，包括预告片按钮和磁力链接的使用方法
 
 ## [1.2.0] - 2025-05-31
 
@@ -121,6 +135,20 @@
 
 **Note**: Future development plans for this project (including GUI client, web support, database storage, etc.) will be continued in another yet-to-be-disclosed project. We will update this information when the new project is made public.
 
+## [1.2.1] - 2025-05-31
+
+### Added
+- Improved Jellyfin metadata generation with clickable links and buttons
+- Added MissAV and 123AV watch links to NFO files
+
+### Fixed
+- Fixed actress misclassification in author directories
+- Optimized poster file structure for better Jellyfin compatibility
+
+### Documentation
+- Added information about Jellyfin metadata placeholder MP4 files
+- Updated usage instructions for trailer buttons and magnet links
+
 ## [1.2.0] - 2025-05-31
 
 ### Added
@@ -224,6 +252,20 @@
 ## 開発計画について
 
 **注意**: 本プロジェクトの将来の開発計画（GUIクライアント、ウェブサポート、データベースストレージなど）は、まだ公開されていない別のプロジェクトで継続される予定です。新しいプロジェクトが公開された際には、ここで情報を更新します。
+
+## [1.2.1] - 2025-05-31
+
+### 追加
+- Jellyfin メタデータ生成機能をクリック可能なリンクとボタンで改善
+- NFO ファイルに MissAV と 123AV の視聴リンクを追加
+
+### 修正
+- 作者ディレクトリへの女優の誤分類を修正
+- Jellyfin との互換性向上のためにポスターファイル構造を最適化
+
+### ドキュメント
+- Jellyfin メタデータのプレースホルダー MP4 ファイルに関する情報を追加
+- プレビューボタンとマグネットリンクの使用方法に関する説明を更新
 
 ## [1.2.0] - 2025-05-31
 
