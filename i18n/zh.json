@@ -261,6 +261,10 @@
   "usage_jellyfin": "生成Jellyfin兼容的元数据",
   "example_jellyfin": "分析作者视频并生成Jellyfin元数据",
   
+  "advanced_usage": "高级用法",
+  "advanced_example1": "使用20个线程分析作者视频，生成Jellyfin元数据，并使用英文界面",
+  "advanced_example2": "批量分析多个作者，使用最大50个线程，不下载缩略图但获取磁力链接，并生成Jellyfin元数据",
+  
   "sites_none": "未配置任何检查站点，将使用默认站点",
   "sites_title": "视频检查站点 (按优先级排序)",
   "sites_name": "站点",

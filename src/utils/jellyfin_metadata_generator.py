@@ -329,8 +329,8 @@ class JellyfinMetadataGenerator:
             
         # 添加观看链接
         plot_text += f"\n\n{_('jellyfin.watch_links')}\n"
-        plot_text += f"MissAV: https://missav.ws/dm14/en/fc2-ppv-{video_id}\n"
-        plot_text += f"123AV: https://123av.com/en/dm2/v/fc2-ppv-{video_id}\n"
+        plot_text += f"MissAV: <a href=\"https://missav.ws/dm14/en/fc2-ppv-{video_id}\">https://missav.ws/dm14/en/fc2-ppv-{video_id}</a>\n"
+        plot_text += f"123AV: <a href=\"https://123av.com/en/dm2/v/fc2-ppv-{video_id}\">https://123av.com/en/dm2/v/fc2-ppv-{video_id}</a>\n"
             
         # 如果有磁力链接，添加到情节介绍
         magnets = video_info.get("magnets", []) or ([video_info.get("magnet")] if video_info.get("magnet") else [])
@@ -338,11 +338,24 @@ class JellyfinMetadataGenerator:
             plot_text += "\n" + _("jellyfin.magnet_links").format() + "\n"
             for idx, magnet in enumerate(magnets, 1):
                 if magnet:
-                    plot_text += f"{idx}. {magnet}\n"
+                    plot_text += f"{idx}. <a href=\"{magnet}\">{magnet}</a>\n"
                     
         # 添加情节介绍
         ET.SubElement(root, "plot").text = plot_text.strip()
         ET.SubElement(root, "outline").text = title
+        
+        # 添加锁定标记，防止元数据被覆盖
+        ET.SubElement(root, "lockdata").text = "true"
+        
+        # 添加displaylinks标签用于显示链接
+        displaylinks = ET.SubElement(root, "displaylinks")
+        missav_display = ET.SubElement(displaylinks, "link")
+        missav_display.text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        missav_display.set("name", "MissAV")
+        
+        av123_display = ET.SubElement(displaylinks, "link")
+        av123_display.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        av123_display.set("name", "123AV")
         
         # 添加制作公司/作者信息
         if author_info and "name" in author_info:
@@ -382,50 +395,52 @@ class JellyfinMetadataGenerator:
         # 添加特殊标签
         ET.SubElement(root, "tag").text = "FC2"
         
-        # 添加播放源链接
+        # 添加播放源链接 - 方法1：使用fileinfo和streamdetails标签
         fileinfo = ET.SubElement(root, "fileinfo")
         streamdetails = ET.SubElement(fileinfo, "streamdetails")
         
         # 添加MissAV链接
-        missav_stream = ET.SubElement(streamdetails, "stream")
-        ET.SubElement(missav_stream, "type").text = "video"
+        missav_stream = ET.SubElement(streamdetails, "video")
         ET.SubElement(missav_stream, "provider").text = "MissAV"
         ET.SubElement(missav_stream, "url").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
         
         # 添加123AV链接
-        av123_stream = ET.SubElement(streamdetails, "stream")
-        ET.SubElement(av123_stream, "type").text = "video"
+        av123_stream = ET.SubElement(streamdetails, "video")
         ET.SubElement(av123_stream, "provider").text = "123AV"
         ET.SubElement(av123_stream, "url").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         
-        # 添加外部链接ID (用于Jellyfin中显示可点击按钮)
-        missav_id = ET.SubElement(root, "uniqueid", type="missav", default="false")
+        # 方法2：添加外部链接ID (用于Jellyfin中显示可点击按钮)
+        missav_id = ET.SubElement(root, "uniqueid", type="missav")
         missav_id.text = f"fc2-ppv-{video_id}"
         
-        av123_id = ET.SubElement(root, "uniqueid", type="123av", default="false")
+        av123_id = ET.SubElement(root, "uniqueid", type="123av")
         av123_id.text = f"fc2-ppv-{video_id}"
         
-        # 添加外部链接信息
-        links = ET.SubElement(root, "externallinks")
+        # 方法3：添加外部链接信息
+        externallinks = ET.SubElement(root, "externallinks")
         
-        # MissAV链接
-        missav_link = ET.SubElement(links, "link")
+        # 使用标准格式添加链接
+        missav_link = ET.SubElement(externallinks, "link")
         missav_link.text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
         missav_link.set("name", "MissAV")
-        missav_link.set("url", f"https://missav.ws/dm14/en/fc2-ppv-{video_id}")
         
-        # 123AV链接
-        av123_link = ET.SubElement(links, "link")
+        av123_link = ET.SubElement(externallinks, "link")
         av123_link.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         av123_link.set("name", "123AV")
-        av123_link.set("url", f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}")
         
-        # 添加预告片链接（在Jellyfin中显示为可点击按钮）
-        missav_trailer = ET.SubElement(root, "trailer")
-        missav_trailer.text = f"[MissAV] https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        # 方法4：添加预告片链接（在Jellyfin中显示为可点击按钮）
+        # 使用Jellyfin和Kodi兼容格式
+        ET.SubElement(root, "trailer").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        ET.SubElement(root, "trailer").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         
-        av123_trailer = ET.SubElement(root, "trailer")
-        av123_trailer.text = f"[123AV] https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        # 方法5：添加特殊标记，帮助Jellyfin识别链接
+        # 添加MissAV和123AV作为媒体源
+        ET.SubElement(root, "source").text = "MissAV"
+        ET.SubElement(root, "source").text = "123AV"
+        
+        # 添加媒体URL
+        ET.SubElement(root, "mediaurl").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        ET.SubElement(root, "mediaurl").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         
         # 保存为美观格式的XML
         xml_str = minidom.parseString(ET.tostring(root, encoding='unicode')).toprettyxml(indent="  ")

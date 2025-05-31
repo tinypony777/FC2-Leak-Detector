@@ -527,6 +527,10 @@
   "usage_jellyfin": "Jellyfin互換のメタデータを生成",
   "example_jellyfin": "作者の動画を分析してJellyfinメタデータを生成",
   
+  "advanced_usage": "高度な使用法",
+  "advanced_example1": "20スレッドで作者の動画を分析し、Jellyfinメタデータを生成し、英語インターフェースを使用",
+  "advanced_example2": "複数の作者を最大50スレッドで一括処理し、サムネイルをダウンロードせずにマグネットリンクを取得し、Jellyfinメタデータを生成",
+  
   "jellyfin": {
     "leaked_status": "ステータス: 流出済み",
     "not_leaked_status": "ステータス: 未流出",

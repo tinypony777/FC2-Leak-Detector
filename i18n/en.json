@@ -510,5 +510,9 @@
     "watch_links": "Watch Links:",
     "using_author_dir": "Using author category directory: {dir}",
     "using_actress_dir": "Using actress category directory: {dir}"
-  }
+  },
+  
+  "advanced_usage": "Advanced Usage",
+  "advanced_example1": "Analyze author videos with 20 threads, generate Jellyfin metadata, and use English interface",
+  "advanced_example2": "Batch process multiple authors with maximum 50 threads, without downloading thumbnails but with magnet links, and generate Jellyfin metadata"
 } 
