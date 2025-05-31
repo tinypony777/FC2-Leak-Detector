@@ -52,6 +52,13 @@ class JellyfinMetadataGenerator:
         self.actresses_dir = os.path.join(self.output_dir, "actresses")
         os.makedirs(self.authors_dir, exist_ok=True)
         os.makedirs(self.actresses_dir, exist_ok=True)
+        
+        # 429错误计数器
+        self.rate_limit_count = 0
+        # 429错误阈值，超过此值将切换到单线程模式
+        self.rate_limit_threshold = 10
+        # 429错误阈值，超过此值将跳过网络请求
+        self.skip_network_threshold = 20
 
     async def fetch_page(self, url):
         """获取页面HTML内容，带重试和退避机制
@@ -79,6 +86,10 @@ class JellyfinMetadataGenerator:
                         
                         # 处理常见错误状态码
                         if response.status == 429 or response.status >= 500:
+                            # 增加429错误计数
+                            if response.status == 429:
+                                self.rate_limit_count += 1
+                                
                             # 服务器限流或服务器错误，使用指数退避
                             wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
                             # 添加随机抖动以避免请求同步
@@ -198,6 +209,11 @@ class JellyfinMetadataGenerator:
         video_id = video_info.get("video_id")
         if not video_id:
             logger.warning("无法获取额外信息：视频ID不存在")
+            return video_info
+            
+        # 如果429错误次数超过阈值，跳过网络请求
+        if self.rate_limit_count >= self.skip_network_threshold:
+            logger.warning(f"429错误次数({self.rate_limit_count})超过阈值({self.skip_network_threshold})，跳过网络请求获取标签信息")
             return video_info
             
         logger.info(_("jellyfin.fetch_extra_info").format(video_id=video_id))
@@ -675,6 +691,15 @@ class JellyfinMetadataGenerator:
         elif actress_info and "id" in actress_info:
             logger.info(f"处理女优ID: {actress_info['id']}, 名称: {actress_info.get('name', '未知')}")
         
+        # 重置429错误计数器
+        self.rate_limit_count = 0
+        
+        # 是否使用单线程模式
+        use_single_thread = False
+        
+        # 是否跳过网络请求
+        skip_network_requests = False
+        
         for batch_idx in range(total_batches):
             start_idx = batch_idx * batch_size
             end_idx = min(start_idx + batch_size, len(leaked_videos))
@@ -682,32 +707,72 @@ class JellyfinMetadataGenerator:
             
             logger.info(f"处理第 {batch_idx+1}/{total_batches} 批视频 ({len(batch_videos)}个)")
             
-            # 创建并发任务
-            tasks = []
-            for video_info in batch_videos:
-                video_id = video_info.get("video_id")
-                if not video_id:
-                    logger.warning("跳过无效的视频信息(缺少video_id)")
-                    continue
+            # 检查是否需要切换到单线程模式
+            if self.rate_limit_count >= self.rate_limit_threshold and not use_single_thread:
+                logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.rate_limit_threshold})，切换到单线程模式")
+                use_single_thread = True
+            
+            # 检查是否需要跳过网络请求
+            if self.rate_limit_count >= self.skip_network_threshold and not skip_network_requests:
+                logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.skip_network_threshold})，跳过网络请求获取标签信息")
+                skip_network_requests = True
+                # 如果跳过网络请求，则不需要从网络获取额外信息
+                enrich_from_web = False
+            
+            if use_single_thread:
+                # 单线程模式：逐个处理视频
+                for video_info in batch_videos:
+                    video_id = video_info.get("video_id")
+                    if not video_id:
+                        logger.warning("跳过无效的视频信息(缺少video_id)")
+                        continue
+                        
+                    # 查找对应的图片路径
+                    image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
                     
-                # 查找对应的图片路径
-                image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
+                    # 创建生成元数据的任务
+                    result = await self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
+                    if result:
+                        results.append(result)
+                    
+                    # 单线程模式下，每个请求之间添加更长的等待时间
+                    wait_time = 3.0  # 固定为3秒
+                    logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
+                    await asyncio.sleep(wait_time)
+            else:
+                # 多线程模式：批量处理视频
+                tasks = []
+                for video_info in batch_videos:
+                    video_id = video_info.get("video_id")
+                    if not video_id:
+                        logger.warning("跳过无效的视频信息(缺少video_id)")
+                        continue
+                        
+                    # 查找对应的图片路径
+                    image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
+                    
+                    # 创建生成元数据的任务 - 确保正确传递author_info和actress_info参数
+                    task = self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
+                    tasks.append(task)
                 
-                # 创建生成元数据的任务 - 确保正确传递author_info和actress_info参数
-                task = self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
-                tasks.append(task)
-            
-            # 等待本批次任务完成
-            batch_results = await asyncio.gather(*tasks)
-            
-            # 过滤掉None结果
-            valid_results = [result for result in batch_results if result]
-            results.extend(valid_results)
+                # 等待本批次任务完成
+                batch_results = await asyncio.gather(*tasks)
+                
+                # 过滤掉None结果
+                valid_results = [result for result in batch_results if result]
+                results.extend(valid_results)
             
             # 批次间休息一下，避免被限流
             if batch_idx < total_batches - 1:
-                wait_time = self.min_wait_time
-                logger.info(f"等待 {wait_time} 秒后处理下一批...")
+                # 如果遇到较多429错误，增加等待时间
+                if self.rate_limit_count > self.skip_network_threshold:
+                    wait_time = self.min_wait_time * 4
+                elif self.rate_limit_count > 5:
+                    wait_time = self.min_wait_time * 3
+                else:
+                    wait_time = self.min_wait_time
+                
+                logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
                 await asyncio.sleep(wait_time)
                 
         logger.info(_("jellyfin.generate_complete").format(count=len(results)))
