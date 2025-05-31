@@ -28,6 +28,7 @@ from src.utils.report_generator import ReportGenerator
 from src.utils.ui_manager import RichUIManager
 from src.writers.writer_extractor import WriterExtractor
 from src.utils.i18n import get_text as _, switch_language, get_current_language, SUPPORTED_LANGUAGES
+from src.utils.jellyfin_metadata_generator import JellyfinMetadataGenerator
 
 # 获取主程序日志记录器
 logger = get_logger("main")
@@ -63,6 +64,7 @@ def print_usage():
   --no-image                {_('usage_no_image', '不下载视频缩略图')}
   -l LANG, --lang LANG      {_('usage_lang', '设置界面语言 (支持: zh, en, ja)')}
   --clear-cache             {_('usage_clear_cache', '清除所有缓存数据')}
+  --jellyfin                {_('usage_jellyfin', '生成Jellyfin兼容的元数据')}
 
 {_('usage_examples', '示例')}:
   python run.py -w 5656               # {_('example_writer', '分析作者ID 5656 的视频')}
@@ -77,6 +79,7 @@ def print_usage():
   python run.py -w 5656 --no-image    # {_('example_no_image', '分析作者视频但不下载缩略图')}
   python run.py -l {target_lang}                 # {_('example_lang', '使用英文界面')}
   python run.py --clear-cache         # {_('example_clear_cache', '清除所有缓存数据')}
+  python run.py -w 5656 --jellyfin    # {_('example_jellyfin', '分析作者视频并生成Jellyfin元数据')}
 """
     print(usage)
 
@@ -163,7 +166,7 @@ def is_leaked(result):
 
 
 def check_videos(
-    target_id, is_actress=False, threads=None, with_magnet=True, download_images=True
+    target_id, is_actress=False, threads=None, with_magnet=True, download_images=True, generate_jellyfin=False
 ):
     """通用视频分析函数
 
@@ -175,6 +178,7 @@ def check_videos(
         threads: 并行线程数
         with_magnet: 是否获取磁力链接
         download_images: 是否下载缩略图
+        generate_jellyfin: 是否生成Jellyfin元数据
 
     返回:
         bool: 操作是否成功
@@ -369,6 +373,38 @@ def check_videos(
         print(_("check_videos.leaked_videos", "已流出数: {count}").format(count=leaked))
         print(_("check_videos.leaked_ratio", "流出比例: {ratio}%").format(ratio=f"{leak_ratio:.2f}"))
 
+        # 在函数结尾部分添加Jellyfin元数据生成代码
+        if generate_jellyfin and results:
+            try:
+                print("\n=== Jellyfin元数据 ===")
+                jellyfin_generator = JellyfinMetadataGenerator()
+                
+                # 从视频结果中提取已流出的视频
+                leaked_videos = [v for v in results if v.get("status") in ["leaked", "available", "已流出"]]
+                
+                if not leaked_videos:
+                    print("❌ 没有已流出的视频，跳过生成Jellyfin元数据")
+                    return results
+                
+                # 创建作者信息字典
+                author_info = {
+                    "id": target_id,
+                    "name": author_name
+                }
+                
+                # 异步调用批量生成元数据
+                import asyncio
+                # 使用asyncio.run运行异步函数
+                metadata_results = asyncio.run(jellyfin_generator.batch_generate_metadata(leaked_videos, author_info=author_info))
+                
+                if metadata_results:
+                    print(f"✅ 成功生成 {len(metadata_results)} 个Jellyfin元数据文件")
+                else:
+                    print("❌ 未生成任何Jellyfin元数据文件")
+                
+            except Exception as e:
+                print(f"❌ 生成Jellyfin元数据时出错: {str(e)}")
+
         return True
     except KeyboardInterrupt:
         logger.info("用户中断了操作")
@@ -387,7 +423,7 @@ def check_videos(
 
 
 def process_multiple_ids(
-    ids, is_actress=False, threads=None, with_magnet=True, download_images=True
+    ids, is_actress=False, threads=None, with_magnet=True, download_images=True, generate_jellyfin=False
 ):
     """批量处理多个作者或女优
 
@@ -399,6 +435,7 @@ def process_multiple_ids(
         threads: 并行线程数
         with_magnet: 是否获取磁力链接
         download_images: 是否下载缩略图
+        generate_jellyfin: 是否生成Jellyfin元数据
 
     返回:
         bool: 操作是否成功
@@ -628,6 +665,36 @@ def process_multiple_ids(
     else:
         print(f"单{entity_type}分析完成，无需生成汇总报告")
 
+    # 在函数末尾添加Jellyfin元数据生成逻辑
+    if generate_jellyfin and processed_items:
+        try:
+            print("\n=== Jellyfin元数据 ===")
+            jellyfin_generator = JellyfinMetadataGenerator()
+            total_metadata_count = 0
+            
+            for item in processed_items:
+                entity_id = item.get(id_field)
+                videos_info = item.get("results", [])
+                entity_name = item.get(name_field)
+                
+                if videos_info:
+                    entity_info = {"id": entity_id, "name": entity_name} if entity_name else {"id": entity_id}
+                    metadata_files = jellyfin_generator.batch_generate_metadata(
+                        videos_info,
+                        author_info=entity_info if not is_actress else None,
+                        actress_info=entity_info if is_actress else None
+                    )
+                    total_metadata_count += len(metadata_files)
+            
+            if total_metadata_count > 0:
+                print(f"✅ {_('jellyfin.metadata_generated_batch', '总共为 {count} 个视频生成Jellyfin元数据').format(count=total_metadata_count)}")
+                print(f"📁 {_('jellyfin.metadata_location', '元数据保存位置: {path}').format(path=jellyfin_generator.output_dir)}")
+            else:
+                print(f"⚠️ {_('jellyfin.no_metadata_generated', '没有成功生成Jellyfin元数据')}")
+        except Exception as e:
+            logger.error(f"批量生成Jellyfin元数据时出错: {str(e)}")
+            print(f"❌ {_('jellyfin.metadata_error_batch', '批量生成Jellyfin元数据时出错: {error}').format(error=str(e))}")
+
     return True
 
 
@@ -676,7 +743,7 @@ def generate_multi_actress_report(processed_actresses):
 
 
 def find_writer_by_video_id(
-    video_id, threads=None, with_magnet=True, download_images=True
+    video_id, threads=None, with_magnet=True, download_images=True, generate_jellyfin=False
 ):
     """通过视频ID查找并分析作者
 
@@ -687,6 +754,7 @@ def find_writer_by_video_id(
         threads: 并行线程数
         with_magnet: 是否获取磁力链接
         download_images: 是否下载缩略图
+        generate_jellyfin: 是否生成Jellyfin元数据
 
     Returns:
         bool: 操作是否成功
@@ -717,6 +785,7 @@ def find_writer_by_video_id(
             threads=threads,
             with_magnet=with_magnet,
             download_images=download_images,
+            generate_jellyfin=generate_jellyfin
         )
     except ConnectionError as e:
         logger.error(f"查找作者时连接错误: {e}")
@@ -758,6 +827,7 @@ def main():
     parser.add_argument("--no-image", action="store_true", help=_("usage_no_image", "不下载视频缩略图"))
     parser.add_argument("-l", "--lang", type=str, help=_("usage_lang", "设置界面语言 (支持: zh, en, ja)"))
     parser.add_argument("--clear-cache", action="store_true", help=_("usage_clear_cache", "清除所有缓存数据"))
+    parser.add_argument("--jellyfin", action="store_true", help=_("usage_jellyfin", "生成Jellyfin兼容的元数据"))
 
     try:
         args, unknown = parser.parse_known_args()
@@ -818,11 +888,12 @@ def main():
         # 设置磁链和图片下载选项
         with_magnet = not args.no_magnet
         download_images = not args.no_image
+        generate_jellyfin = args.jellyfin
 
         # 通过视频ID查找并分析作者
         if args.video:
             success = find_writer_by_video_id(
-                args.video, threads, with_magnet, download_images
+                args.video, threads, with_magnet, download_images, generate_jellyfin
             )
             return 0 if success else 1
 
@@ -834,6 +905,7 @@ def main():
                 threads=threads,
                 with_magnet=with_magnet,
                 download_images=download_images,
+                generate_jellyfin=generate_jellyfin
             )
         elif args.actress:
             check_videos(
@@ -842,6 +914,7 @@ def main():
                 threads=threads,
                 with_magnet=with_magnet,
                 download_images=download_images,
+                generate_jellyfin=generate_jellyfin
             )
         elif args.batch:
             process_multiple_ids(
@@ -850,6 +923,7 @@ def main():
                 threads=threads,
                 with_magnet=with_magnet,
                 download_images=download_images,
+                generate_jellyfin=generate_jellyfin
             )
         elif args.batch_actress:
             process_multiple_ids(
@@ -858,6 +932,7 @@ def main():
                 threads=threads,
                 with_magnet=with_magnet,
                 download_images=download_images,
+                generate_jellyfin=generate_jellyfin
             )
         else:
             print_usage()
