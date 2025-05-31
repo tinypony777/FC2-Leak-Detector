@@ -46,6 +46,12 @@ class JellyfinMetadataGenerator:
         self.base_timeout = config.timeout
         self.min_wait_time = 5.0  # 最小等待时间（秒）
         self.max_wait_time = 30.0  # 最大等待时间（秒）
+        
+        # 创建作者和女优子目录
+        self.authors_dir = os.path.join(self.output_dir, "authors")
+        self.actresses_dir = os.path.join(self.output_dir, "actresses")
+        os.makedirs(self.authors_dir, exist_ok=True)
+        os.makedirs(self.actresses_dir, exist_ok=True)
 
     async def fetch_page(self, url):
         """获取页面HTML内容，带重试和退避机制
@@ -283,7 +289,7 @@ class JellyfinMetadataGenerator:
         ET.SubElement(root, "sorttitle").text = f"FC2-PPV-{video_id}"
         
         # 添加视频ID作为uniqueid
-        uniqueid = ET.SubElement(root, "uniqueid", type="fc2ppv")
+        uniqueid = ET.SubElement(root, "uniqueid", type="fc2ppv", default="true")
         uniqueid.text = video_id
         
         # 添加发布日期
@@ -321,10 +327,15 @@ class JellyfinMetadataGenerator:
         if "mosaic_type" in video_info:
             plot_text += f"\n马赛克类型: {video_info['mosaic_type']}"
             
+        # 添加观看链接
+        plot_text += f"\n\n{_('jellyfin.watch_links')}\n"
+        plot_text += f"MissAV: https://missav.ws/dm14/en/fc2-ppv-{video_id}\n"
+        plot_text += f"123AV: https://123av.com/en/dm2/v/fc2-ppv-{video_id}\n"
+            
         # 如果有磁力链接，添加到情节介绍
         magnets = video_info.get("magnets", []) or ([video_info.get("magnet")] if video_info.get("magnet") else [])
         if magnets:
-            plot_text += "\n\n" + _("jellyfin.magnet_links").format() + "\n"
+            plot_text += "\n" + _("jellyfin.magnet_links").format() + "\n"
             for idx, magnet in enumerate(magnets, 1):
                 if magnet:
                     plot_text += f"{idx}. {magnet}\n"
@@ -371,14 +382,96 @@ class JellyfinMetadataGenerator:
         # 添加特殊标签
         ET.SubElement(root, "tag").text = "FC2"
         
+        # 添加播放源链接
+        fileinfo = ET.SubElement(root, "fileinfo")
+        streamdetails = ET.SubElement(fileinfo, "streamdetails")
+        
+        # 添加MissAV链接
+        missav_stream = ET.SubElement(streamdetails, "stream")
+        ET.SubElement(missav_stream, "type").text = "video"
+        ET.SubElement(missav_stream, "provider").text = "MissAV"
+        ET.SubElement(missav_stream, "url").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        
+        # 添加123AV链接
+        av123_stream = ET.SubElement(streamdetails, "stream")
+        ET.SubElement(av123_stream, "type").text = "video"
+        ET.SubElement(av123_stream, "provider").text = "123AV"
+        ET.SubElement(av123_stream, "url").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        
+        # 添加外部链接ID (用于Jellyfin中显示可点击按钮)
+        missav_id = ET.SubElement(root, "uniqueid", type="missav", default="false")
+        missav_id.text = f"fc2-ppv-{video_id}"
+        
+        av123_id = ET.SubElement(root, "uniqueid", type="123av", default="false")
+        av123_id.text = f"fc2-ppv-{video_id}"
+        
+        # 添加外部链接信息
+        links = ET.SubElement(root, "externallinks")
+        
+        # MissAV链接
+        missav_link = ET.SubElement(links, "link")
+        missav_link.text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        missav_link.set("name", "MissAV")
+        missav_link.set("url", f"https://missav.ws/dm14/en/fc2-ppv-{video_id}")
+        
+        # 123AV链接
+        av123_link = ET.SubElement(links, "link")
+        av123_link.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        av123_link.set("name", "123AV")
+        av123_link.set("url", f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}")
+        
+        # 添加预告片链接（在Jellyfin中显示为可点击按钮）
+        missav_trailer = ET.SubElement(root, "trailer")
+        missav_trailer.text = f"[MissAV] https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        
+        av123_trailer = ET.SubElement(root, "trailer")
+        av123_trailer.text = f"[123AV] https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        
         # 保存为美观格式的XML
         xml_str = minidom.parseString(ET.tostring(root, encoding='unicode')).toprettyxml(indent="  ")
+        
+        # 确定输出目录
+        output_dir = self.output_dir  # 默认目录
+        
+        # 如果有作者信息，创建作者子目录
+        if author_info and "id" in author_info:
+            author_id = author_info["id"]
+            author_name = author_info.get("name", "")
+            
+            # 清理作者名称以用于路径
+            author_name_clean = self._clean_filename(author_name)
+            
+            # 创建作者子目录 (格式: 作者名_id)
+            author_subdir = f"{author_name_clean}_{author_id}" if author_name_clean else f"author_{author_id}"
+            author_dir = os.path.join(self.authors_dir, author_subdir)
+            os.makedirs(author_dir, exist_ok=True)
+            
+            # 使用作者子目录作为输出目录
+            output_dir = author_dir
+            logger.info(_("jellyfin.using_author_dir").format(dir=author_dir))
+            
+        # 如果有女优信息，创建女优子目录
+        elif actress_info and "id" in actress_info:
+            actress_id = actress_info["id"]
+            actress_name = actress_info.get("name", "")
+            
+            # 清理女优名称以用于路径
+            actress_name_clean = self._clean_filename(actress_name)
+            
+            # 创建女优子目录 (格式: 女优名_id)
+            actress_subdir = f"{actress_name_clean}_{actress_id}" if actress_name_clean else f"actress_{actress_id}"
+            actress_dir = os.path.join(self.actresses_dir, actress_subdir)
+            os.makedirs(actress_dir, exist_ok=True)
+            
+            # 使用女优子目录作为输出目录
+            output_dir = actress_dir
+            logger.info(_("jellyfin.using_actress_dir").format(dir=actress_dir))
         
         # 定义输出文件名，简化为只用视频ID
         output_filename = f"FC2-PPV-{video_id}"
         
         # 保存NFO文件
-        nfo_path = os.path.join(self.output_dir, f"{output_filename}.nfo")
+        nfo_path = os.path.join(output_dir, f"{output_filename}.nfo")
         try:
             with open(nfo_path, "w", encoding="utf-8") as f:
                 f.write(xml_str)
@@ -397,7 +490,7 @@ class JellyfinMetadataGenerator:
                     image_ext = ".jpg"  # 默认使用jpg扩展名
                     
                 # 设置目标路径，使用Jellyfin标准的-poster后缀
-                poster_path = os.path.join(self.output_dir, f"{output_filename}-poster{image_ext}")
+                poster_path = os.path.join(output_dir, f"{output_filename}-poster{image_ext}")
                 
                 # 复制图片
                 shutil.copy(image_path, poster_path)
@@ -405,10 +498,22 @@ class JellyfinMetadataGenerator:
             except Exception as e:
                 logger.error(_("jellyfin.copy_poster_failed").format(error=str(e)))
                 poster_path = None
+        
+        # 创建空的MP4文件作为占位符
+        mp4_path = os.path.join(output_dir, f"{output_filename}.mp4")
+        try:
+            # 创建0字节的空MP4文件
+            with open(mp4_path, "wb") as f:
+                pass
+            logger.info(_("jellyfin.create_placeholder_success").format(path=mp4_path))
+        except Exception as e:
+            logger.error(_("jellyfin.create_placeholder_failed").format(error=str(e)))
+            mp4_path = None
                 
         return {
             "nfo_path": nfo_path,
             "poster_path": poster_path,
+            "mp4_path": mp4_path,
             "video_id": video_id
         }
     

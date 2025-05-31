@@ -80,6 +80,13 @@ def print_usage():
   python run.py -l {target_lang}                 # {_('example_lang', '使用英文界面')}
   python run.py --clear-cache         # {_('example_clear_cache', '清除所有缓存数据')}
   python run.py -w 5656 --jellyfin    # {_('example_jellyfin', '分析作者视频并生成Jellyfin元数据')}
+
+高级用法:
+  # 使用20个线程分析作者视频，生成Jellyfin元数据，并使用英文界面
+  python run.py -w 5656 -t 20 --jellyfin -l en
+  
+  # 批量分析多个作者，使用最大50个线程，不下载缩略图但获取磁力链接，并生成Jellyfin元数据
+  python run.py -b 5656,3524,4461,7890,6543,2109 -t 50 --no-image --jellyfin
 """
     print(usage)
 
@@ -679,11 +686,12 @@ def process_multiple_ids(
                 
                 if videos_info:
                     entity_info = {"id": entity_id, "name": entity_name} if entity_name else {"id": entity_id}
-                    metadata_files = jellyfin_generator.batch_generate_metadata(
+                    import asyncio
+                    metadata_files = asyncio.run(jellyfin_generator.batch_generate_metadata(
                         videos_info,
                         author_info=entity_info if not is_actress else None,
                         actress_info=entity_info if is_actress else None
-                    )
+                    ))
                     total_metadata_count += len(metadata_files)
             
             if total_metadata_count > 0:
