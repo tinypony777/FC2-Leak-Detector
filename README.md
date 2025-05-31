@@ -35,6 +35,16 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
  **高效缓存机制** - 智能缓存减少重复请求  
  **Jellyfin元数据支持** - 为已流出视频生成Jellyfin兼容的NFO文件和海报图片，方便整合到媒体库
 
+### Jellyfin元数据说明
+生成的Jellyfin元数据包含以下内容：
+- NFO文件：包含视频标题、描述、外部链接等信息
+- 海报图片：视频缩略图作为海报
+- 占位MP4文件：**注意：这些是0字节的空文件，不能直接播放**，仅用于在Jellyfin中显示视频条目
+- 观看链接：NFO文件中包含MissAV和123AV的观看链接，可通过预告片按钮或外部链接访问
+- 磁力链接：如果可用，NFO文件中会包含磁力链接，用于下载视频
+
+要观看视频，您需要点击Jellyfin界面中的预告片按钮跳转到在线观看网站，或使用磁力链接下载视频。
+
 ### 安装指南
 
 #### 系统要求
@@ -299,6 +309,16 @@ See the [complete changelog](CHANGELOG.md) for more details.
 **Efficient Caching** - Smart caching to reduce duplicate requests  
 **Jellyfin Metadata Support** - Generate Jellyfin-compatible NFO files and poster images for leaked videos, making it easy to integrate into your media library
 
+### Jellyfin Metadata Notes
+The generated Jellyfin metadata includes:
+- NFO files: Contains video title, description, external links, and other information
+- Poster images: Video thumbnails as posters
+- Placeholder MP4 files: **Note: These are 0-byte empty files that cannot be played directly**, only used to display video entries in Jellyfin
+- Watch links: The NFO files contain links to MissAV and 123AV for online viewing, accessible via the trailer button or external links
+- Magnet links: If available, the NFO files include magnet links for downloading the videos
+
+To watch the videos, you need to click the trailer button in the Jellyfin interface to jump to online viewing websites, or use the magnet links to download the videos.
+
 ### Installation Guide
 
 #### System Requirements
@@ -562,6 +582,16 @@ FC2流出チェッカーは、fc2ppvdb.comに基づいて構築された専門�
 **詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成  
 **効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ  
 **Jellyfin メタデータサポート** - 流出したビデオ向けにJellyfin互換のNFOファイルとポスター画像を生成し、メディアライブラリーへの統合を容易にします
+
+### Jellyfinメタデータについて
+生成されるJellyfinメタデータには以下が含まれます：
+- NFOファイル：ビデオのタイトル、説明、外部リンクなどの情報を含む
+- ポスター画像：ビデオのサムネイルをポスターとして使用
+- プレースホルダーMP4ファイル：**注意：これらは0バイトの空ファイルで、直接再生することはできません**。Jellyfin内でビデオエントリを表示するためだけに使用されます
+- 視聴リンク：NFOファイルにはMissAVと123AVへのオンライン視聴リンクが含まれており、予告編ボタンまたは外部リンクからアクセスできます
+- マグネットリンク：利用可能な場合、NFOファイルにはビデオをダウンロードするためのマグネットリンクが含まれています
+
+ビデオを視聴するには、Jellyfinインターフェースの予告編ボタンをクリックしてオンライン視聴サイトにジャンプするか、マグネットリンクを使用してビデオをダウンロードする必要があります。
 
 ### インストールガイド
 

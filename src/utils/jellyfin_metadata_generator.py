@@ -329,8 +329,8 @@ class JellyfinMetadataGenerator:
             
         # 添加观看链接
         plot_text += f"\n\n{_('jellyfin.watch_links')}\n"
-        plot_text += f"MissAV: <a href=\"https://missav.ws/dm14/en/fc2-ppv-{video_id}\">https://missav.ws/dm14/en/fc2-ppv-{video_id}</a>\n"
-        plot_text += f"123AV: <a href=\"https://123av.com/en/dm2/v/fc2-ppv-{video_id}\">https://123av.com/en/dm2/v/fc2-ppv-{video_id}</a>\n"
+        plot_text += f"MissAV: https://missav.ws/dm14/en/fc2-ppv-{video_id}\n"
+        plot_text += f"123AV: https://123av.com/en/dm2/v/fc2-ppv-{video_id}\n"
             
         # 如果有磁力链接，添加到情节介绍
         magnets = video_info.get("magnets", []) or ([video_info.get("magnet")] if video_info.get("magnet") else [])
@@ -338,11 +338,15 @@ class JellyfinMetadataGenerator:
             plot_text += "\n" + _("jellyfin.magnet_links").format() + "\n"
             for idx, magnet in enumerate(magnets, 1):
                 if magnet:
-                    plot_text += f"{idx}. <a href=\"{magnet}\">{magnet}</a>\n"
+                    plot_text += f"{idx}. {magnet}\n"
                     
         # 添加情节介绍
         ET.SubElement(root, "plot").text = plot_text.strip()
         ET.SubElement(root, "outline").text = title
+        
+        # 方法4：添加预告片链接（在Jellyfin中显示为可点击按钮）
+        # 使用Jellyfin和Kodi官方支持的格式
+        ET.SubElement(root, "trailer").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
         
         # 添加锁定标记，防止元数据被覆盖
         ET.SubElement(root, "lockdata").text = "true"
@@ -417,30 +421,9 @@ class JellyfinMetadataGenerator:
         av123_id.text = f"fc2-ppv-{video_id}"
         
         # 方法3：添加外部链接信息
-        externallinks = ET.SubElement(root, "externallinks")
-        
-        # 使用标准格式添加链接
-        missav_link = ET.SubElement(externallinks, "link")
-        missav_link.text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
-        missav_link.set("name", "MissAV")
-        
-        av123_link = ET.SubElement(externallinks, "link")
-        av123_link.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
-        av123_link.set("name", "123AV")
-        
-        # 方法4：添加预告片链接（在Jellyfin中显示为可点击按钮）
-        # 使用Jellyfin和Kodi兼容格式
-        ET.SubElement(root, "trailer").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
-        ET.SubElement(root, "trailer").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
-        
-        # 方法5：添加特殊标记，帮助Jellyfin识别链接
-        # 添加MissAV和123AV作为媒体源
-        ET.SubElement(root, "source").text = "MissAV"
-        ET.SubElement(root, "source").text = "123AV"
-        
-        # 添加媒体URL
-        ET.SubElement(root, "mediaurl").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
-        ET.SubElement(root, "mediaurl").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
+        # 使用标准格式添加链接 - 使用官方支持的格式
+        ET.SubElement(root, "url").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        ET.SubElement(root, "url").text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         
         # 保存为美观格式的XML
         xml_str = minidom.parseString(ET.tostring(root, encoding='unicode')).toprettyxml(indent="  ")
@@ -449,7 +432,7 @@ class JellyfinMetadataGenerator:
         output_dir = self.output_dir  # 默认目录
         
         # 如果有作者信息，创建作者子目录
-        if author_info and "id" in author_info:
+        if author_info and "id" in author_info and not actress_info:
             author_id = author_info["id"]
             author_name = author_info.get("name", "")
             
@@ -686,6 +669,12 @@ class JellyfinMetadataGenerator:
         batch_size = 5
         total_batches = (len(leaked_videos) + batch_size - 1) // batch_size
         
+        # 记录日志，显示当前处理的是作者还是女优
+        if author_info and "id" in author_info:
+            logger.info(f"处理作者ID: {author_info['id']}, 名称: {author_info.get('name', '未知')}")
+        elif actress_info and "id" in actress_info:
+            logger.info(f"处理女优ID: {actress_info['id']}, 名称: {actress_info.get('name', '未知')}")
+        
         for batch_idx in range(total_batches):
             start_idx = batch_idx * batch_size
             end_idx = min(start_idx + batch_size, len(leaked_videos))
@@ -704,7 +693,7 @@ class JellyfinMetadataGenerator:
                 # 查找对应的图片路径
                 image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
                 
-                # 创建生成元数据的任务
+                # 创建生成元数据的任务 - 确保正确传递author_info和actress_info参数
                 task = self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
                 tasks.append(task)
             
