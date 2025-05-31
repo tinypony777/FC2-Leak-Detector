@@ -130,6 +130,38 @@ def extract_writer_info():
         return False
 
 
+def is_leaked(result):
+    """
+    判断视频是否已泄露
+    
+    参数:
+        result: 视频结果对象
+        
+    返回:
+        bool: 是否已泄露
+    """
+    # 如果leaked字段存在并且为True，直接返回True
+    if result.get("leaked") is True:
+        return True
+    
+    status = result.get("status")
+    
+    # 如果status是available，则视为已泄露
+    if status == "available":
+        return True
+        
+    # 如果status是布尔类型
+    if isinstance(status, bool):
+        return status
+        
+    # 如果status是字符串且为leaked、yes或true
+    if isinstance(status, str) and status.lower() in ["leaked", "yes", "true"]:
+        return True
+        
+    # 默认为未泄露
+    return False
+
+
 def check_videos(
     target_id, is_actress=False, threads=None, with_magnet=True, download_images=True
 ):
