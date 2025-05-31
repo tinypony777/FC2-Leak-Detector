@@ -33,6 +33,7 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
  **图片下载** - 自动下载视频缩略图  
  **详细报告生成** - 生成全面的分析报告，支持文本和JSON格式  
  **高效缓存机制** - 智能缓存减少重复请求  
+ **Jellyfin元数据支持** - 为已流出视频生成Jellyfin兼容的NFO文件和海报图片，方便整合到媒体库
 
 ### 安装指南
 
@@ -96,6 +97,7 @@ python run.py [选项]
   --no-image                不下载视频缩略图
   -l LANG, --lang LANG      设置界面语言 (支持: zh, en, ja)
   --clear-cache             清除所有缓存数据
+  --jellyfin                为已流出视频生成Jellyfin元数据（NFO文件和海报）
 ```
 
 #### 示例
@@ -133,6 +135,9 @@ python run.py -l en
 
 # 清除所有缓存
 python run.py --clear-cache
+
+# 分析作者视频并生成Jellyfin元数据
+python run.py -w 5656 --jellyfin
 ```
 
 > **注意**: 本项目默认语言为中文(zh)。如果您希望使用英文或日文界面，只需使用 `-l` 参数设置一次您的首选语言即可。此设置将保存在 `i18n/preference.json` 文件中，并在您更改之前的所有后续运行中使用。
@@ -271,6 +276,7 @@ See the [complete changelog](CHANGELOG.md) for more details.
 **Image Download** - Automatically download video thumbnails  
 **Detailed Report Generation** - Generate comprehensive analysis reports, supporting text and JSON formats  
 **Efficient Caching** - Smart caching to reduce duplicate requests  
+**Jellyfin Metadata Support** - Generate Jellyfin-compatible NFO files and poster images for leaked videos, making it easy to integrate into your media library
 
 ### Installation Guide
 
@@ -334,6 +340,7 @@ Options:
   --no-image                Don't download video thumbnails
   -l LANG, --lang LANG      Set interface language (supported: zh, en, ja)
   --clear-cache             Clear all cache data
+  --jellyfin                Generate Jellyfin metadata (NFO files and posters) for leaked videos
 ```
 
 #### Examples
@@ -371,6 +378,9 @@ python run.py -l ja
 
 # Clear all cache
 python run.py --clear-cache
+
+# Analyze author videos and generate Jellyfin metadata
+python run.py -w 5656 --jellyfin
 ```
 
 > **Note**: The default language for this project is Chinese (zh). If you prefer English or Japanese, you can use the `-l` parameter once to set your preferred language. This setting will be saved in `i18n/preference.json` and will be used for all future runs until you change it again.
@@ -509,6 +519,7 @@ FC2流出チェッカーは、fc2ppvdb.comに基づいて構築された専門�
 **画像ダウンロード** - 動画のサムネイル画像を自動的にダウンロード  
 **詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成  
 **効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ  
+**Jellyfin メタデータサポート** - 流出したビデオ向けにJellyfin互換のNFOファイルとポスター画像を生成し、メディアライブラリーへの統合を容易にします
 
 ### インストールガイド
 
@@ -572,6 +583,7 @@ python run.py [オプション]
   --no-image                ビデオサムネイルをダウンロードしない
   -l LANG, --lang LANG      インターフェース言語を設定（対応: zh, en, ja）
   --clear-cache             すべてのキャッシュデータをクリア
+  --jellyfin                流出したビデオ向けにJellyfinメタデータ（NFOファイルとポスター）を生成
 ```
 
 #### 使用例
@@ -609,6 +621,9 @@ python run.py -l zh
 
 # すべてのキャッシュをクリア
 python run.py --clear-cache
+
+# 作者のビデオを分析しJellyfinメタデータを生成
+python run.py -w 5656 --jellyfin
 ```
 
 > **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。日本語または英語を使用したい場合は、`-l`パラメータを一度使用すれば設定が`i18n/preference.json`ファイルに保存され、変更するまで全ての起動時にその言語が使用されます。
