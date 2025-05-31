@@ -736,7 +736,7 @@ class JellyfinMetadataGenerator:
                         results.append(result)
                     
                     # 单线程模式下，每个请求之间添加更长的等待时间
-                    wait_time = 3.0  # 固定为3秒
+                    wait_time = 2.0  # 固定为2秒
                     logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
                     await asyncio.sleep(wait_time)
             else:
@@ -769,6 +769,8 @@ class JellyfinMetadataGenerator:
                     wait_time = self.min_wait_time * 4
                 elif self.rate_limit_count > 5:
                     wait_time = self.min_wait_time * 3
+                elif use_single_thread:
+                    wait_time = 1.0  # 单线程模式下批次间等待1秒
                 else:
                     wait_time = self.min_wait_time
                 
