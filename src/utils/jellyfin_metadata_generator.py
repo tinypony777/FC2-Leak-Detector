@@ -534,8 +534,9 @@ class JellyfinMetadataGenerator:
             
         # 添加观看链接
         plot_text += f"\n\n{_('jellyfin.watch_links')}\n"
-        plot_text += f"MissAV: https://missav.ws/dm14/en/fc2-ppv-{video_id}\n"
-        plot_text += f"123AV: https://123av.com/en/dm2/v/fc2-ppv-{video_id}\n"
+        # 使用HTML <a>标签创建可点击链接
+        plot_text += f'<a href="https://missav.ws/dm14/en/fc2-ppv-{video_id}">MissAV</a>: https://missav.ws/dm14/en/fc2-ppv-{video_id}\n'
+        plot_text += f'<a href="https://123av.com/en/dm2/v/fc2-ppv-{video_id}">123AV</a>: https://123av.com/en/dm2/v/fc2-ppv-{video_id}\n'
             
         # 如果有磁力链接，添加到情节介绍
         magnets = video_info.get("magnets", []) or ([video_info.get("magnet")] if video_info.get("magnet") else [])
@@ -543,7 +544,8 @@ class JellyfinMetadataGenerator:
             plot_text += "\n" + _("jellyfin.magnet_links").format() + "\n"
             for idx, magnet in enumerate(magnets, 1):
                 if magnet:
-                    plot_text += f"{idx}. {magnet}\n"
+                    # 创建可点击的磁链链接
+                    plot_text += f'{idx}. <a href="{magnet}">{magnet}</a>\n'
                     
         # 添加情节介绍
         ET.SubElement(root, "plot").text = plot_text.strip()
