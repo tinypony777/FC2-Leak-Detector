@@ -140,6 +140,27 @@ python run.py --clear-cache
 python run.py -w 5656 --jellyfin
 ```
 
+#### 高级用法
+
+以下是一些组合多个参数的高级用法示例：
+
+```bash
+# 使用20个线程分析作者视频，生成Jellyfin元数据，并使用英文界面
+python run.py -w 5656 -t 20 --jellyfin -l en
+
+# 批量分析多个作者，使用最大50个线程，不下载缩略图但获取磁力链接，并生成Jellyfin元数据
+python run.py -b 5656,3524,4461,7890,6543,2109 -t 50 --no-image --jellyfin
+
+# 分析女优视频，使用15个线程，不获取磁力链接，生成Jellyfin元数据，并使用日文界面
+python run.py -a 5711 -t 15 --no-magnet --jellyfin -l ja
+
+# 通过视频ID找到作者并分析其所有视频，使用30个线程，生成Jellyfin元数据
+python run.py -v 1234567 -t 30 --jellyfin
+
+# 批量分析多个女优，使用25个线程，不获取磁力链接和缩略图，生成Jellyfin元数据
+python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
+```
+
 > **注意**: 本项目默认语言为中文(zh)。如果您希望使用英文或日文界面，只需使用 `-l` 参数设置一次您的首选语言即可。此设置将保存在 `i18n/preference.json` 文件中，并在您更改之前的所有后续运行中使用。
 
 ### 配置说明
@@ -383,6 +404,27 @@ python run.py --clear-cache
 python run.py -w 5656 --jellyfin
 ```
 
+#### Advanced Usage
+
+Below are some advanced usage examples combining multiple parameters:
+
+```bash
+# Use 20 threads to analyze author videos, generate Jellyfin metadata, and use English interface
+python run.py -w 5656 -t 20 --jellyfin -l en
+
+# Batch analyze multiple authors, use up to 50 threads, don't download thumbnails but fetch magnet links, and generate Jellyfin metadata
+python run.py -b 5656,3524,4461,7890,6543,2109 -t 50 --no-image --jellyfin
+
+# Analyze actress videos, use 15 threads, don't fetch magnet links, generate Jellyfin metadata, and use Japanese interface
+python run.py -a 5711 -t 15 --no-magnet --jellyfin -l ja
+
+# Find author by video ID and analyze all videos from that author, use 30 threads, and generate Jellyfin metadata
+python run.py -v 1234567 -t 30 --jellyfin
+
+# Batch analyze multiple actresses, use 25 threads, don't fetch magnet links and thumbnails, and generate Jellyfin metadata
+python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
+```
+
 > **Note**: The default language for this project is Chinese (zh). If you prefer English or Japanese, you can use the `-l` parameter once to set your preferred language. This setting will be saved in `i18n/preference.json` and will be used for all future runs until you change it again.
 
 ### Configuration
@@ -624,6 +666,27 @@ python run.py --clear-cache
 
 # 作者のビデオを分析しJellyfinメタデータを生成
 python run.py -w 5656 --jellyfin
+```
+
+#### 高级用法
+
+以下は、複数のパラメータを組み合わせた高度な使用例です：
+
+```bash
+# 使用20個スレッドで作者のビデオを分析し、Jellyfinメタデータを生成し、英語インターフェースを使用
+python run.py -w 5656 -t 20 --jellyfin -l en
+
+# 複数の作者をバッチ分析し、最大50個のスレッドを使用し、サムネイルをダウンロードせずに磁力リンクを取得し、Jellyfinメタデータを生成
+python run.py -b 5656,3524,4461,7890,6543,2109 -t 50 --no-image --jellyfin
+
+# 女優のビデオを分析し、最大15個のスレッドを使用し、磁力リンクを取得せずにJellyfinメタデータを生成し、日本語インターフェースを使用
+python run.py -a 5711 -t 15 --no-magnet --jellyfin -l ja
+
+# 動画IDを使用して作者を見つけ、そのすべてのビデオを分析し、最大30個のスレッドを使用し、Jellyfinメタデータを生成
+python run.py -v 1234567 -t 30 --jellyfin
+
+# 複数の女優をバッチ分析し、最大25個のスレッドを使用し、磁力リンクとサムネイルを取得せずにJellyfinメタデータを生成
+python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
 ```
 
 > **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。日本語または英語を使用したい場合は、`-l`パラメータを一度使用すれば設定が`i18n/preference.json`ファイルに保存され、変更するまで全ての起動時にその言語が使用されます。

@@ -495,6 +495,8 @@
     "save_metadata_failed": "Failed to save metadata file: {error}",
     "copy_poster_success": "Successfully copied poster image: {path}",
     "copy_poster_failed": "Failed to copy poster image: {error}",
+    "create_placeholder_success": "Successfully created MP4 placeholder file: {path}",
+    "create_placeholder_failed": "Failed to create MP4 placeholder file: {error}",
     "no_leaked_videos": "No leaked videos found, skipping Jellyfin metadata generation",
     "generate_complete": "Metadata generation complete, successfully generated {count} metadata files",
     "ensure_dir": "Ensuring directory exists: {path}",
@@ -504,6 +506,9 @@
     "mosaic_type": "Mosaic type: {type}",
     "duration": "Duration: {duration}",
     "release_date": "Release date: {date}",
-    "tags_found": "Tags found: {tags}"
+    "tags_found": "Tags found: {tags}",
+    "watch_links": "Watch Links:",
+    "using_author_dir": "Using author category directory: {dir}",
+    "using_actress_dir": "Using actress category directory: {dir}"
   }
 } 
