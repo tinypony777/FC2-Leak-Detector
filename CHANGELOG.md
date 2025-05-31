@@ -17,6 +17,19 @@
 
 # 简体中文
 
+## [1.2.2] - 2025-05-31
+
+### 新增
+- 为独立使用的`--jellyfin`参数添加功能，可单独查找48小时内的分析结果生成元数据
+- 添加详细的Jellyfin元数据翻译，支持多语言界面
+
+### 变更
+- 重新排序命令行选项和示例，按重要性排列，提高用户体验
+- 优化Jellyfin元数据生成器的性能：添加速率限制检测，错误达到阈值后切换到单线程模式
+- 重构jellyfin_metadata_generator.py，减少代码重复，提高可维护性
+- 改进速率限制处理机制，优化等待时间策略
+- 当禁用网络请求时完全跳过等待时间，提高处理效率
+
 ## [1.2.1] - 2025-05-31
 
 ### 新增
@@ -135,6 +148,17 @@
 
 **Note**: Future development plans for this project (including GUI client, web support, database storage, etc.) will be continued in another yet-to-be-disclosed project. We will update this information when the new project is made public.
 
+## [1.2.2] - 2025-05-31
+
+### Added
+- Added functionality for standalone `--jellyfin` parameter to find analysis results from the last 48 hours
+- Added detailed Jellyfin metadata translations with multi-language support
+
+### Changed
+- Rearranged CLI options and examples by importance for better user experience
+- Optimized Jellyfin metadata generator performance: added rate limit detection, switch to single thread mode after error threshold
+- Refactored jellyfin_metadata_generator.py to reduce code duplication and improve maintainability
+
 ## [1.2.1] - 2025-05-31
 
 ### Added
@@ -252,6 +276,19 @@
 ## 開発計画について
 
 **注意**: 本プロジェクトの将来の開発計画（GUIクライアント、ウェブサポート、データベースストレージなど）は、まだ公開されていない別のプロジェクトで継続される予定です。新しいプロジェクトが公開された際には、ここで情報を更新します。
+
+## [1.2.2] - 2025-05-31
+
+### 追加
+- スタンドアロンの`--jellyfin`パラメータに過去48時間の分析結果を検索する機能を追加
+- 多言語対応の詳細なJellyfinメタデータ翻訳を追加
+
+### 変更
+- CLIオプションと例を重要度に応じて並べ替え、ユーザーエクスペリエンスを向上
+- Jellyfinメタデータジェネレータのパフォーマンスを最適化：レート制限検出を追加、エラー閾値後に単一スレッドモードに切り替え
+- jellyfin_metadata_generator.pyをリファクタリングし、コードの重複を減らし、保守性を向上
+- レート制限処理メカニズムを改善し、待機時間戦略を最適化
+- ネットワークリクエストが無効な場合は待機時間を完全にスキップし、効率を向上
 
 ## [1.2.1] - 2025-05-31
 
