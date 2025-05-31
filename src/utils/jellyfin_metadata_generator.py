@@ -36,10 +36,6 @@ class JellyfinMetadataGenerator:
         self.output_dir = output_dir or os.path.join(BASE_CACHE_DIR, "jellyfin")
         os.makedirs(self.output_dir, exist_ok=True)
         
-        # 创建用于存放图片的目录
-        self.poster_dir = os.path.join(self.output_dir, "posters")
-        os.makedirs(self.poster_dir, exist_ok=True)
-        
         logger.info(_("jellyfin.initialize").format(path=self.output_dir))
         
         # FC2PPVDB 网站的基础URL
@@ -395,16 +391,13 @@ class JellyfinMetadataGenerator:
         poster_path = None
         if image_path and os.path.exists(image_path):
             try:
-                # 确保poster目录存在
-                os.makedirs(self.poster_dir, exist_ok=True)
-                
                 # 获取图片扩展名
                 image_ext = os.path.splitext(image_path)[1]
                 if not image_ext:
                     image_ext = ".jpg"  # 默认使用jpg扩展名
                     
-                # 设置目标路径，简化为只用视频ID
-                poster_path = os.path.join(self.poster_dir, f"{output_filename}-poster{image_ext}")
+                # 设置目标路径，使用Jellyfin标准的-poster后缀
+                poster_path = os.path.join(self.output_dir, f"{output_filename}-poster{image_ext}")
                 
                 # 复制图片
                 shutil.copy(image_path, poster_path)
