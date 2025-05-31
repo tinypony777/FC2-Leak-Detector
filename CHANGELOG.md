@@ -17,6 +17,26 @@
 
 # 简体中文
 
+## [1.2.0] - 2025-05-31
+
+### 新增
+
+- 添加Jellyfin媒体服务器元数据生成功能
+  - 支持将FC2视频分析结果转换为Jellyfin兼容的NFO文件
+  - 自动生成视频海报图片（基于缩略图）
+  - 添加--jellyfin命令行参数，使其成为可选功能
+  - 元数据包含视频基本信息、视频标签、磁力链接和作者信息
+- 优化文件结构，使海报图片与视频文件在同一目录，符合Jellyfin标准
+
+### 变更
+
+- 移除冗余代码和未使用的方法
+- 优化配置项和日志输出
+
+### 修复
+
+- 修复各种问题并改进配置
+
 ## [1.1.1] - 2025-05-31
 
 ### 修复
@@ -101,6 +121,26 @@
 
 **Note**: Future development plans for this project (including GUI client, web support, database storage, etc.) will be continued in another yet-to-be-disclosed project. We will update this information when the new project is made public.
 
+## [1.2.0] - 2025-05-31
+
+### Added
+
+- Added Jellyfin media server metadata generation functionality
+  - Support for converting FC2 video analysis results to Jellyfin-compatible NFO files
+  - Automatic generation of video poster images (based on thumbnails)
+  - Added --jellyfin command line parameter as an optional feature
+  - Metadata includes video basic information, video tags, magnet links, and author information
+- Optimized file structure to place poster images in the same directory as video files, complying with Jellyfin standards
+
+### Changed
+
+- Removed redundant code and unused methods
+- Optimized configuration items and log output
+
+### Fixed
+
+- Fixed various issues and improved configuration
+
 ## [1.1.1] - 2025-05-31
 
 ### Fixed
@@ -184,6 +224,26 @@
 ## 開発計画について
 
 **注意**: 本プロジェクトの将来の開発計画（GUIクライアント、ウェブサポート、データベースストレージなど）は、まだ公開されていない別のプロジェクトで継続される予定です。新しいプロジェクトが公開された際には、ここで情報を更新します。
+
+## [1.2.0] - 2025-05-31
+
+### 追加
+
+- Jellyfin メディアサーバーのメタデータ生成機能を追加
+  - FC2 ビデオ分析結果を Jellyfin 互換の NFO ファイルに変換するサポート
+  - ビデオポスター画像の自動生成（サムネイルに基づく）
+  - オプション機能として --jellyfin コマンドラインパラメータを追加
+  - メタデータにはビデオの基本情報、ビデオタグ、マグネットリンク、作者情報が含まれる
+- Jellyfin 標準に準拠するため、ポスター画像をビデオファイルと同じディレクトリに配置するよう最適化
+
+### 変更
+
+- 冗長なコードと未使用のメソッドを削除
+- 設定項目とログ出力を最適化
+
+### 修正
+
+- さまざまな問題を修正し、構成を改善
 
 ## [1.1.1] - 2025-05-31
 
