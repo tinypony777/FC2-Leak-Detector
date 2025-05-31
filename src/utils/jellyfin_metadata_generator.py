@@ -766,7 +766,7 @@ class JellyfinMetadataGenerator:
             if batch_idx < total_batches - 1:
                 # 如果遇到较多429错误，增加等待时间
                 if self.rate_limit_count > self.skip_network_threshold:
-                    wait_time = self.min_wait_time * 4
+                    wait_time = 5.0  # 最长等待时间固定为5秒
                 elif self.rate_limit_count > 5:
                     wait_time = self.min_wait_time * 3
                 elif use_single_thread:
