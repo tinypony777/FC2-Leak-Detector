@@ -269,8 +269,8 @@
   "example_no_image": "サムネイルなしで作者のビデオを分析",
   "example_lang": "中国語インターフェースを使用",
   "usage_clear_cache": "すべてのキャッシュデータをクリア",
-  "example_clear_cache": "すべてのキャッシュデータをクリア",
-  "clear_cache_start": "すべてのキャッシュデータをクリアしています...",
+  "example_clear_cache": "すべてのキャッシュをクリア",
+  "clear_cache_start": "すべてのキャッシュデータのクリアを開始...",
   "clear_cache_success": "すべてのキャッシュデータが正常にクリアされました",
   "clear_cache_failed": "キャッシュデータのクリアに失敗しました",
   
@@ -524,8 +524,8 @@
     "javbus": "JavBus"
   },
   
-  "usage_jellyfin": "Jellyfin互換のメタデータを生成",
-  "example_jellyfin": "作者の動画を分析してJellyfinメタデータを生成",
+  "usage_jellyfin": "Jellyfin互換のメタデータを生成；単独で使用可能、最近48時間の分析結果を検索",
+  "example_jellyfin": "作者の動画を分析しJellyfinメタデータを生成",
   
   "advanced_usage": "高度な使用法",
   "advanced_example1": "20スレッドで作者の動画を分析し、Jellyfinメタデータを生成し、英語インターフェースを使用",
@@ -570,5 +570,51 @@
     "watch_links": "視聴リンク:",
     "using_author_dir": "作者カテゴリディレクトリを使用: {dir}",
     "using_actress_dir": "女優カテゴリディレクトリを使用: {dir}"
+  },
+  
+  "magnet_only": {
+    "retry_limit": "リトライ制限",
+    "retry_success_ratio": "リトライ成功率",
+    "display_count": "表示数",
+    "results_title": "マグネット分析結果",
+    "top_title": "トップマグネットランキング",
+    "table_title": "マグネット詳細",
+    "rank": "ランク",
+    "url": "URL",
+    "size": "サイズ",
+    "seeders": "シーダー",
+    "leechers": "リーチャー",
+    "total_count": "合計",
+    "empty_result": "マグネット情報が見つかりません"
+  },
+  
+  "jellyfin_only": {
+    "no_reports": "分析結果ファイルが見つかりません。最初に-a/-w/-b/-ba/-vパラメータを使用して分析してください",
+    "no_recent_reports": "過去48時間以内の分析結果ファイルが見つかりません。最初に-a/-w/-b/-ba/-vパラメータを使用して分析してください",
+    "found_reports": "過去48時間以内の{count}件の分析結果が見つかりました：",
+    "unknown_name": "不明",
+    "entity_name": "名前",
+    "analysis_time": "分析時間",
+    "select_report": "使用するレポート番号を入力してください（キャンセルするにはEnterを押してください）",
+    "operation_cancelled": "操作がキャンセルされました",
+    "invalid_number": "無効な番号",
+    "selected_report": "選択済み",
+    "confirm_selection": "このレポートを使用してJellyfin メタデータを生成しますか？ (y/n)",
+    "using_cache": "キャッシュデータを使用中",
+    "invalid_cache": "キャッシュデータが無効または不完全です",
+    "cache_expired": "キャッシュデータが期限切れです",
+    "cache_error": "キャッシュ読み取りエラー",
+    "parsing_report": "レポートファイルからビデオ情報を解析中...",
+    "parse_error": "レポートファイルの解析エラー",
+    "parsing_summary": "流出済みビデオ一覧ファイルから解析を試みています...",
+    "summary_not_found": "流出済みビデオ一覧ファイルが見つかりません",
+    "summary_parse_error": "流出済みビデオ一覧ファイルの解析エラー",
+    "no_videos_found": "ビデオ情報が見つかりません",
+    "found_videos": "{count}本のビデオが見つかり、そのうち{leaked}本が流出済み",
+    "jellyfin_metadata": "Jellyfin メタデータ",
+    "generation_success": "{count}個のJellyfin メタデータファイルが正常に生成されました",
+    "generation_failed": "Jellyfin メタデータファイルは生成されませんでした",
+    "invalid_input": "無効な入力",
+    "error": "Jellyfin メタデータの生成中にエラーが発生しました"
   }
 }

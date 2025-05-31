@@ -258,7 +258,7 @@
   "clear_cache_start": "开始清除所有缓存数据...",
   "clear_cache_success": "所有缓存数据已成功清除",
   "clear_cache_failed": "清除缓存数据失败",
-  "usage_jellyfin": "生成Jellyfin兼容的元数据",
+  "usage_jellyfin": "生成Jellyfin兼容的元数据；可单独使用，会查找48小时内的分析结果",
   "example_jellyfin": "分析作者视频并生成Jellyfin元数据",
   
   "advanced_usage": "高级用法",
@@ -504,5 +504,51 @@
     "watch_links": "观看链接:",
     "using_author_dir": "使用作者分类目录: {dir}",
     "using_actress_dir": "使用女优分类目录: {dir}"
+  },
+
+  "magnet_only": {
+    "retry_limit": "检索限制",
+    "retry_success_ratio": "重试成功率",
+    "display_count": "显示数量",
+    "results_title": "磁链分析结果",
+    "top_title": "热门磁链排名",
+    "table_title": "磁链详情",
+    "rank": "排名",
+    "url": "网址",
+    "size": "大小",
+    "seeders": "种子数",
+    "leechers": "下载数",
+    "total_count": "总计",
+    "empty_result": "未找到任何磁链信息"
+  },
+
+  "jellyfin_only": {
+    "no_reports": "未找到任何分析结果文件，请先使用-a/-w/-b/-ba/-v参数进行分析",
+    "no_recent_reports": "未找到48小时内的分析结果文件，请先使用-a/-w/-b/-ba/-v参数进行分析",
+    "found_reports": "找到以下{count}个48小时内的分析结果:",
+    "unknown_name": "未知",
+    "entity_name": "名称",
+    "analysis_time": "分析时间",
+    "select_report": "请输入要使用的报告序号(直接回车取消)",
+    "operation_cancelled": "已取消操作",
+    "invalid_number": "无效的序号",
+    "selected_report": "已选择",
+    "confirm_selection": "是否确认使用此报告生成Jellyfin元数据? (y/n)",
+    "using_cache": "使用缓存数据",
+    "invalid_cache": "缓存数据无效或不完整",
+    "cache_expired": "缓存数据已过期",
+    "cache_error": "读取缓存出错",
+    "parsing_report": "从报告文件解析视频信息...",
+    "parse_error": "解析报告文件出错",
+    "parsing_summary": "尝试从已流出视频总表文件解析...",
+    "summary_not_found": "未找到已流出视频总表文件",
+    "summary_parse_error": "解析已流出视频总表文件出错",
+    "no_videos_found": "未找到任何视频信息",
+    "found_videos": "找到 {count} 个视频，其中 {leaked} 个已流出",
+    "jellyfin_metadata": "Jellyfin元数据",
+    "generation_success": "成功生成 {count} 个Jellyfin元数据文件",
+    "generation_failed": "未生成任何Jellyfin元数据文件",
+    "invalid_input": "无效的输入",
+    "error": "生成Jellyfin元数据时出错"
   }
 } 
