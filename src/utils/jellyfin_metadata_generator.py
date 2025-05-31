@@ -100,20 +100,19 @@ class JellyfinMetadataGenerator:
                             
                             await asyncio.sleep(wait_time)
                             continue
-                            
+                        
                         logger.warning(_("jellyfin.page_fetch_failed").format(status_code=response.status, url=url))
                         return None
                         
-            except (asyncio.TimeoutError, Exception) as e:
-                # 统一处理超时和其他异常
+            except asyncio.TimeoutError:
                 wait_time = self._calculate_wait_time(attempt)
+                logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
+                await asyncio.sleep(wait_time)
                 
-                if isinstance(e, asyncio.TimeoutError):
-                    logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
-                else:
+            except Exception as e:
+                wait_time = self._calculate_wait_time(attempt)
                 logger.error(f"获取页面异常: {str(e)}, URL: {url}")
                 logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
-                
                 await asyncio.sleep(wait_time)
                 
         logger.error(f"达到最大重试次数 ({self.max_retries})，获取页面失败: {url}")
@@ -620,7 +619,7 @@ class JellyfinMetadataGenerator:
             
             # 特殊形式: actress_{id}_Actress_{id}
             actress_id = actress_info["id"]
-                actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
+            actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
             possible_paths.extend([
                 os.path.join(actress_dir_special, f"{video_id}.jpg"),
                 os.path.join(actress_dir_special, "leaked", f"{video_id}.jpg"),

@@ -84,20 +84,20 @@ python run.py [选项]
 
 选项:
   -h, --help                显示帮助信息
-  -c, --config              显示当前配置
-  -s, --sites               显示检查站点列表
   -w ID, --writer ID        分析作者ID的视频
   -a ID, --actress ID       分析女优ID的视频
   -b IDS, --batch IDS       批量处理多个作者ID (用逗号分隔)
   -ba IDS, --batch-actress  批量处理多个女优ID (用逗号分隔)
-  -e, --extract             提取热门作者列表
   -v ID, --video ID         通过视频ID获取作者的所有视频
   -t NUM, --threads NUM     设置并行线程数 (默认值见配置)
+  --jellyfin                为已流出视频生成Jellyfin元数据（NFO文件和海报）；可单独使用，会查找48小时内的分析结果
   --no-magnet               不获取磁力链接
   --no-image                不下载视频缩略图
   -l LANG, --lang LANG      设置界面语言 (支持: zh, en, ja)
+  -c, --config              显示当前配置
+  -s, --sites               显示检查站点列表
+  -e, --extract             提取热门作者列表
   --clear-cache             清除所有缓存数据
-  --jellyfin                为已流出视频生成Jellyfin元数据（NFO文件和海报）
 ```
 
 #### 示例
@@ -115,11 +115,17 @@ python run.py -b 5656,3524,4461
 # 批量分析多个女优
 python run.py -ba 5711,3986,4219
 
-# 提取热门作者列表
-python run.py -e
+# 通过视频ID获取作者的所有视频
+python run.py -v 1234567
 
 # 使用10个线程分析作者视频
 python run.py -w 5656 -t 10
+
+# 分析作者视频并生成Jellyfin元数据
+python run.py -w 5656 --jellyfin
+
+# 使用最近的分析结果生成Jellyfin元数据（无需重新分析）
+python run.py --jellyfin
 
 # 分析女优视频但不获取磁力链接
 python run.py -a 5711 --no-magnet
@@ -127,17 +133,14 @@ python run.py -a 5711 --no-magnet
 # 分析作者视频但不下载缩略图
 python run.py -w 5656 --no-image
 
-# 通过视频ID获取作者的所有视频
-python run.py -v 1234567
-
 # 使用英文界面
 python run.py -l en
 
+# 提取热门作者列表
+python run.py -e
+
 # 清除所有缓存
 python run.py --clear-cache
-
-# 分析作者视频并生成Jellyfin元数据
-python run.py -w 5656 --jellyfin
 ```
 
 #### 高级用法
@@ -159,6 +162,9 @@ python run.py -v 1234567 -t 30 --jellyfin
 
 # 批量分析多个女优，使用25个线程，不获取磁力链接和缩略图，生成Jellyfin元数据
 python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
+
+# 独立使用Jellyfin元数据生成，从最近48小时内的分析结果中选择
+python run.py --jellyfin
 ```
 
 > **注意**: 本项目默认语言为中文(zh)。如果您希望使用英文或日文界面，只需使用 `-l` 参数设置一次您的首选语言即可。此设置将保存在 `i18n/preference.json` 文件中，并在您更改之前的所有后续运行中使用。
@@ -240,6 +246,8 @@ FC2-Leak-Detector/
 - 磁力链接：如果可用，NFO文件中会包含磁力链接，用于下载视频
 
 要观看视频，您需要点击Jellyfin界面中的预告片按钮跳转到在线观看网站，或使用磁力链接下载视频。
+
+单独使用`--jellyfin`参数时，程序会查找48小时内的分析结果，并让您选择一个用于生成元数据。这样可以避免重复分析同一作者或女优的视频，方便快速生成元数据。
 
 #### 分析速度很慢怎么办?
 
@@ -359,20 +367,20 @@ python run.py [options]
 
 Options:
   -h, --help                Show help information
-  -c, --config              Show current configuration
-  -s, --sites               Show check site list
   -w ID, --writer ID        Analyze videos by author ID
   -a ID, --actress ID       Analyze videos by actress ID
   -b IDS, --batch IDS       Batch process multiple author IDs (comma separated)
   -ba IDS, --batch-actress  Batch process multiple actress IDs (comma separated)
-  -e, --extract             Extract popular author list
   -v ID, --video ID         Get all videos from author by video ID
   -t NUM, --threads NUM     Set parallel thread count (default in config)
+  --jellyfin                Generate Jellyfin metadata (NFO files and posters) for leaked videos; can be used independently to find analysis results from the last 48 hours
   --no-magnet               Don't fetch magnet links
   --no-image                Don't download video thumbnails
   -l LANG, --lang LANG      Set interface language (supported: zh, en, ja)
+  -c, --config              Show current configuration
+  -s, --sites               Show check site list
+  -e, --extract             Extract popular author list
   --clear-cache             Clear all cache data
-  --jellyfin                Generate Jellyfin metadata (NFO files and posters) for leaked videos
 ```
 
 #### Examples
@@ -390,11 +398,17 @@ python run.py -b 5656,3524,4461
 # Batch analyze multiple actresses
 python run.py -ba 5711,3986,4219
 
-# Extract popular author list
-python run.py -e
+# Get all videos from author by video ID
+python run.py -v 1234567
 
 # Analyze author videos with 10 threads
 python run.py -w 5656 -t 10
+
+# Analyze author videos and generate Jellyfin metadata
+python run.py -w 5656 --jellyfin
+
+# Use recent analysis results to generate Jellyfin metadata (without re-analyzing)
+python run.py --jellyfin
 
 # Analyze actress videos without magnet links
 python run.py -a 5711 --no-magnet
@@ -402,17 +416,14 @@ python run.py -a 5711 --no-magnet
 # Analyze author videos without thumbnails
 python run.py -w 5656 --no-image
 
-# Get all videos from author by video ID
-python run.py -v 1234567
-
 # Use Japanese interface
 python run.py -l ja
 
+# Extract popular author list
+python run.py -e
+
 # Clear all cache
 python run.py --clear-cache
-
-# Analyze author videos and generate Jellyfin metadata
-python run.py -w 5656 --jellyfin
 ```
 
 #### Advanced Usage
@@ -434,6 +445,9 @@ python run.py -v 1234567 -t 30 --jellyfin
 
 # Batch analyze multiple actresses, use 25 threads, don't fetch magnet links and thumbnails, and generate Jellyfin metadata
 python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
+
+# Generate Jellyfin metadata independently, choosing from analysis results within the last 48 hours
+python run.py --jellyfin
 ```
 
 > **Note**: The default language for this project is Chinese (zh). If you prefer English or Japanese, you can use the `-l` parameter once to set your preferred language. This setting will be saved in `i18n/preference.json` and will be used for all future runs until you change it again.
@@ -516,7 +530,9 @@ The generated Jellyfin metadata includes the following:
 
 To watch videos, you need to click the trailer button in the Jellyfin interface to jump to the online viewing website, or use the magnet link to download the video.
 
-#### What If Analysis is Slow?
+When using the `--jellyfin` parameter independently, the program will search for analysis results from the last 48 hours and let you choose one to generate metadata. This avoids re-analyzing the same author or actress's videos and makes it convenient to quickly generate metadata.
+
+#### Analysis is Slow, What Should I Do?
 
 - Increase parallel thread count (`-t` parameter or modify `max_workers` in config)
 - Reduce the number of videos to analyze
@@ -634,29 +650,29 @@ python run.py [オプション]
 
 オプション:
   -h, --help                ヘルプ情報を表示
+  -w ID, --writer ID        作者IDの動画を分析
+  -a ID, --actress ID       女優IDの動画を分析
+  -b IDS, --batch IDS       複数の作者IDをバッチ処理 (カンマ区切り)
+  -ba IDS, --batch-actress  複数の女優IDをバッチ処理 (カンマ区切り)
+  -v ID, --video ID         動画IDから作者のすべての動画を取得
+  -t NUM, --threads NUM     並列スレッド数を設定 (設定値は設定を参照)
+  --jellyfin                流出した動画のJellyfinメタデータを生成 (NFOファイルとポスター)；単独で使用可能、最近48時間の分析結果を検索
+  --no-magnet               マグネットリンクを取得しない
+  --no-image                動画サムネイルをダウンロードしない
+  -l LANG, --lang LANG      インターフェース言語を設定 (サポート: zh, en, ja)
   -c, --config              現在の設定を表示
   -s, --sites               チェックサイトリストを表示
-  -w ID, --writer ID        作者IDのビデオを分析
-  -a ID, --actress ID       女優IDのビデオを分析
-  -b IDS, --batch IDS       複数の作者IDをバッチ処理（カンマ区切り）
-  -ba IDS, --batch-actress  複数の女優IDをバッチ処理（カンマ区切り）
   -e, --extract             人気作者リストを抽出
-  -v ID, --video ID         作者のすべてのビデオを動画IDから取得
-  -t NUM, --threads NUM     並列スレッド数を設定（デフォルトは設定ファイルを参照）
-  --no-magnet               マグネットリンクを取得しない
-  --no-image                ビデオサムネイルをダウンロードしない
-  -l LANG, --lang LANG      インターフェース言語を設定（対応: zh, en, ja）
   --clear-cache             すべてのキャッシュデータをクリア
-  --jellyfin                流出したビデオ向けにJellyfinメタデータ（NFOファイルとポスター）を生成
 ```
 
-#### 使用例
+#### 例
 
 ```bash
-# 単一の作者の作品を分析
+# 単一作者の作品を分析
 python run.py -w 5656
 
-# 単一の女優の作品を分析
+# 単一女優の作品を分析
 python run.py -a 5711
 
 # 複数の作者をバッチ分析
@@ -665,87 +681,93 @@ python run.py -b 5656,3524,4461
 # 複数の女優をバッチ分析
 python run.py -ba 5711,3986,4219
 
+# 動画IDから作者のすべての動画を取得
+python run.py -v 1234567
+
+# 10スレッドで作者の動画を分析
+python run.py -w 5656 -t 10
+
+# 作者の動画を分析し、Jellyfinメタデータを生成
+python run.py -w 5656 --jellyfin
+
+# 最近の分析結果からJellyfinメタデータを生成 (再分析なし)
+python run.py --jellyfin
+
+# 女優の動画を分析し、マグネットリンクを取得しない
+python run.py -a 5711 --no-magnet
+
+# 作者の動画を分析し、サムネイルをダウンロードしない
+python run.py -w 5656 --no-image
+
+# 英語インターフェースを使用
+python run.py -l en
+
 # 人気作者リストを抽出
 python run.py -e
 
-# 10スレッドで作者のビデオを分析
-python run.py -w 5656 -t 10
-
-# マグネットリンクなしで女優のビデオを分析
-python run.py -a 5711 --no-magnet
-
-# サムネイルなしで作者のビデオを分析
-python run.py -w 5656 --no-image
-
-# 動画IDから作者のすべてのビデオを取得
-python run.py -v 1234567
-
-# 中国語インターフェースを使用
-python run.py -l zh
-
 # すべてのキャッシュをクリア
 python run.py --clear-cache
-
-# 作者のビデオを分析しJellyfinメタデータを生成
-python run.py -w 5656 --jellyfin
 ```
 
-#### 高级用法
+#### 高度な使用法
 
-以下は、複数のパラメータを組み合わせた高度な使用例です：
+以下は、複数のパラメータを組み合わせた高度な使用法の例です：
 
 ```bash
-# 使用20個スレッドで作者のビデオを分析し、Jellyfinメタデータを生成し、英語インターフェースを使用
+# 20スレッドで作者の動画を分析し、Jellyfinメタデータを生成し、英語インターフェースを使用
 python run.py -w 5656 -t 20 --jellyfin -l en
 
-# 複数の作者をバッチ分析し、最大50個のスレッドを使用し、サムネイルをダウンロードせずに磁力リンクを取得し、Jellyfinメタデータを生成
+# 複数の作者をバッチ分析し、最大50スレッドを使用し、サムネイルはダウンロードせずマグネットリンクを取得し、Jellyfinメタデータを生成
 python run.py -b 5656,3524,4461,7890,6543,2109 -t 50 --no-image --jellyfin
 
-# 女優のビデオを分析し、最大15個のスレッドを使用し、磁力リンクを取得せずにJellyfinメタデータを生成し、日本語インターフェースを使用
+# 女優の動画を分析し、15スレッドを使用し、マグネットリンクを取得せず、Jellyfinメタデータを生成し、日本語インターフェースを使用
 python run.py -a 5711 -t 15 --no-magnet --jellyfin -l ja
 
-# 動画IDを使用して作者を見つけ、そのすべてのビデオを分析し、最大30個のスレッドを使用し、Jellyfinメタデータを生成
+# 動画IDから作者を見つけ、その作者のすべての動画を分析し、30スレッドを使用し、Jellyfinメタデータを生成
 python run.py -v 1234567 -t 30 --jellyfin
 
-# 複数の女優をバッチ分析し、最大25個のスレッドを使用し、磁力リンクとサムネイルを取得せずにJellyfinメタデータを生成
+# 複数の女優をバッチ分析し、25スレッドを使用し、マグネットリンクとサムネイルを取得せず、Jellyfinメタデータを生成
 python run.py -ba 5711,3986,4219,8765,5432 -t 25 --no-magnet --no-image --jellyfin
+
+# Jellyfinメタデータを単独で生成し、最近48時間の分析結果から選択
+python run.py --jellyfin
 ```
 
-> **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。日本語または英語を使用したい場合は、`-l`パラメータを一度使用すれば設定が`i18n/preference.json`ファイルに保存され、変更するまで全ての起動時にその言語が使用されます。
+> **注意**: このプロジェクトのデフォルト言語は中国語(zh)です。英語または日本語のインターフェースを使用する場合は、`-l`パラメータを使用して一度だけ好みの言語を設定してください。この設定は`i18n/preference.json`ファイルに保存され、次回の実行まで使用されます。
 
 ### 設定説明
 
-設定システムは`config.py`の`Config`クラスを使用したクラスベースのモデルに更新されました：
+設定システムは、`config.py`の`Config`クラスを使用してすべての設定項目を管理するクラスベースの設定モデルに更新されました：
 
-| カテゴリ | パラメータ | 説明 | デフォルト値 |
+| 設定カテゴリ | パラメータ | 説明 | デフォルト値 |
 |--------|------|------|--------|
-| **ネットワーク設定** | max_workers | 最大並列スレッド数 | 30 |
-| | timeout | リクエストタイムアウト（秒） | 15 |
-| | max_retries | 最大再試行回数 | 4 |
-| | page_interval | ページリクエスト間隔範囲（秒） | (0.5, 1.2) |
-| | request_interval | 通常リクエスト間隔範囲（秒） | (0.5, 1.0) |
-| | retry_base | 再試行間隔の基数 | 2.0 |
-| **キャッシュ設定** | cache_ttl | キャッシュ有効期間（秒） | 172800 (48時間) |
-| **ストレージパス** | cache_dir | ID キャッシュディレクトリ | data/id_cache |
-| | image_dir | 画像保存ディレクトリ | data/img |
-| | result_dir | 結果保存ディレクトリ | data/results |
-| | magnet_dir | マグネットキャッシュディレクトリ | data/magnets |
-| | log_dir | ログディレクトリ | data/logs |
+| **ネットワークリクエスト** | max_workers | 最大並列スレッド数 | 30 |
+| | timeout | リクエストタイムアウト (秒) | 15 |
+| | max_retries | 最大リトライ回数 | 4 |
+| | page_interval | ページリクエスト間隔範囲 (秒) | (0.5, 1.2) |
+| | request_interval | 通常リクエスト間隔範囲 (秒) | (0.5, 1.0) |
+| | retry_base | リトライ間隔ベース | 2.0 |
+| **キャッシュ設定** | cache_ttl | キャッシュ有効期間 (秒) | 172800 (48時間) |
+| **保存パス** | cache_dir | 作者と女優IDキャッシュディレクトリ | data/id_cache |
+| | image_dir | 動画サムネイル保存ディレクトリ | data/img |
+| | result_dir | 分析結果保存ディレクトリ | data/results |
+| | magnet_dir | マグネット情報保存ディレクトリ | data/magnets |
+| | log_dir | ログファイル保存ディレクトリ | data/logs |
 | **出力設定** | save_format | 保存形式 | ["text", "json"] |
-| | report_batch_size | レポート内の1バッチあたりのビデオ数 | 100 |
+| | report_batch_size | レポート内の1バッチあたりの動画数 | 100 |
 | **高度な設定** | log_level | ログレベル | INFO |
 | | enable_proxy | プロキシを使用するかどうか | false |
-| | user_agents | ブラウザユーザーエージェントローテーションリスト | [複数のエージェント] |
+| | user_agents | ブラウザユーザーエージェントローテーションリスト | [様々なエージェント] |
 
 ### ディレクトリ構造
 
 ```
 FC2-Leak-Detector/
 ├── src/                 # ソースコードディレクトリ
-│   ├── checkers/        # ビデオチェックモジュール
+│   ├── checkers/        # 動画チェックモジュール
 │   ├── writers/         # 作者情報モジュール
 │   └── utils/           # ユーティリティモジュール
-├── data/                # データストレージディレクトリ（自動作成）
+├── data/                # データ保存ディレクトリ (自動作成)
 │   ├── id_cache/        # IDキャッシュディレクトリ
 │   ├── results/         # 結果保存ディレクトリ
 │   ├── img/             # 画像保存ディレクトリ
@@ -757,58 +779,60 @@ FC2-Leak-Detector/
 │   └── zh.json          # 中国語言語ファイル
 ├── .github/             # GitHub設定
 │   └── workflows/       # GitHubワークフロー
-├── logs/                # ルートレベルログディレクトリ
-├── run.py               # プログラムエントリーポイント
+├── logs/                # ルートレベルのログディレクトリ
+├── run.py               # プログラムエントリポイント
 ├── main.py              # メインプログラムコード
 ├── config.py            # 設定ファイル
 ├── setup.py             # パッケージインストール設定
-├── requirements.txt     # 基本依存関係リスト
+├── requirements.txt     # 基本的な依存関係リスト
 ├── pyproject.toml       # プロジェクト設定ファイル
 ├── .gitignore           # Git無視ファイル
 ├── .editorconfig        # エディタ設定
 ├── .python-version      # Pythonバージョン設定
-├── CHANGELOG.md         # Update log
+├── CHANGELOG.md         # 更新履歴
 ├── LICENSE              # ライセンスファイル
 └── README.md            # ドキュメント
 ```
 
 ### よくある質問
 
-#### 作者IDや女優IDはどうやって見つけるの？
+#### 作者IDまたは女優IDをどうやって見つけますか？
 
-女優IDはfc2ppvdb.comウェブサイトのURLから見つけることができます。例えば：
-- 女優ページURL: `.../actress/6789` の `6789` が女優IDです
-- 作者IDはウェブページに明示的に表示されていません。ユーザーは、その作者のFC2ビデオIDを選択し、-v idコマンドライン形式を使用して、特定のIDを提供せずに直接その作者のビデオを取得できます。
+女優IDはfc2ppvdb.comウェブサイトのURLから見つけることができます。例：
+- 女優ページURL: `.../actress/6789` の `6789` が女優ID
+- 作者IDはウェブページ上で明文で表示されていません。ユーザーは、その作者のFC2ビデオIDを-v idのコマンドライン形式で選択し、特定のidを提供せずにその作者の動画を直接取得できます。
 
 #### Jellyfinメタデータの使用について
 
-生成されたJellyfinメタデータには以下の内容が含まれます：
-- NFOファイル：ビデオのタイトル、説明、外部リンクなどの情報を含む
-- ポスター画像：ビデオのサムネイル画像をポスターとして使用
-- 占位MP4ファイル：**注意：これらは0バイトの空ファイルで、直接再生することはできません**、Jellyfinでビデオエントリを表示するためだけに使用
-- 視聴リンク：NFOファイルにはMissAVと123AVの視聴リンクが含まれており、予告編ボタンまたは外部リンクからアクセス可能
-- マグネットリンク：利用可能な場合、NFOファイルにはビデオをダウンロードするためのマグネットリンクが含まれる
+生成されたJellyfinメタデータには以下の内容が含まれています：
+- NFOファイル：動画タイトル、説明、外部リンクなどの情報を含む
+- ポスター画像：動画サムネイルをポスターとして使用
+- プレースホルダーMP4ファイル：**注意：これらは0バイトの空ファイルで、直接再生できません**、Jellyfinで動画エントリを表示するためにのみ使用されます
+- 視聴リンク：NFOファイルにはMissAVと123AVの視聴リンクが含まれ、予告映画ボタンまたは外部リンクからアクセスできます
+- マグネットリンク：利用可能な場合、NFOファイルには動画をダウンロードするためのマグネットリンクが含まれます
 
-ビデオを視聴するには、Jellyfinインターフェースの予告編ボタンをクリックしてオンライン視聴サイトにジャンプするか、マグネットリンクを使用してビデオをダウンロードする必要があります。
+動画を視聴するには、Jellyfinインターフェースの予告映画ボタンをクリックしてオンライン視聴サイトにジャンプするか、マグネットリンクを使用して動画をダウンロードする必要があります。
+
+When using the `--jellyfin` parameter independently, the program will search for analysis results from the last 48 hours and let you choose one to generate metadata. This avoids re-analyzing the same author or actress's videos and makes it convenient to quickly generate metadata.
 
 #### 分析が遅い場合はどうすればいいですか？
 
-- 並列スレッド数を増やす（`-t`パラメータまたは設定ファイルの`max_workers`値を変更）
-- 分析するビデオの数を減らす
+- 並列スレッド数を増やす (`-t`パラメータまたは設定ファイルの`max_workers`値を変更)
+- 分析する動画の数を減らす
 - ネットワーク接続が安定していることを確認する
-- マグネットリンク検索と画像ダウンロードを無効にする（`--no-magnet --no-image`パラメータ）
+- マグネット検索と画像ダウンロードを無効にする (`--no-magnet --no-image`パラメータ)
 
-#### 一部のビデオが「チェック失敗」と表示されるのはなぜですか？
+#### なぜいくつかの動画に"チェック失敗"と表示されるのですか？
 
-チェック失敗は以下の原因で発生する可能性があります：
-- ネットワーク接続の問題
+チェック失敗は以下の原因による可能性があります：
+- ネットワーク接続問題
 - チェックサイトが一時的に利用できない
-- リクエストがターゲットサイトによって拒否された
-- ビデオIDのフォーマットが正しくない
+- 対象サイトによってリクエストが拒否された
+- 動画IDの形式が正しくない
 
-#### 如何清除缓存?
+#### キャッシュをクリアするにはどうすればいいですか？
 
-`data`ディレクトリ内の対応するキャッシュフォルダを手動で削除するか、次のコマンドを使用します：
+`data`ディレクトリ内の関連するキャッシュフォルダを手動で削除するか、以下のコマンドを使用します：
 
 ```bash
 python run.py --clear-cache
@@ -816,23 +840,23 @@ python run.py --clear-cache
 
 ### 注意事項
 
-1. 本ツールは学術研究と個人学習のみを目的としており、商業目的や違法な目的には使用しないでください
-2. IPブロックを避けるため、頻繁な大量リクエストは避けてください
-3. 関連法規を遵守し、コンテンツの著作権を尊重してください
-4. 本ツールを通じて取得した著作権を侵害する可能性のあるコンテンツを共有または配布しないでください
-5. **特別な注意：中国大陸のユーザーは、このツールが依存するオンラインサービスに接続するために、適切なインターネットアクセス環境を確保する必要があります**
+1. このツールは学術研究および個人学習のみに使用し、商用または非法目的には使用しないでください
+2. 頻繁に大量のリクエストを行わないでください、IPがブロックされる可能性があります
+3. 関連法律法規に従い、コンテンツ著作権を尊重してください
+4. このツールを介して取得した潜在的に著作権侵害のコンテンツを共有または配布しないでください
+5. **特別な注意：中国大陸のユーザーは、このツールが依存する各種オンラインサービスにアクセスできるように、国際インターネットへの正常なアクセスを確実に確保する必要があります**
 
 ### 免責事項
 
-**重要：本ツールを使用する前に、以下の声明をよくお読みください**
+**重要：このツールを使用する前に、以下の免責事項をよく読んでください**
 
-本プロジェクトは技術研究ツールであり、学術研究、データ分析、技術学習のみを目的としています。ユーザーは、所在地域の法律法規を遵守することを前提として本ツールを使用しなければなりません。本ツールは、いかなる著作権コンテンツも提供、保存、配布せず、公開されているインデックスへのメタデータ情報のみを提供します。
+このプロジェクトは、学術研究、データ分析、技術学習のみを目的とした技術研究ツールです。ユーザーは、このツールを使用する際に、所在地域の法律法規に従う必要があります。このツールは、著作権コンテンツを提供、保存、配布するものではありません。公開インデックスされたリソースを指すメタデータ情報のみを提供します。
 
-使用者は自身の行動に責任を負うものとします。作者および貢献者は、本ツールの使用に起因するいかなる法的問題または損失についても責任を負いません。本ツールはコンテンツのステータスを確認するためにのみ使用され、著作権を侵害するコンテンツの取得や共有を奨励するものではありません。コンテンツ作成者の権利を尊重し、正規のコンテンツを支持してください。
+ユーザーは自身の行為に対する責任を負うものとします。作者および貢献者は、このツールの使用によって発生するいかなる法的問題または損害に対しても責任を負いません。このツールは、コンテンツステータスをチェックするためのものであり、著作権侵害のコンテンツを取得または共有することを奨励するものではありません。コンテンツクリエイターの権利を尊重し、正規コンテンツをサポートしてください。
 
-本プロジェクトはGNU一般公衆利用許諾契約書v3（GNU GPL v3）に基づいて公開されています。これは、GPL契約の関連規定に従うことを条件に、本ソフトウェアを自由に使用、変更、配布できることを意味します。詳細については、プロジェクトのルートディレクトリにあるLICENSEファイルを参照してください。
+このプロジェクトは、GNU General Public License v3 (GNU GPL v3)の下でリリースされています。これは、GPLの規定に従って、このソフトウェアを自由に使用、修正、配布できることを意味します。詳細については、プロジェクトルートディレクトリのLICENSEファイルを参照してください。
 
-### スター履歴
+### Star履歴
 
-[![スター履歴チャート](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
+[![Star履歴グラフ](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector.svg)](https://starchart.cc/FC2-Research-Club/FC2-Leak-Detector)
 

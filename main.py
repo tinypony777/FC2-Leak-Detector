@@ -14,9 +14,10 @@ import sys
 import time
 import traceback
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from urllib.error import HTTPError, URLError
+import glob
 
 from requests.exceptions import ConnectionError, RequestException, Timeout
 
@@ -51,35 +52,36 @@ def print_usage():
 
 {_('usage_options', '选项')}:
   -h, --help                {_('usage_help', '显示此帮助信息')}
-  -c, --config              {_('usage_config', '显示配置信息')}
-  -s, --sites               {_('usage_sites', '显示检查站点列表')}
   -w ID, --writer ID        {_('usage_writer', '分析作者ID的视频')}
   -a ID, --actress ID       {_('usage_actress', '分析女优ID的视频')}
   -b IDs, --batch IDs       {_('usage_batch', '批量处理多个作者ID (用英文逗号分隔)')}
   -ba IDs, --batch-actress IDs  {_('usage_batch_actress', '批量处理多个女优ID (用英文逗号分隔)')}
-  -e, --extract             {_('usage_extract', '提取热门作者列表')}
   -v ID, --video ID         {_('usage_video', '通过视频ID查找并分析作者')}
   -t NUM, --threads NUM     {_('usage_threads', '指定并行线程数 (默认30)')}
+  --jellyfin                {_('usage_jellyfin', '生成Jellyfin兼容的元数据；可单独使用，会查找48小时内的分析结果')}
   --no-magnet               {_('usage_no_magnet', '不获取磁力链接')}
   --no-image                {_('usage_no_image', '不下载视频缩略图')}
   -l LANG, --lang LANG      {_('usage_lang', '设置界面语言 (支持: zh, en, ja)')}
+  -c, --config              {_('usage_config', '显示配置信息')}
+  -s, --sites               {_('usage_sites', '显示检查站点列表')}
+  -e, --extract             {_('usage_extract', '提取热门作者列表')}
   --clear-cache             {_('usage_clear_cache', '清除所有缓存数据')}
-  --jellyfin                {_('usage_jellyfin', '生成Jellyfin兼容的元数据')}
 
 {_('usage_examples', '示例')}:
   python run.py -w 5656               # {_('example_writer', '分析作者ID 5656 的视频')}
   python run.py -a 5711               # {_('example_actress', '分析女优ID 5711 的视频')}
   python run.py -b 5656,3524,4461     # {_('example_batch', '批量处理多个作者')}
   python run.py -ba 5711,3986,4219    # {_('example_batch_actress', '批量处理多个女优')}
-  python run.py -e                    # {_('example_extract', '提取热门作者列表')}
   python run.py -v 1248860            # {_('example_video', '通过视频ID查找并分析作者')}
-  python run.py -c                    # {_('example_config', '显示配置信息')}
   python run.py -w 5656 -t 10         # {_('example_threads', '使用10个线程分析作者视频')}
+  python run.py -w 5656 --jellyfin    # {_('example_jellyfin', '分析作者视频并生成Jellyfin元数据')}
+  python run.py --jellyfin            # {_('example_jellyfin', '使用最近的分析结果生成Jellyfin元数据')}
   python run.py -a 5711 --no-magnet   # {_('example_no_magnet', '分析女优视频但不获取磁力链接')}
   python run.py -w 5656 --no-image    # {_('example_no_image', '分析作者视频但不下载缩略图')}
-  python run.py -l {target_lang}                 # {_('example_lang', '使用英文界面')}
+  python run.py -l {target_lang}               # {_('example_lang', '使用英文界面')}
+  python run.py -c                    # {_('example_config', '显示配置信息')}
+  python run.py -e                    # {_('example_extract', '提取热门作者列表')}
   python run.py --clear-cache         # {_('example_clear_cache', '清除所有缓存数据')}
-  python run.py -w 5656 --jellyfin    # {_('example_jellyfin', '分析作者视频并生成Jellyfin元数据')}
 
 
 {_('advanced_usage', '高级用法')}:
@@ -818,76 +820,345 @@ def find_writer_by_video_id(
         return False
 
 
+def generate_jellyfin_only():
+    """
+    独立执行Jellyfin元数据生成，基于已有的缓存结果文件
+    
+    在没有指定-a/-w/-b/-ba/-v参数的情况下，但指定了--jellyfin参数时执行此函数
+    查找最近48小时内的分析结果文件，询问用户是否基于该结果生成元数据
+    
+    Returns:
+        bool: 成功返回True，失败返回False
+    """
+    try:
+        # 获取当前时间
+        now = datetime.now()
+        # 计算48小时前的时间戳
+        cache_threshold = now - timedelta(seconds=config.cache_ttl)
+        
+        # 查找results目录中的所有总报告文件
+        report_files = glob.glob(os.path.join(config.result_dir, "*_总报告.txt"))
+        
+        # 如果没有找到任何报告文件
+        if not report_files:
+            print(f"❌ {_('jellyfin_only.no_reports', '未找到任何分析结果文件，请先使用-a/-w/-b/-ba/-v参数进行分析')}")
+            return False
+            
+        # 按最后修改时间排序，最新的在前面
+        report_files.sort(key=os.path.getmtime, reverse=True)
+        
+        # 查找48小时内的报告文件
+        valid_reports = []
+        for report_file in report_files:
+            # 获取文件的最后修改时间
+            file_mtime = datetime.fromtimestamp(os.path.getmtime(report_file))
+            
+            # 如果文件在48小时内修改过
+            if file_mtime >= cache_threshold:
+                # 文件名模式：id_name_总报告.txt
+                filename = os.path.basename(report_file)
+                
+                # 提取entity_id和entity_name
+                report_data = {'file_path': report_file, 'mtime': file_mtime}
+                
+                # 读取文件内容提取信息
+                with open(report_file, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+                    
+                    # 解析第一行获取类型和ID
+                    if lines and len(lines) > 0:
+                        first_line = lines[0].strip()
+                        # 格式："作者ID: 1476" 或 "女优ID: 5711"
+                        id_match = re.match(r'(作者|女优)ID: (\d+)', first_line)
+                        if id_match:
+                            report_data['entity_type'] = id_match.group(1)  # 作者 或 女优
+                            report_data['entity_id'] = id_match.group(2)
+                    
+                    # 解析第二行获取名称
+                    if len(lines) > 1:
+                        second_line = lines[1].strip()
+                        # 格式："作者名称: ぱすも" 或 "女优名称: みお 女優"
+                        name_match = re.match(r'(作者|女优)名称: (.+?)(?:分析时间:|$)', second_line)
+                        if name_match:
+                            report_data['entity_name'] = name_match.group(2).strip()
+                    
+                    # 检查分析时间
+                    time_match = None
+                    for line in lines[:3]:  # 只检查前几行
+                        if '分析时间:' in line:
+                            time_match = re.search(r'分析时间: (\d{8}_\d{6})', line)
+                            if time_match:
+                                report_data['timestamp'] = time_match.group(1)
+                                break
+                
+                # 如果成功提取到ID和类型，则添加到有效报告列表
+                if 'entity_id' in report_data and 'entity_type' in report_data:
+                    valid_reports.append(report_data)
+        
+        # 如果没有找到任何有效的报告文件
+        if not valid_reports:
+            print(f"❌ {_('jellyfin_only.no_recent_reports', '未找到48小时内的分析结果文件，请先使用-a/-w/-b/-ba/-v参数进行分析')}")
+            return False
+        
+        # 显示找到的报告文件列表
+        print(f"\n{_('jellyfin_only.found_reports', '找到以下{count}个48小时内的分析结果:').format(count=len(valid_reports))}")
+        for i, report in enumerate(valid_reports, 1):
+            entity_type = _('analyzer.entity_type_actress', '女优') if report['entity_type'] == '女优' else _('analyzer.entity_type_writer', '作者')
+            entity_id = report['entity_id']
+            entity_name = report.get('entity_name', _('jellyfin_only.unknown_name', '未知'))
+            file_time = report['mtime'].strftime('%Y-%m-%d %H:%M:%S')
+            
+            print(f"{i}. {entity_type}ID: {entity_id}, {_('jellyfin_only.entity_name', '名称')}: {entity_name}, {_('jellyfin_only.analysis_time', '分析时间')}: {file_time}")
+        
+        # 询问用户选择使用哪个报告文件
+        choice = input(f"\n{_('jellyfin_only.select_report', '请输入要使用的报告序号(直接回车取消)')}: ")
+        if not choice.strip():
+            print(_('jellyfin_only.operation_cancelled', '已取消操作'))
+            return False
+        
+        try:
+            choice_idx = int(choice) - 1
+            if choice_idx < 0 or choice_idx >= len(valid_reports):
+                print(f"❌ {_('jellyfin_only.invalid_number', '无效的序号')}")
+                return False
+                
+            selected_report = valid_reports[choice_idx]
+            entity_type_display = _('analyzer.entity_type_actress', '女优') if selected_report['entity_type'] == '女优' else _('analyzer.entity_type_writer', '作者')
+            print(f"\n{_('jellyfin_only.selected_report', '已选择')}: {entity_type_display}ID: {selected_report['entity_id']}, {_('jellyfin_only.entity_name', '名称')}: {selected_report.get('entity_name', _('jellyfin_only.unknown_name', '未知'))}")
+            
+            # 询问用户是否确认
+            confirm = input(f"{_('jellyfin_only.confirm_selection', '是否确认使用此报告生成Jellyfin元数据? (y/n)')}: ")
+            if confirm.lower() != 'y':
+                print(_('jellyfin_only.operation_cancelled', '已取消操作'))
+                return False
+            
+            # 根据类型确定是作者还是女优
+            is_actress = selected_report['entity_type'] == '女优'
+            entity_id = selected_report['entity_id']
+            entity_name = selected_report.get('entity_name', '')
+            
+            # 创建实体信息对象
+            entity_info = {
+                "id": entity_id,
+                "name": entity_name
+            }
+            
+            # 尝试读取缓存数据
+            cache_file = os.path.join(
+                config.cache_dir, f"{'actress' if is_actress else 'author'}_{entity_id}.json"
+            )
+            
+            videos_info = []
+            used_cache = False
+            
+            # 如果缓存文件存在
+            if os.path.exists(cache_file):
+                try:
+                    with open(cache_file, "r", encoding="utf-8") as f:
+                        cache_data = json.load(f)
+                    
+                    # 检查缓存有效期
+                    cache_time = datetime.strptime(cache_data["timestamp"], "%Y-%m-%d %H:%M:%S")
+                    cache_age = (datetime.now() - cache_time).total_seconds()
+                    
+                    if cache_age < config.cache_ttl:
+                        videos_info = cache_data.get("results", [])
+                        
+                        # 检查缓存中的视频信息是否有效
+                        if videos_info and isinstance(videos_info, list) and all("video_id" in v for v in videos_info):
+                            print(f"🔄 {_('jellyfin_only.using_cache', '使用缓存数据')}")
+                            used_cache = True
+                        else:
+                            print(f"⚠️ {_('jellyfin_only.invalid_cache', '缓存数据无效或不完整')}")
+                            videos_info = []
+                    else:
+                        print(f"⚠️ {_('jellyfin_only.cache_expired', '缓存数据已过期')}")
+                except Exception as e:
+                    logger.error(f"读取缓存出错: {e}")
+                    print(f"⚠️ {_('jellyfin_only.cache_error', '读取缓存出错')}: {e}")
+                    videos_info = []
+            
+            # 如果没有从缓存获取到有效的视频信息，则从报告文件解析
+            if not videos_info:
+                print(f"🔍 {_('jellyfin_only.parsing_report', '从报告文件解析视频信息...')}")
+                
+                # 读取报告文件并解析已流出视频列表
+                try:
+                    with open(selected_report['file_path'], 'r', encoding='utf-8') as f:
+                        report_content = f.read()
+                    
+                    # 查找已流出视频列表部分
+                    leaked_section_match = re.search(r'===\s*已流出视频列表\s*===\s*(.*?)(?:===\s*未流出视频列表\s*===|\Z)', report_content, re.DOTALL)
+                    
+                    if leaked_section_match:
+                        leaked_section = leaked_section_match.group(1).strip()
+                        
+                        # 尝试不同的正则表达式匹配视频条目
+                        video_entries = re.findall(r'(\d+).\s*\[(\d+)\].*?(\[有磁链\]|\[无磁链\])?\s*(.*?)(?=\d+\.\s*\[|\Z)', leaked_section, re.DOTALL)
+                        
+                        # 如果上面的正则表达式没有匹配到，尝试另一种格式
+                        if not video_entries:
+                            video_entries = re.findall(r'(\d+).\s*\[(\d+)\](.*)', leaked_section.split('\n'))
+                            
+                        # 处理匹配到的视频条目
+                        for entry in video_entries:
+                            if len(entry) == 4:  # 第一种正则表达式
+                                video_id = entry[1]
+                                title_part = entry[3]
+                            elif len(entry) == 3:  # 第二种正则表达式
+                                video_id = entry[1]
+                                title_part = entry[2]
+                            else:
+                                continue
+                                
+                            # 提取视频标题 (移除前面的[有磁链]/[无磁链]部分)
+                            title_match = re.search(r'(?:\[有磁链\]|\[无磁链\])?\s*(.*)', title_part)
+                            title = title_match.group(1).strip() if title_match else f"FC2-PPV-{video_id}"
+                            
+                            # 创建视频信息对象
+                            video_info = {
+                                "video_id": video_id,
+                                "title": title,
+                                "status": "available",
+                                "leaked": True
+                            }
+                            
+                            videos_info.append(video_info)
+                except Exception as e:
+                    logger.error(f"解析报告文件出错: {e}")
+                    print(f"❌ {_('jellyfin_only.parse_error', '解析报告文件出错')}: {e}")
+                    traceback.print_exc()  # 打印完整的错误堆栈跟踪
+                    
+                    # 如果报告文件解析失败，尝试读取已流出视频总表文件
+                    try:
+                        leaked_summary_file = selected_report['file_path'].replace('_总报告.txt', '_已流出视频总表.txt')
+                        
+                        if os.path.exists(leaked_summary_file):
+                            print(f"🔍 {_('jellyfin_only.parsing_summary', '尝试从已流出视频总表文件解析...')}")
+                            
+                            with open(leaked_summary_file, 'r', encoding='utf-8') as f:
+                                lines = f.readlines()
+                                
+                                for line in lines:
+                                    # 格式: FC2-PPV-1234567 | 视频标题
+                                    match = re.match(r'FC2-PPV-(\d+) \| (.+)', line.strip())
+                                    if match:
+                                        video_id = match.group(1)
+                                        title = match.group(2)
+                                        
+                                        video_info = {
+                                            "video_id": video_id,
+                                            "title": title,
+                                            "status": "available",
+                                            "leaked": True
+                                        }
+                                        
+                                        videos_info.append(video_info)
+                        else:
+                            print(f"❌ {_('jellyfin_only.summary_not_found', '未找到已流出视频总表文件')}")
+                    except Exception as e2:
+                        logger.error(f"解析已流出视频总表文件出错: {e2}")
+                        print(f"❌ {_('jellyfin_only.summary_parse_error', '解析已流出视频总表文件出错')}: {e2}")
+            
+            # 检查是否有视频信息
+            if not videos_info:
+                print(f"❌ {_('jellyfin_only.no_videos_found', '未找到任何视频信息')}")
+                return False
+            
+            # 筛选已流出的视频
+            leaked_videos = [v for v in videos_info if v.get("status") == "available" or v.get("leaked") == True]
+            
+            if not leaked_videos:
+                print(f"❌ {_('jellyfin.no_leaked_videos', '没有已流出的视频，跳过生成Jellyfin元数据')}")
+                return False
+            
+            print(f"✅ {_('jellyfin_only.found_videos', '找到 {count} 个视频，其中 {leaked} 个已流出').format(count=len(videos_info), leaked=len(leaked_videos))}")
+            
+            # 生成Jellyfin元数据
+            print(f"\n=== {_('jellyfin_only.jellyfin_metadata', 'Jellyfin元数据')} ===")
+            jellyfin_generator = JellyfinMetadataGenerator()
+            
+            # 使用asyncio运行异步方法
+            import asyncio
+            metadata_results = asyncio.run(jellyfin_generator.batch_generate_metadata(
+                leaked_videos,
+                author_info=entity_info if not is_actress else None,
+                actress_info=entity_info if is_actress else None,
+                enrich_from_web=not used_cache  # 如果使用了缓存，就不需要再从网络获取额外信息
+            ))
+            
+            if metadata_results:
+                print(f"✅ {_('jellyfin_only.generation_success', '成功生成 {count} 个Jellyfin元数据文件').format(count=len(metadata_results))}")
+                print(f"📁 {_('jellyfin.metadata_location', '元数据保存位置: {path}').format(path=jellyfin_generator.output_dir)}")
+                return True
+            else:
+                print(f"❌ {_('jellyfin_only.generation_failed', '未生成任何Jellyfin元数据文件')}")
+                return False
+                
+        except ValueError:
+            print(f"❌ {_('jellyfin_only.invalid_input', '无效的输入')}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"生成Jellyfin元数据时出错: {str(e)}\n{traceback.format_exc()}")
+        print(f"❌ {_('jellyfin_only.error', '生成Jellyfin元数据时出错')}: {str(e)}")
+        return False
+
+
 def main():
     """程序主入口"""
     # 解析命令行参数
     parser = argparse.ArgumentParser(description=_("app_description", "FC2流出检测器"), add_help=False)
     parser.add_argument("-h", "--help", action="store_true", help=_("usage_help", "显示帮助信息"))
-    parser.add_argument("-c", "--config", action="store_true", help=_("usage_config", "显示配置信息"))
-    parser.add_argument("-s", "--sites", action="store_true", help=_("usage_sites", "显示检查站点列表"))
     parser.add_argument("-w", "--writer", type=str, help=_("usage_writer", "分析作者ID的视频"))
     parser.add_argument("-a", "--actress", type=str, help=_("usage_actress", "分析女优ID的视频"))
     parser.add_argument("-b", "--batch", type=str, help=_("usage_batch", "批量处理多个作者ID（用英文逗号分隔）"))
     parser.add_argument("-ba", "--batch-actress", type=str, help=_("usage_batch_actress", "批量处理多个女优ID（用英文逗号分隔）"))
-    parser.add_argument("-e", "--extract", action="store_true", help=_("usage_extract", "提取热门作者列表"))
     parser.add_argument("-v", "--video", type=str, help=_("usage_video", "通过视频ID查找并分析作者"))
     parser.add_argument("-t", "--threads", type=int, help=_("usage_threads", "指定并行线程数"))
+    parser.add_argument("--jellyfin", action="store_true", help=_("usage_jellyfin", "生成Jellyfin兼容的元数据；可单独使用，会查找48小时内的分析结果"))
     parser.add_argument("--no-magnet", action="store_true", help=_("usage_no_magnet", "不获取磁力链接"))
     parser.add_argument("--no-image", action="store_true", help=_("usage_no_image", "不下载视频缩略图"))
     parser.add_argument("-l", "--lang", type=str, help=_("usage_lang", "设置界面语言 (支持: zh, en, ja)"))
+    parser.add_argument("-c", "--config", action="store_true", help=_("usage_config", "显示配置信息"))
+    parser.add_argument("-s", "--sites", action="store_true", help=_("usage_sites", "显示检查站点列表"))
+    parser.add_argument("-e", "--extract", action="store_true", help=_("usage_extract", "提取热门作者列表"))
     parser.add_argument("--clear-cache", action="store_true", help=_("usage_clear_cache", "清除所有缓存数据"))
-    parser.add_argument("--jellyfin", action="store_true", help=_("usage_jellyfin", "生成Jellyfin兼容的元数据"))
 
     try:
-        args, unknown = parser.parse_known_args()
-        
-        # 处理语言设置
-        if args.lang:
-            if args.lang in SUPPORTED_LANGUAGES:
-                switch_language(args.lang)
-                print(f"{_('language_switched', '已切换语言为')}: {args.lang}")
-            else:
-                print(f"{_('language_unsupported', '不支持的语言')}: {args.lang}")
-                print(f"{_('language_supported', '支持的语言')}: {', '.join(SUPPORTED_LANGUAGES)}")
-                return 1
+        args = parser.parse_args()
 
         # 显示帮助信息
-        if args.help or len(sys.argv) == 1:
+        if args.help:
             print_usage()
             return 0
 
+        # 设置语言
+        if args.lang:
+            if args.lang in SUPPORTED_LANGUAGES:
+                switch_language(args.lang)
+                print(f"🌐 {_('main.language_switched', '已切换语言为: {lang}').format(lang=args.lang)}")
+            else:
+                print(f"❌ {_('main.unsupported_language', '不支持的语言: {lang}').format(lang=args.lang)}")
+                return 1
+
         # 显示配置信息
         if args.config:
-            show_config_info()
+            display_config()
             return 0
 
         # 显示检查站点列表
         if args.sites:
-            show_check_sites()
+            display_sites()
             return 0
 
         # 清除缓存
         if args.clear_cache:
-            from src.utils.cache_manager import CacheManager
-            print(f"{_('clear_cache_start', '开始清除所有缓存数据...')}")
-            success = CacheManager.clear_all_caches()
-            if success:
-                print(f"✅ {_('clear_cache_success', '所有缓存数据已成功清除')}")
-            else:
-                print(f"❌ {_('clear_cache_failed', '清除缓存数据失败')}")
-            return 0 if success else 1
+            clear_cache()
+            return 0
 
-        # 设置并行线程数，优先使用命令行参数，其次使用配置，最后是默认值
-        threads = (
-            args.threads if args.threads is not None else config.max_workers
-        )
-        # 确保线程数在合理范围内
-        threads = max(1, min(threads, 50))  # 至少1个线程，最多50个线程
-
-        # 如果设置了线程数参数，更新全局配置
-        if args.threads is not None:
-            config.max_workers = threads
-            print(f"{_('threads_set', '已设置并行线程数为')}: {threads}")
+        # 设置线程数
+        threads = args.threads if args.threads else config.max_workers
 
         # 提取热门作者列表
         if args.extract:
@@ -943,20 +1214,21 @@ def main():
                 download_images=download_images,
                 generate_jellyfin=generate_jellyfin
             )
+        # 添加只有--jellyfin参数的情况
+        elif generate_jellyfin:
+            # 直接调用独立的Jellyfin元数据生成函数
+            generate_jellyfin_only()
         else:
             print_usage()
 
         return 0
+
     except KeyboardInterrupt:
-        print(f"\n⚠️ {_('error_interrupted', '程序已被用户中断')}")
-        return 1
-    except argparse.ArgumentError as e:
-        print(f"❌ {_('error_argument', '命令行参数错误')}: {e}")
-        print_usage()
-        return 1
+        print("\n🛑 用户中断了操作")
+        return 130  # 标准Unix中断退出码
     except Exception as e:
-        logger.critical(f"{_('error_runtime', '程序运行时出错')}: {type(e).__name__}: {e}\n{traceback.format_exc()}")
-        print(f"❌ {_('error_runtime', '程序运行时出错')}: {type(e).__name__}: {e}")
+        logger.error(f"程序执行出错: {str(e)}\n{traceback.format_exc()}")
+        print(f"❌ 程序执行出错: {str(e)}")
         return 1
 
 
