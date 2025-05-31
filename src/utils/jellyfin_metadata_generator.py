@@ -256,6 +256,12 @@ class JellyfinMetadataGenerator:
             logger.warning("无法获取额外信息：视频ID不存在")
             return video_info
             
+        # 尝试从磁链缓存文件中获取磁链信息
+        magnets = self._get_magnets_from_cache(video_id, video_info)
+        if magnets:
+            video_info["magnets"] = magnets
+            logger.info(f"从缓存中获取到视频 {video_id} 的磁链：{len(magnets)}个")
+            
         # 如果429错误次数超过阈值，跳过网络请求
         if self.rate_limit_count >= self.skip_network_threshold:
             logger.warning(f"429错误次数({self.rate_limit_count})超过阈值({self.skip_network_threshold})，跳过网络请求获取标签信息")
@@ -288,6 +294,139 @@ class JellyfinMetadataGenerator:
         
         logger.info(_("jellyfin.fetch_success").format(video_id=video_id))
         return enriched_info
+        
+    def _get_magnets_from_cache(self, video_id, video_info):
+        """从缓存文件中获取磁链信息
+        
+        Args:
+            video_id: 视频ID
+            video_info: 视频信息字典
+        
+        Returns:
+            list: 磁链列表
+        """
+        # 如果视频信息中已有磁链，直接返回
+        if video_info.get("magnets") and isinstance(video_info.get("magnets"), list):
+            return video_info.get("magnets")
+            
+        if video_info.get("magnet"):
+            return [video_info.get("magnet")]
+            
+        # 尝试从results目录中查找磁链缓存文件
+        try:
+            # 检查是否有作者或女优信息
+            author_id = None
+            actress_id = None
+            
+            if "author_id" in video_info:
+                author_id = video_info["author_id"]
+            
+            if "actress_id" in video_info:
+                actress_id = video_info["actress_id"]
+                
+            # 查找可能的磁链文件路径模式
+            possible_paths = []
+            
+            # 添加基本模式
+            basic_paths = [
+                os.path.join(config.result_dir, f"*_{video_id}_磁链.txt"),
+                os.path.join(config.result_dir, f"*_{video_id}_magnet.txt"),
+                os.path.join(config.magnet_dir, f"{video_id}.txt"),
+                os.path.join(config.magnet_dir, f"FC2-PPV-{video_id}.txt")
+            ]
+            possible_paths.extend(basic_paths)
+            
+            # 添加作者/女优相关模式 - 包括各种可能的格式
+            if author_id:
+                author_patterns = [
+                    os.path.join(config.result_dir, f"author_{author_id}*_磁链.txt"),
+                    os.path.join(config.result_dir, f"author_{author_id}*_magnet.txt"),
+                    os.path.join(config.result_dir, f"{author_id}_*_磁链.txt"),
+                    os.path.join(config.result_dir, f"{author_id}_*_magnet.txt")
+                ]
+                possible_paths.extend(author_patterns)
+            
+            if actress_id:
+                actress_patterns = [
+                    os.path.join(config.result_dir, f"actress_{actress_id}*_磁链.txt"),
+                    os.path.join(config.result_dir, f"actress_{actress_id}*_magnet.txt"),
+                    os.path.join(config.result_dir, f"{actress_id}_*_磁链.txt"),
+                    os.path.join(config.result_dir, f"{actress_id}_*_magnet.txt")
+                ]
+                possible_paths.extend(actress_patterns)
+            
+            # 搜索匹配的文件
+            import glob
+            matched_files = []
+            for path_pattern in possible_paths:
+                matched_files.extend(glob.glob(path_pattern))
+            
+            # 如果没有找到匹配的文件，尝试直接在results目录下查找包含"磁链"的文件
+            if not matched_files:
+                all_magnet_files = glob.glob(os.path.join(config.result_dir, "*_磁链.txt"))
+                matched_files.extend(all_magnet_files)
+                
+                # 日志所有找到的磁链文件，帮助调试
+                if all_magnet_files:
+                    logger.info(f"找到的所有磁链文件: {all_magnet_files}")
+            
+            # 如果找到了匹配的文件
+            magnets = []
+            for file_path in matched_files:
+                try:
+                    logger.info(f"尝试从文件读取磁链: {file_path}")
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                        
+                    for i, line in enumerate(lines):
+                        line = line.strip()
+                        
+                        # 尝试各种格式匹配
+                        # 1. 以 "# {video_id} |" 开头的行
+                        if line.startswith(f"# {video_id} |") or line.startswith(f"#{video_id} |"):
+                            # 下一行应该是磁链
+                            if i + 1 < len(lines) and lines[i + 1].strip().startswith("magnet:?"):
+                                magnet = lines[i + 1].strip()
+                                magnets.append(magnet)
+                                logger.info(f"从文件 {file_path} 中找到视频 {video_id} 的磁链 (格式1)")
+                                break
+                        
+                        # 2. 直接是以 "magnet:?" 开头的行，且文件名中包含视频ID
+                        elif line.startswith("magnet:?") and f"{video_id}" in file_path:
+                            magnets.append(line)
+                            logger.info(f"从文件 {file_path} 中找到视频的磁链 (格式2)")
+                        
+                        # 3. 任意包含视频ID的行之后的磁链
+                        elif video_id in line and i + 1 < len(lines) and lines[i + 1].strip().startswith("magnet:?"):
+                            magnet = lines[i + 1].strip()
+                            magnets.append(magnet)
+                            logger.info(f"从文件 {file_path} 中找到视频 {video_id} 的磁链 (格式3)")
+                            break
+                            
+                    # 如果上面的匹配都失败了，再尝试遍历所有行找磁链
+                    if not magnets:
+                        # 读取整个文件内容
+                        content = "".join(lines)
+                        # 尝试找出视频ID后面的磁链
+                        video_id_pattern = re.compile(f"#{video_id}.*?\\n(magnet:\\?.*?)\\n", re.DOTALL)
+                        matches = video_id_pattern.findall(content)
+                        if matches:
+                            for match in matches:
+                                magnets.append(match.strip())
+                                logger.info(f"从文件 {file_path} 中找到视频 {video_id} 的磁链 (正则匹配)")
+                except Exception as e:
+                    logger.error(f"读取磁链缓存文件 {file_path} 出错: {str(e)}")
+                    
+            # 检查是否找到了磁链
+            if magnets:
+                logger.info(f"成功为视频 {video_id} 找到 {len(magnets)} 个磁链")
+            else:
+                logger.warning(f"未找到视频 {video_id} 的磁链")
+                
+            return magnets
+        except Exception as e:
+            logger.error(f"搜索磁链缓存文件时出错: {str(e)}")
+            return []
 
     def is_leaked(self, video_info):
         """判断视频是否已泄露
@@ -339,7 +478,12 @@ class JellyfinMetadataGenerator:
         # 从网络获取额外信息
         if enrich_from_web:
             video_info = await self.enrich_video_info(video_info)
-        
+        else:
+            # 即使不从网络获取信息，也尝试从本地缓存获取磁链
+            magnets = self._get_magnets_from_cache(video_id, video_info)
+            if magnets:
+                video_info["magnets"] = magnets
+                
         # 创建XML根元素
         root = ET.Element("movie")
         
@@ -405,9 +549,11 @@ class JellyfinMetadataGenerator:
         ET.SubElement(root, "plot").text = plot_text.strip()
         ET.SubElement(root, "outline").text = title
         
-        # 方法4：添加预告片链接（在Jellyfin中显示为可点击按钮）
-        # 使用Jellyfin和Kodi官方支持的格式
-        ET.SubElement(root, "trailer").text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        # 添加预告片链接（在Jellyfin中显示为可点击按钮）
+        # 确保使用Jellyfin和Kodi官方支持的格式
+        trailer_element = ET.SubElement(root, "trailer")
+        trailer_url = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        trailer_element.text = trailer_url
         
         # 添加锁定标记，防止元数据被覆盖
         ET.SubElement(root, "lockdata").text = "true"
@@ -421,6 +567,21 @@ class JellyfinMetadataGenerator:
         av123_display = ET.SubElement(displaylinks, "link")
         av123_display.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         av123_display.set("name", "123AV")
+        
+        # 添加外部链接到moviedb部分
+        moviedb = ET.SubElement(root, "moviedb")
+        missav_link = ET.SubElement(moviedb, "missav")
+        missav_link.text = f"fc2-ppv-{video_id}"
+        
+        av123_link = ET.SubElement(moviedb, "av123")
+        av123_link.text = f"fc2-ppv-{video_id}"
+        
+        # 添加额外的URL元素
+        url_missav = ET.SubElement(root, "url")
+        url_missav.text = f"https://missav.ws/dm14/en/fc2-ppv-{video_id}"
+        
+        url_123av = ET.SubElement(root, "url")
+        url_123av.text = f"https://123av.com/en/dm2/v/fc2-ppv-{video_id}"
         
         # 添加制作公司/作者信息
         if author_info and "name" in author_info:
