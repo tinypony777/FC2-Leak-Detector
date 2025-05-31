@@ -770,18 +770,23 @@ class JellyfinMetadataGenerator:
             
             # 批次间休息一下，避免被限流
             if batch_idx < total_batches - 1:
-                # 如果遇到较多429错误，增加等待时间
-                if self.rate_limit_count > self.skip_network_threshold:
-                    wait_time = 5.0  # 最长等待时间固定为5秒
+                # 如果已经跳过网络请求了，则不需要等待
+                if self.rate_limit_count >= self.skip_network_threshold:
+                    # 直接进行下一批处理，不等待
+                    logger.info(f"跳过网络请求模式：直接处理下一批视频...(当前429错误计数: {self.rate_limit_count})")
+                # 如果遇到一定次数的429错误，增加等待时间
                 elif self.rate_limit_count > 5:
                     wait_time = 6.0  # 固定为6秒
+                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
+                    await asyncio.sleep(wait_time)
                 elif use_single_thread:
                     wait_time = 1.0  # 单线程模式下批次间等待1秒
+                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
+                    await asyncio.sleep(wait_time)
                 else:
                     wait_time = self.min_wait_time
-                
-                logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
-                await asyncio.sleep(wait_time)
+                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
+                    await asyncio.sleep(wait_time)
                 
         logger.info(_("jellyfin.generate_complete").format(count=len(results)))
         return results
