@@ -111,8 +111,8 @@ class JellyfinMetadataGenerator:
                 if isinstance(e, asyncio.TimeoutError):
                     logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
                 else:
-                    logger.error(f"获取页面异常: {str(e)}, URL: {url}")
-                    logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
+                logger.error(f"获取页面异常: {str(e)}, URL: {url}")
+                logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
                 
                 await asyncio.sleep(wait_time)
                 
@@ -227,7 +227,7 @@ class JellyfinMetadataGenerator:
                             break
             except Exception as e:
                 logger.error(f"使用BeautifulSoup解析标签失败: {str(e)}")
-                
+        
     def _extract_with_pattern(self, html_content, pattern, key, results, flags=0):
         """使用正则表达式提取内容
         
@@ -620,7 +620,7 @@ class JellyfinMetadataGenerator:
             
             # 特殊形式: actress_{id}_Actress_{id}
             actress_id = actress_info["id"]
-            actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
+                actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
             possible_paths.extend([
                 os.path.join(actress_dir_special, f"{video_id}.jpg"),
                 os.path.join(actress_dir_special, "leaked", f"{video_id}.jpg"),
@@ -639,7 +639,7 @@ class JellyfinMetadataGenerator:
         # 如果没有找到图片，记录警告
         logger.warning(f"未找到视频 FC2-PPV-{video_id} 的图片")
         return None
-        
+    
     def _add_entity_image_paths(self, possible_paths, video_id, entity_type, entity_id, entity_name):
         """添加实体相关的图片路径
         
@@ -702,7 +702,7 @@ class JellyfinMetadataGenerator:
                     possible_paths.append(matched_file)
         except Exception as e:
             logger.error(f"递归搜索图片文件时出错: {str(e)}")
-    
+            
     def _clean_filename(self, name):
         """清理文件名，移除不允许的字符
         
@@ -728,3 +728,196 @@ class JellyfinMetadataGenerator:
             return "unknown"
             
         return name 
+
+    async def batch_generate_metadata(self, videos_info, author_info=None, actress_info=None, enrich_from_web=True):
+        """批量生成多个视频的元数据
+        
+        Args:
+            videos_info: 视频信息列表
+            author_info: 作者信息字典
+            actress_info: 女优信息字典
+            enrich_from_web: 是否从网络获取额外信息
+                
+        Returns:
+            list: 生成的元数据文件信息列表
+        """
+        if not videos_info:
+            logger.warning("没有视频信息可用于生成元数据")
+            return []
+        
+        # 过滤出已流出的视频
+        leaked_videos = [video for video in videos_info if self.is_leaked(video)]
+        
+        # 如果没有已流出的视频，直接返回
+        if not leaked_videos:
+            logger.info(_("jellyfin.no_leaked_videos"))
+            return []
+            
+        logger.info(_("jellyfin.start_batch").format(count=len(leaked_videos)))
+        
+        # 记录日志，显示当前处理的是作者还是女优
+        self._log_entity_info(author_info, actress_info)
+        
+        # 初始化处理状态
+        results = []
+        self.rate_limit_count = 0
+        use_single_thread = False
+        skip_network_requests = False
+        
+        # 每批次处理的视频数量
+        batch_size = 5
+        total_batches = (len(leaked_videos) + batch_size - 1) // batch_size
+        
+        for batch_idx in range(total_batches):
+            # 获取当前批次的视频
+            start_idx = batch_idx * batch_size
+            end_idx = min(start_idx + batch_size, len(leaked_videos))
+            batch_videos = leaked_videos[start_idx:end_idx]
+            
+            logger.info(f"处理第 {batch_idx+1}/{total_batches} 批视频 ({len(batch_videos)}个)")
+            
+            # 检查是否需要更新处理模式
+            use_single_thread, skip_network_requests, enrich_from_web = self._check_processing_mode(
+                use_single_thread, skip_network_requests, enrich_from_web
+            )
+            
+            # 处理当前批次视频
+            batch_results = await self._process_batch(
+                batch_videos, author_info, actress_info, 
+                enrich_from_web, use_single_thread
+            )
+            results.extend(batch_results)
+            
+            # 处理批次间等待
+            if batch_idx < total_batches - 1:
+                await self._handle_batch_wait(use_single_thread, skip_network_requests)
+                
+        logger.info(_("jellyfin.generate_complete").format(count=len(results)))
+        return results
+        
+    def _log_entity_info(self, author_info, actress_info):
+        """记录实体信息日志
+        
+        Args:
+            author_info: 作者信息字典
+            actress_info: 女优信息字典
+        """
+        if author_info and "id" in author_info:
+            logger.info(f"处理作者ID: {author_info['id']}, 名称: {author_info.get('name', '未知')}")
+        elif actress_info and "id" in actress_info:
+            logger.info(f"处理女优ID: {actress_info['id']}, 名称: {actress_info.get('name', '未知')}")
+    
+    def _check_processing_mode(self, use_single_thread, skip_network_requests, enrich_from_web):
+        """检查并更新处理模式
+        
+        Args:
+            use_single_thread: 当前是否使用单线程模式
+            skip_network_requests: 当前是否跳过网络请求
+            enrich_from_web: 当前是否从网络获取额外信息
+            
+        Returns:
+            tuple: 更新后的(use_single_thread, skip_network_requests, enrich_from_web)
+        """
+        # 检查是否需要切换到单线程模式
+        if self.rate_limit_count >= self.rate_limit_threshold and not use_single_thread:
+            logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.rate_limit_threshold})，切换到单线程模式")
+            use_single_thread = True
+        
+        # 检查是否需要跳过网络请求
+        if self.rate_limit_count >= self.skip_network_threshold and not skip_network_requests:
+            logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.skip_network_threshold})，跳过网络请求获取标签信息")
+            skip_network_requests = True
+            # 如果跳过网络请求，则不需要从网络获取额外信息
+            enrich_from_web = False
+            
+        return use_single_thread, skip_network_requests, enrich_from_web
+        
+    async def _process_batch(self, batch_videos, author_info, actress_info, enrich_from_web, use_single_thread):
+        """处理一批视频
+        
+        Args:
+            batch_videos: 视频信息列表
+            author_info: 作者信息字典
+            actress_info: 女优信息字典
+            enrich_from_web: 是否从网络获取额外信息
+            use_single_thread: 是否使用单线程模式
+            
+        Returns:
+            list: 有效的处理结果列表
+        """
+        results = []
+        
+        if use_single_thread:
+            # 单线程模式：逐个处理视频
+            for video_info in batch_videos:
+                video_id = video_info.get("video_id")
+                if not video_id:
+                    logger.warning("跳过无效的视频信息(缺少video_id)")
+                    continue
+                    
+                # 查找对应的图片路径
+                image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
+                
+                # 创建生成元数据的任务
+                result = await self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
+                if result:
+                    results.append(result)
+                
+                # 如果已经跳过网络请求，则不需要等待
+                if self.rate_limit_count >= self.skip_network_threshold:
+                    # 直接处理下一个，不等待
+                    continue
+                else:
+                    # 单线程模式下，每个请求之间添加等待时间
+                    wait_time = 2.0  # 固定为2秒
+                    logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
+                    await asyncio.sleep(wait_time)
+        else:
+            # 多线程模式：批量处理视频
+            tasks = []
+            for video_info in batch_videos:
+                video_id = video_info.get("video_id")
+                if not video_id:
+                    logger.warning("跳过无效的视频信息(缺少video_id)")
+                    continue
+                    
+                # 查找对应的图片路径
+                image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
+                
+                # 创建生成元数据的任务
+                task = self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
+                tasks.append(task)
+            
+            if tasks:
+                # 等待本批次任务完成
+                batch_results = await asyncio.gather(*tasks)
+                
+                # 过滤掉None结果
+                valid_results = [result for result in batch_results if result]
+                results.extend(valid_results)
+                
+        return results
+        
+    async def _handle_batch_wait(self, use_single_thread, skip_network_requests):
+        """处理批次间等待
+        
+        Args:
+            use_single_thread: 是否使用单线程模式
+            skip_network_requests: 是否跳过网络请求
+        """
+        # 如果已经跳过网络请求了，则不需要等待
+        if skip_network_requests:
+            # 直接进行下一批处理，不等待
+            logger.info(f"跳过网络请求模式：直接处理下一批视频...(当前429错误计数: {self.rate_limit_count})")
+            return
+            
+        # 根据情况确定等待时间
+        if self.rate_limit_count > 5:
+            wait_time = 6.0  # 固定为6秒
+        elif use_single_thread:
+            wait_time = 1.0  # 单线程模式下批次间等待1秒
+        else:
+            wait_time = self.min_wait_time
+            
+        logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
+        await asyncio.sleep(wait_time) 
