@@ -45,7 +45,7 @@ class JellyfinMetadataGenerator:
         self.max_retries = config.max_retries
         self.base_timeout = config.timeout
         self.min_wait_time = 5.0  # 最小等待时间（秒）
-        self.max_wait_time = 30.0  # 最大等待时间（秒）
+        self.max_wait_time = 6.0  # 最大等待时间（秒）- 确保批次间等待不超过6秒
         
         # 创建作者和女优子目录
         self.authors_dir = os.path.join(self.output_dir, "authors")
@@ -94,6 +94,8 @@ class JellyfinMetadataGenerator:
                             wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
                             # 添加随机抖动以避免请求同步
                             wait_time = wait_time * (0.5 + random.random())
+                            # 确保等待时间不超过6秒
+                            wait_time = min(wait_time, 6.0)
                             
                             logger.warning(_("logger.rate_limit").format(
                                 status_code=response.status,
@@ -108,11 +110,15 @@ class JellyfinMetadataGenerator:
                         
             except asyncio.TimeoutError:
                 wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
+                # 确保等待时间不超过6秒
+                wait_time = min(wait_time, 6.0)
                 logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
                 await asyncio.sleep(wait_time)
                 
             except Exception as e:
                 wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
+                # 确保等待时间不超过6秒
+                wait_time = min(wait_time, 6.0)
                 logger.error(f"获取页面异常: {str(e)}, URL: {url}")
                 logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
                 await asyncio.sleep(wait_time)
@@ -768,7 +774,7 @@ class JellyfinMetadataGenerator:
                 if self.rate_limit_count > self.skip_network_threshold:
                     wait_time = 5.0  # 最长等待时间固定为5秒
                 elif self.rate_limit_count > 5:
-                    wait_time = self.min_wait_time * 3
+                    wait_time = 6.0  # 固定为6秒
                 elif use_single_thread:
                     wait_time = 1.0  # 单线程模式下批次间等待1秒
                 else:
