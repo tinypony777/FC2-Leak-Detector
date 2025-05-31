@@ -741,10 +741,15 @@ class JellyfinMetadataGenerator:
                     if result:
                         results.append(result)
                     
-                    # 单线程模式下，每个请求之间添加更长的等待时间
-                    wait_time = 2.0  # 固定为2秒
-                    logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
-                    await asyncio.sleep(wait_time)
+                    # 如果已经跳过网络请求，则不需要等待
+                    if self.rate_limit_count >= self.skip_network_threshold:
+                        # 直接处理下一个，不等待
+                        continue
+                    else:
+                        # 单线程模式下，每个请求之间添加等待时间
+                        wait_time = 2.0  # 固定为2秒
+                        logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
+                        await asyncio.sleep(wait_time)
             else:
                 # 多线程模式：批量处理视频
                 tasks = []
