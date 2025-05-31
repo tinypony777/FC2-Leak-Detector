@@ -33,17 +33,7 @@ FC2流出检查器是一款专业的内容状态分析工具，基于fc2ppvdb.co
  **图片下载** - 自动下载视频缩略图  
  **详细报告生成** - 生成全面的分析报告，支持文本和JSON格式  
  **高效缓存机制** - 智能缓存减少重复请求  
- **Jellyfin元数据支持** - 为已流出视频生成Jellyfin兼容的NFO文件和海报图片，方便整合到媒体库
-
-### Jellyfin元数据说明
-生成的Jellyfin元数据包含以下内容：
-- NFO文件：包含视频标题、描述、外部链接等信息
-- 海报图片：视频缩略图作为海报
-- 占位MP4文件：**注意：这些是0字节的空文件，不能直接播放**，仅用于在Jellyfin中显示视频条目
-- 观看链接：NFO文件中包含MissAV和123AV的观看链接，可通过预告片按钮或外部链接访问
-- 磁力链接：如果可用，NFO文件中会包含磁力链接，用于下载视频
-
-要观看视频，您需要点击Jellyfin界面中的预告片按钮跳转到在线观看网站，或使用磁力链接下载视频。
+ **Jellyfin元数据支持** - 为已流出视频生成Jellyfin兼容的NFO文件和海报图片
 
 ### 安装指南
 
@@ -240,6 +230,17 @@ FC2-Leak-Detector/
 - 女优页面URL: `.../actress/6789` 中的 `6789` 即为女优ID
 - 作者ID由于没有明文在网页中显示，用户可以选取任意一个该作者的FC2视频ID采用-v id的命令行格式直接获取该作者的视频，无需提供具体id
 
+#### 关于Jellyfin元数据的使用
+
+生成的Jellyfin元数据包含以下内容：
+- NFO文件：包含视频标题、描述、外部链接等信息
+- 海报图片：视频缩略图作为海报
+- 占位MP4文件：**注意：这些是0字节的空文件，不能直接播放**，仅用于在Jellyfin中显示视频条目
+- 观看链接：NFO文件中包含MissAV和123AV的观看链接，可通过预告片按钮或外部链接访问
+- 磁力链接：如果可用，NFO文件中会包含磁力链接，用于下载视频
+
+要观看视频，您需要点击Jellyfin界面中的预告片按钮跳转到在线观看网站，或使用磁力链接下载视频。
+
 #### 分析速度很慢怎么办?
 
 - 增加并行线程数 (`-t` 参数或修改配置文件中的`max_workers`值)
@@ -307,17 +308,7 @@ See the [complete changelog](CHANGELOG.md) for more details.
 **Image Download** - Automatically download video thumbnails  
 **Detailed Report Generation** - Generate comprehensive analysis reports, supporting text and JSON formats  
 **Efficient Caching** - Smart caching to reduce duplicate requests  
-**Jellyfin Metadata Support** - Generate Jellyfin-compatible NFO files and poster images for leaked videos, making it easy to integrate into your media library
-
-### Jellyfin Metadata Notes
-The generated Jellyfin metadata includes:
-- NFO files: Contains video title, description, external links, and other information
-- Poster images: Video thumbnails as posters
-- Placeholder MP4 files: **Note: These are 0-byte empty files that cannot be played directly**, only used to display video entries in Jellyfin
-- Watch links: The NFO files contain links to MissAV and 123AV for online viewing, accessible via the trailer button or external links
-- Magnet links: If available, the NFO files include magnet links for downloading the videos
-
-To watch the videos, you need to click the trailer button in the Jellyfin interface to jump to online viewing websites, or use the magnet links to download the videos.
+**Jellyfin Metadata Support** - Generate Jellyfin-compatible NFO files and poster images for leaked videos
 
 ### Installation Guide
 
@@ -514,6 +505,17 @@ Actress ID can be found in the URL of fc2ppvdb.com website. For example:
 - Actress page URL: `.../actress/6789` where `6789` is the actress ID
 - Author ID is not explicitly displayed on the webpage. Users can select any FC2 video ID from that author and use the -v id command line format to directly get videos from that author without providing a specific id.
 
+#### About Using Jellyfin Metadata
+
+The generated Jellyfin metadata includes the following:
+- NFO files: Contains video title, description, external links, and other information
+- Poster images: Video thumbnails used as posters
+- Placeholder MP4 files: **Note: These are 0-byte empty files that cannot be played directly**, only used to display video entries in Jellyfin
+- Watch links: NFO files contain links to MissAV and 123AV for watching, accessible via the trailer button or external links
+- Magnet links: If available, NFO files include magnet links for downloading the videos
+
+To watch videos, you need to click the trailer button in the Jellyfin interface to jump to the online viewing website, or use the magnet link to download the video.
+
 #### What If Analysis is Slow?
 
 - Increase parallel thread count (`-t` parameter or modify `max_workers` in config)
@@ -582,16 +584,6 @@ FC2流出チェッカーは、fc2ppvdb.comに基づいて構築された専門�
 **詳細レポート生成** - テキストとJSON形式をサポートする包括的な分析レポートを生成  
 **効率的なキャッシュ機構** - 重複リクエストを減らすスマートキャッシュ  
 **Jellyfin メタデータサポート** - 流出したビデオ向けにJellyfin互換のNFOファイルとポスター画像を生成し、メディアライブラリーへの統合を容易にします
-
-### Jellyfinメタデータについて
-生成されるJellyfinメタデータには以下が含まれます：
-- NFOファイル：ビデオのタイトル、説明、外部リンクなどの情報を含む
-- ポスター画像：ビデオのサムネイルをポスターとして使用
-- プレースホルダーMP4ファイル：**注意：これらは0バイトの空ファイルで、直接再生することはできません**。Jellyfin内でビデオエントリを表示するためだけに使用されます
-- 視聴リンク：NFOファイルにはMissAVと123AVへのオンライン視聴リンクが含まれており、予告編ボタンまたは外部リンクからアクセスできます
-- マグネットリンク：利用可能な場合、NFOファイルにはビデオをダウンロードするためのマグネットリンクが含まれています
-
-ビデオを視聴するには、Jellyfinインターフェースの予告編ボタンをクリックしてオンライン視聴サイトにジャンプするか、マグネットリンクを使用してビデオをダウンロードする必要があります。
 
 ### インストールガイド
 
@@ -788,6 +780,17 @@ FC2-Leak-Detector/
 - 女優ページURL: `.../actress/6789` の `6789` が女優IDです
 - 作者IDはウェブページに明示的に表示されていません。ユーザーは、その作者のFC2ビデオIDを選択し、-v idコマンドライン形式を使用して、特定のIDを提供せずに直接その作者のビデオを取得できます。
 
+#### Jellyfinメタデータの使用について
+
+生成されたJellyfinメタデータには以下の内容が含まれます：
+- NFOファイル：ビデオのタイトル、説明、外部リンクなどの情報を含む
+- ポスター画像：ビデオのサムネイル画像をポスターとして使用
+- 占位MP4ファイル：**注意：これらは0バイトの空ファイルで、直接再生することはできません**、Jellyfinでビデオエントリを表示するためだけに使用
+- 視聴リンク：NFOファイルにはMissAVと123AVの視聴リンクが含まれており、予告編ボタンまたは外部リンクからアクセス可能
+- マグネットリンク：利用可能な場合、NFOファイルにはビデオをダウンロードするためのマグネットリンクが含まれる
+
+ビデオを視聴するには、Jellyfinインターフェースの予告編ボタンをクリックしてオンライン視聴サイトにジャンプするか、マグネットリンクを使用してビデオをダウンロードする必要があります。
+
 #### 分析が遅い場合はどうすればいいですか？
 
 - 並列スレッド数を増やす（`-t`パラメータまたは設定ファイルの`max_workers`値を変更）
@@ -803,7 +806,7 @@ FC2-Leak-Detector/
 - リクエストがターゲットサイトによって拒否された
 - ビデオIDのフォーマットが正しくない
 
-#### キャッシュをクリアするには？
+#### 如何清除缓存?
 
 `data`ディレクトリ内の対応するキャッシュフォルダを手動で削除するか、次のコマンドを使用します：
 
