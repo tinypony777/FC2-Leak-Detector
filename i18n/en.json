@@ -468,7 +468,7 @@
     "javbus": "JavBus"
   },
   
-  "usage_jellyfin": "Generate Jellyfin compatible metadata",
+  "usage_jellyfin": "Generate Jellyfin compatible metadata for leaked videos; can be used independently to find analysis results from the last 48 hours",
   "example_jellyfin": "Analyze writer videos and generate Jellyfin metadata",
   
   "jellyfin": {
@@ -514,5 +514,77 @@
   
   "advanced_usage": "Advanced Usage",
   "advanced_example1": "Analyze author videos with 20 threads, generate Jellyfin metadata, and use English interface",
-  "advanced_example2": "Batch process multiple authors with maximum 50 threads, without downloading thumbnails but with magnet links, and generate Jellyfin metadata"
+  "advanced_example2": "Batch process multiple authors with maximum 50 threads, without downloading thumbnails but with magnet links, and generate Jellyfin metadata",
+  
+  "magnet_only": {
+    "retry_limit": "Retry Limit",
+    "retry_success_ratio": "Retry Success Ratio",
+    "display_count": "Display Count",
+    "results_title": "Magnet Analysis Results",
+    "top_title": "Top Magnet Rankings",
+    "table_title": "Magnet Details",
+    "rank": "Rank",
+    "url": "URL",
+    "size": "Size",
+    "seeders": "Seeders",
+    "leechers": "Leechers",
+    "total_count": "Total",
+    "empty_result": "No magnet information found"
+  },
+
+  "jellyfin_only": {
+    "no_reports": "No analysis result files found, please use -a/-w/-b/-ba/-v parameters first",
+    "no_recent_reports": "No analysis result files found within the last 48 hours, please use -a/-w/-b/-ba/-v parameters first",
+    "found_reports": "Found the following {count} analysis results within the last 48 hours:",
+    "unknown_name": "Unknown",
+    "entity_name": "Name",
+    "analysis_time": "Analysis time",
+    "select_report": "Please enter the report number to use (press Enter to cancel)",
+    "operation_cancelled": "Operation cancelled",
+    "invalid_number": "Invalid number",
+    "selected_report": "Selected",
+    "confirm_selection": "Do you want to generate Jellyfin metadata using this report? (y/n)",
+    "using_cache": "Using cached data",
+    "invalid_cache": "Invalid or incomplete cache data",
+    "cache_expired": "Cache data has expired",
+    "cache_error": "Error reading cache",
+    "parsing_report": "Parsing video information from report file...",
+    "parse_error": "Error parsing report file",
+    "parsing_summary": "Trying to parse from leaked videos summary file...",
+    "summary_not_found": "Leaked videos summary file not found",
+    "summary_parse_error": "Error parsing leaked videos summary file",
+    "no_videos_found": "No video information found",
+    "found_videos": "Found {count} videos, with {leaked} leaked",
+    "jellyfin_metadata": "Jellyfin Metadata",
+    "generation_success": "Successfully generated {count} Jellyfin metadata files",
+    "generation_failed": "No Jellyfin metadata files were generated",
+    "invalid_input": "Invalid input",
+    "error": "Error generating Jellyfin metadata"
+  },
+  
+  "jellyfin": {
+    "initialize": "Initializing Jellyfin metadata generator, output directory: {path}",
+    "generate_start": "Starting to generate metadata for video {video_id}",
+    "fetch_extra_info": "Fetching extra information for video {video_id}",
+    "fetch_failed": "Failed to fetch page: {url}",
+    "fetch_success": "Successfully fetched extra information for video {video_id}",
+    "watch_links": "Watch Links:",
+    "magnet_links": "Magnet Links:",
+    "found_image": "Found image for video {video_id}: {path}",
+    "using_author_dir": "Using author subdirectory: {dir}",
+    "using_actress_dir": "Using actress subdirectory: {dir}",
+    "save_metadata_success": "Metadata saved successfully: {path}",
+    "save_metadata_failed": "Failed to save metadata: {error}",
+    "copy_poster_success": "Poster copied successfully: {path}",
+    "copy_poster_failed": "Failed to copy poster: {error}",
+    "create_placeholder_success": "Placeholder file created successfully: {path}",
+    "create_placeholder_failed": "Failed to create placeholder file: {error}",
+    "no_leaked_videos": "No leaked videos found, skipping Jellyfin metadata generation",
+    "start_batch": "Starting batch metadata generation for {count} videos",
+    "generate_complete": "Metadata generation complete, {count} files generated",
+    "metadata_generated_batch": "Generated Jellyfin metadata for {count} videos in total",
+    "metadata_location": "Metadata save location: {path}",
+    "no_metadata_generated": "No Jellyfin metadata was successfully generated",
+    "metadata_error_batch": "Error generating batch Jellyfin metadata: {error}"
+  }
 } 
