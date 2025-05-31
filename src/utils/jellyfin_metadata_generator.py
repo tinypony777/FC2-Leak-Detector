@@ -90,12 +90,8 @@ class JellyfinMetadataGenerator:
                             if response.status == 429:
                                 self.rate_limit_count += 1
                                 
-                            # 服务器限流或服务器错误，使用指数退避
-                            wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
-                            # 添加随机抖动以避免请求同步
-                            wait_time = wait_time * (0.5 + random.random())
-                            # 确保等待时间不超过6秒
-                            wait_time = min(wait_time, 6.0)
+                            # 计算等待时间并睡眠
+                            wait_time = self._calculate_wait_time(attempt)
                             
                             logger.warning(_("logger.rate_limit").format(
                                 status_code=response.status,
@@ -108,23 +104,38 @@ class JellyfinMetadataGenerator:
                         logger.warning(_("jellyfin.page_fetch_failed").format(status_code=response.status, url=url))
                         return None
                         
-            except asyncio.TimeoutError:
-                wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
-                # 确保等待时间不超过6秒
-                wait_time = min(wait_time, 6.0)
-                logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
-                await asyncio.sleep(wait_time)
+            except (asyncio.TimeoutError, Exception) as e:
+                # 统一处理超时和其他异常
+                wait_time = self._calculate_wait_time(attempt)
                 
-            except Exception as e:
-                wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
-                # 确保等待时间不超过6秒
-                wait_time = min(wait_time, 6.0)
-                logger.error(f"获取页面异常: {str(e)}, URL: {url}")
-                logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
+                if isinstance(e, asyncio.TimeoutError):
+                    logger.warning(f"请求超时，等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
+                else:
+                    logger.error(f"获取页面异常: {str(e)}, URL: {url}")
+                    logger.warning(f"等待 {wait_time:.2f} 秒后重试 ({attempt}/{self.max_retries})")
+                
                 await asyncio.sleep(wait_time)
                 
         logger.error(f"达到最大重试次数 ({self.max_retries})，获取页面失败: {url}")
         return None
+
+    def _calculate_wait_time(self, attempt):
+        """计算重试等待时间
+        
+        Args:
+            attempt: 当前尝试次数
+            
+        Returns:
+            float: 计算后的等待时间（秒）
+        """
+        # 使用指数退避
+        wait_time = min(self.max_wait_time, self.min_wait_time * (2 ** (attempt - 1)))
+        # 添加随机抖动以避免请求同步
+        wait_time = wait_time * (0.5 + random.random())
+        # 确保等待时间不超过最大值
+        wait_time = min(wait_time, self.max_wait_time)
+        
+        return wait_time
 
     def parse_html(self, html_content, fc2_id):
         """解析HTML内容提取视频信息
@@ -139,11 +150,53 @@ class JellyfinMetadataGenerator:
         if not html_content:
             return {}
             
-        results = {}
-        results['fc2_id'] = fc2_id
+        results = {'fc2_id': fc2_id, 'tags': []}
         
-        # 提取标签 - 改进版本，更灵活的正则表达式匹配
-        tags = []
+        # 提取标签
+        self._extract_tags(html_content, results)
+        
+        # 提取马赛克状态
+        self._extract_with_pattern(
+            html_content, 
+            r'<ruby>モザイク<rt[^>]*>[^<]*</rt></ruby>：<span[^>]*>([^<]+)</span>', 
+            'mosaic_type', 
+            results
+        )
+        
+        # 提取发售日
+        self._extract_with_pattern(
+            html_content, 
+            r'販売日：<span[^>]*>([^<]+)</span>', 
+            'release_date', 
+            results
+        )
+        
+        # 提取视频长度
+        self._extract_with_pattern(
+            html_content, 
+            r'収録時間：<span[^>]*>([^<]+)</span>', 
+            'duration', 
+            results
+        )
+            
+        # 获取标题
+        self._extract_with_pattern(
+            html_content, 
+            r'<h2[^>]*>.*?<a[^>]*>([^<]+)</a>', 
+            'title', 
+            results, 
+            re.DOTALL
+        )
+        
+        return results
+        
+    def _extract_tags(self, html_content, results):
+        """提取标签信息
+        
+        Args:
+            html_content: HTML内容
+            results: 结果字典，将直接修改
+        """
         # 方法1：使用正则表达式
         tag_section_pattern = re.compile(r'<div[^>]*>(?:<ruby>)?タグ(?:<rt[^>]*>[^<]*</rt></ruby>)?[^:：]*[:：]\s*<span[^>]*>(.*?)</span>(?:</div>)?', re.DOTALL)
         tag_section_match = tag_section_pattern.search(html_content)
@@ -153,55 +206,42 @@ class JellyfinMetadataGenerator:
             tag_matches = tag_link_pattern.finditer(tags_content)
             for tag_match in tag_matches:
                 tag_name = tag_match.group(2)
-                tags.append(tag_name)
+                results['tags'].append(tag_name)
         
-        # 方法2：如果正则表达式失败，尝试使用BeautifulSoup（作为备选方案）
-        if not tags:
+        # 方法2：如果正则表达式失败，尝试使用BeautifulSoup
+        if not results['tags']:
             try:
                 soup = BeautifulSoup(html_content, 'html.parser')
                 # 查找包含"タグ"的div
                 for div in soup.find_all('div'):
                     if 'タグ' in div.text:
-                        # 只查找href包含"/tags/?name="的链接
+                        # 只查找href包含"/tags/"的链接
                         tag_links = [a for a in div.find_all('a') if 'href' in a.attrs and '/tags/' in a['href']]
                         for tag_link in tag_links:
                             tag_name = tag_link.text.strip()
-                            if tag_name and tag_name not in tags:
-                                tags.append(tag_name)
+                            if tag_name and tag_name not in results['tags']:
+                                results['tags'].append(tag_name)
                         
                         # 如果找到了标签所在的div，就跳出循环
-                        if tags:
+                        if results['tags']:
                             break
             except Exception as e:
                 logger.error(f"使用BeautifulSoup解析标签失败: {str(e)}")
+                
+    def _extract_with_pattern(self, html_content, pattern, key, results, flags=0):
+        """使用正则表达式提取内容
         
-        results['tags'] = tags
-        
-        # 提取马赛克状态
-        mosaic_pattern = re.compile(r'<ruby>モザイク<rt[^>]*>[^<]*</rt></ruby>：<span[^>]*>([^<]+)</span>')
-        mosaic_match = mosaic_pattern.search(html_content)
-        if mosaic_match:
-            results['mosaic_type'] = mosaic_match.group(1)
-        
-        # 提取发售日
-        release_date_pattern = re.compile(r'販売日：<span[^>]*>([^<]+)</span>')
-        release_date_match = release_date_pattern.search(html_content)
-        if release_date_match:
-            results['release_date'] = release_date_match.group(1)
-        
-        # 提取视频长度
-        duration_pattern = re.compile(r'収録時間：<span[^>]*>([^<]+)</span>')
-        duration_match = duration_pattern.search(html_content)
-        if duration_match:
-            results['duration'] = duration_match.group(1)
-            
-        # 获取标题
-        title_pattern = re.compile(r'<h2[^>]*>.*?<a[^>]*>([^<]+)</a>', re.DOTALL)
-        title_match = title_pattern.search(html_content)
-        if title_match:
-            results['title'] = title_match.group(1)
-        
-        return results
+        Args:
+            html_content: HTML内容
+            pattern: 正则表达式模式
+            key: 存储提取内容的键名
+            results: 结果字典，将直接修改
+            flags: 正则表达式标志
+        """
+        regex = re.compile(pattern, flags)
+        match = regex.search(html_content)
+        if match:
+            results[key] = match.group(1)
 
     async def enrich_video_info(self, video_info):
         """从FC2PPVDB获取额外的视频信息
@@ -553,101 +593,42 @@ class JellyfinMetadataGenerator:
         possible_paths = []
         
         # 1. 直接在img目录下查找
-        possible_paths.append(os.path.join(config.image_dir, f"{video_id}.jpg"))
-        possible_paths.append(os.path.join(config.image_dir, f"FC2-PPV-{video_id}.jpg"))
+        possible_paths.extend([
+            os.path.join(config.image_dir, f"{video_id}.jpg"),
+            os.path.join(config.image_dir, f"FC2-PPV-{video_id}.jpg")
+        ])
         
         # 2. 作者目录下查找
         if author_info and "id" in author_info:
-            author_id = author_info["id"]
-            author_name = author_info.get("name", "")
-            
-            if author_name:
-                # 清理作者名称以用于路径
-                author_name = self._clean_filename(author_name)
-                
-                # 形如: author_{id}_{name}
-                author_dir = os.path.join(config.image_dir, f"author_{author_id}_{author_name}")
-                possible_paths.append(os.path.join(author_dir, f"{video_id}.jpg"))
-                
-                # 形如: author_{id}_{name}/leaked/{id}.jpg
-                possible_paths.append(os.path.join(author_dir, "leaked", f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(author_dir, "unleaked", f"{video_id}.jpg"))
-            else:
-                # 只有ID的情况
-                author_dir = os.path.join(config.image_dir, f"author_{author_id}")
-                possible_paths.append(os.path.join(author_dir, f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(author_dir, "leaked", f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(author_dir, "unleaked", f"{video_id}.jpg"))
+            self._add_entity_image_paths(
+                possible_paths, 
+                video_id, 
+                "author", 
+                author_info["id"], 
+                author_info.get("name", "")
+            )
         
         # 3. 女优目录下查找
         if actress_info and "id" in actress_info:
-            actress_id = actress_info["id"]
-            actress_name = actress_info.get("name", "")
+            self._add_entity_image_paths(
+                possible_paths, 
+                video_id, 
+                "actress", 
+                actress_info["id"], 
+                actress_info.get("name", "")
+            )
             
-            if actress_name:
-                # 清理女优名称以用于路径
-                actress_name = self._clean_filename(actress_name)
-                
-                # 形如: actress_{id}_{name}
-                actress_dir = os.path.join(config.image_dir, f"actress_{actress_id}_{actress_name}")
-                possible_paths.append(os.path.join(actress_dir, f"{video_id}.jpg"))
-                
-                # 形如: actress_{id}_{name}/leaked/{id}.jpg
-                possible_paths.append(os.path.join(actress_dir, "leaked", f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(actress_dir, "unleaked", f"{video_id}.jpg"))
-                
-                # 特殊形式: actress_{id}_Actress_{id}
-                actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
-                possible_paths.append(os.path.join(actress_dir_special, f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(actress_dir_special, "leaked", f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(actress_dir_special, "unleaked", f"{video_id}.jpg"))
-                
-                # 特殊形式: 包含女优原始名称（可能包含空格）
-                # 尝试直接搜索actress_{id}_*目录
-                actress_dir_pattern = os.path.join(config.image_dir, f"actress_{actress_id}_*")
-                try:
-                    import glob
-                    matched_dirs = glob.glob(actress_dir_pattern)
-                    for matched_dir in matched_dirs:
-                        if os.path.isdir(matched_dir):
-                            # 添加主目录下图片路径
-                            possible_paths.append(os.path.join(matched_dir, f"{video_id}.jpg"))
-                            # 添加leaked目录下图片路径
-                            possible_paths.append(os.path.join(matched_dir, "leaked", f"{video_id}.jpg"))
-                            # 添加unleaked目录下图片路径
-                            possible_paths.append(os.path.join(matched_dir, "unleaked", f"{video_id}.jpg"))
-                except Exception as e:
-                    logger.error(f"搜索女优目录模式时出错: {str(e)}")
-            else:
-                # 只有ID的情况
-                actress_dir = os.path.join(config.image_dir, f"actress_{actress_id}")
-                possible_paths.append(os.path.join(actress_dir, f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(actress_dir, "leaked", f"{video_id}.jpg"))
-                possible_paths.append(os.path.join(actress_dir, "unleaked", f"{video_id}.jpg"))
-                
-                # 尝试通配符匹配所有可能的actress_{id}_*目录
-                try:
-                    import glob
-                    actress_dir_pattern = os.path.join(config.image_dir, f"actress_{actress_id}_*")
-                    matched_dirs = glob.glob(actress_dir_pattern)
-                    for matched_dir in matched_dirs:
-                        if os.path.isdir(matched_dir):
-                            possible_paths.append(os.path.join(matched_dir, f"{video_id}.jpg"))
-                            possible_paths.append(os.path.join(matched_dir, "leaked", f"{video_id}.jpg"))
-                            possible_paths.append(os.path.join(matched_dir, "unleaked", f"{video_id}.jpg"))
-                except Exception as e:
-                    logger.error(f"搜索女优目录模式时出错: {str(e)}")
+            # 特殊形式: actress_{id}_Actress_{id}
+            actress_id = actress_info["id"]
+            actress_dir_special = os.path.join(config.image_dir, f"actress_{actress_id}_Actress_{actress_id}")
+            possible_paths.extend([
+                os.path.join(actress_dir_special, f"{video_id}.jpg"),
+                os.path.join(actress_dir_special, "leaked", f"{video_id}.jpg"),
+                os.path.join(actress_dir_special, "unleaked", f"{video_id}.jpg")
+            ])
         
         # 4. 尝试在data/img下查找任何可能包含该视频ID的图片
-        try:
-            import glob
-            video_pattern = os.path.join(config.image_dir, "**", f"{video_id}.jpg")
-            matched_files = glob.glob(video_pattern, recursive=True)
-            for matched_file in matched_files:
-                if os.path.isfile(matched_file):
-                    possible_paths.append(matched_file)
-        except Exception as e:
-            logger.error(f"递归搜索图片文件时出错: {str(e)}")
+        self._add_recursive_image_paths(possible_paths, video_id)
         
         # 检查所有可能的路径
         for path in possible_paths:
@@ -658,143 +639,69 @@ class JellyfinMetadataGenerator:
         # 如果没有找到图片，记录警告
         logger.warning(f"未找到视频 FC2-PPV-{video_id} 的图片")
         return None
-    
-    async def batch_generate_metadata(self, videos_info, author_info=None, actress_info=None, enrich_from_web=True):
-        """批量生成多个视频的元数据
+        
+    def _add_entity_image_paths(self, possible_paths, video_id, entity_type, entity_id, entity_name):
+        """添加实体相关的图片路径
         
         Args:
-            videos_info: 视频信息列表
-            author_info: 作者信息字典
-            actress_info: 女优信息字典
-            enrich_from_web: 是否从网络获取额外信息
-                
-        Returns:
-            list: 生成的元数据文件信息列表
+            possible_paths: 路径列表，将直接修改
+            video_id: 视频ID
+            entity_type: 实体类型，如"author"或"actress"
+            entity_id: 实体ID
+            entity_name: 实体名称
         """
-        if not videos_info:
-            logger.warning("没有视频信息可用于生成元数据")
-            return []
-        
-        # 过滤出已流出的视频
-        leaked_videos = [video for video in videos_info if self.is_leaked(video)]
-        
-        # 如果没有已流出的视频，直接返回
-        if not leaked_videos:
-            logger.info(_("jellyfin.no_leaked_videos"))
-            return []
+        if entity_name:
+            # 清理名称以用于路径
+            clean_name = self._clean_filename(entity_name)
             
-        logger.info(_("jellyfin.start_batch").format(count=len(leaked_videos)))
-        results = []
-        
-        # 使用限制数量的并发任务，避免被限流
-        # 每批次处理的视频数量
-        batch_size = 5
-        total_batches = (len(leaked_videos) + batch_size - 1) // batch_size
-        
-        # 记录日志，显示当前处理的是作者还是女优
-        if author_info and "id" in author_info:
-            logger.info(f"处理作者ID: {author_info['id']}, 名称: {author_info.get('name', '未知')}")
-        elif actress_info and "id" in actress_info:
-            logger.info(f"处理女优ID: {actress_info['id']}, 名称: {actress_info.get('name', '未知')}")
-        
-        # 重置429错误计数器
-        self.rate_limit_count = 0
-        
-        # 是否使用单线程模式
-        use_single_thread = False
-        
-        # 是否跳过网络请求
-        skip_network_requests = False
-        
-        for batch_idx in range(total_batches):
-            start_idx = batch_idx * batch_size
-            end_idx = min(start_idx + batch_size, len(leaked_videos))
-            batch_videos = leaked_videos[start_idx:end_idx]
+            # 形如: {entity_type}_{id}_{name}
+            entity_dir = os.path.join(config.image_dir, f"{entity_type}_{entity_id}_{clean_name}")
+            possible_paths.extend([
+                os.path.join(entity_dir, f"{video_id}.jpg"),
+                os.path.join(entity_dir, "leaked", f"{video_id}.jpg"),
+                os.path.join(entity_dir, "unleaked", f"{video_id}.jpg")
+            ])
+        else:
+            # 只有ID的情况
+            entity_dir = os.path.join(config.image_dir, f"{entity_type}_{entity_id}")
+            possible_paths.extend([
+                os.path.join(entity_dir, f"{video_id}.jpg"),
+                os.path.join(entity_dir, "leaked", f"{video_id}.jpg"),
+                os.path.join(entity_dir, "unleaked", f"{video_id}.jpg")
+            ])
             
-            logger.info(f"处理第 {batch_idx+1}/{total_batches} 批视频 ({len(batch_videos)}个)")
+        # 尝试通配符匹配
+        try:
+            import glob
+            entity_dir_pattern = os.path.join(config.image_dir, f"{entity_type}_{entity_id}_*")
+            matched_dirs = glob.glob(entity_dir_pattern)
+            for matched_dir in matched_dirs:
+                if os.path.isdir(matched_dir):
+                    # 添加各种可能的路径
+                    possible_paths.extend([
+                        os.path.join(matched_dir, f"{video_id}.jpg"),
+                        os.path.join(matched_dir, "leaked", f"{video_id}.jpg"),
+                        os.path.join(matched_dir, "unleaked", f"{video_id}.jpg")
+                    ])
+        except Exception as e:
+            logger.error(f"搜索{entity_type}目录模式时出错: {str(e)}")
             
-            # 检查是否需要切换到单线程模式
-            if self.rate_limit_count >= self.rate_limit_threshold and not use_single_thread:
-                logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.rate_limit_threshold})，切换到单线程模式")
-                use_single_thread = True
-            
-            # 检查是否需要跳过网络请求
-            if self.rate_limit_count >= self.skip_network_threshold and not skip_network_requests:
-                logger.warning(f"429错误次数达到阈值({self.rate_limit_count}/{self.skip_network_threshold})，跳过网络请求获取标签信息")
-                skip_network_requests = True
-                # 如果跳过网络请求，则不需要从网络获取额外信息
-                enrich_from_web = False
-            
-            if use_single_thread:
-                # 单线程模式：逐个处理视频
-                for video_info in batch_videos:
-                    video_id = video_info.get("video_id")
-                    if not video_id:
-                        logger.warning("跳过无效的视频信息(缺少video_id)")
-                        continue
-                        
-                    # 查找对应的图片路径
-                    image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
-                    
-                    # 创建生成元数据的任务
-                    result = await self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
-                    if result:
-                        results.append(result)
-                    
-                    # 如果已经跳过网络请求，则不需要等待
-                    if self.rate_limit_count >= self.skip_network_threshold:
-                        # 直接处理下一个，不等待
-                        continue
-                    else:
-                        # 单线程模式下，每个请求之间添加等待时间
-                        wait_time = 2.0  # 固定为2秒
-                        logger.info(f"单线程模式：等待 {wait_time} 秒后处理下一个视频...")
-                        await asyncio.sleep(wait_time)
-            else:
-                # 多线程模式：批量处理视频
-                tasks = []
-                for video_info in batch_videos:
-                    video_id = video_info.get("video_id")
-                    if not video_id:
-                        logger.warning("跳过无效的视频信息(缺少video_id)")
-                        continue
-                        
-                    # 查找对应的图片路径
-                    image_path = self.find_image_path(video_id, video_info, author_info, actress_info)
-                    
-                    # 创建生成元数据的任务 - 确保正确传递author_info和actress_info参数
-                    task = self.generate_metadata(video_info, image_path, author_info, actress_info, enrich_from_web)
-                    tasks.append(task)
-                
-                # 等待本批次任务完成
-                batch_results = await asyncio.gather(*tasks)
-                
-                # 过滤掉None结果
-                valid_results = [result for result in batch_results if result]
-                results.extend(valid_results)
-            
-            # 批次间休息一下，避免被限流
-            if batch_idx < total_batches - 1:
-                # 如果已经跳过网络请求了，则不需要等待
-                if self.rate_limit_count >= self.skip_network_threshold:
-                    # 直接进行下一批处理，不等待
-                    logger.info(f"跳过网络请求模式：直接处理下一批视频...(当前429错误计数: {self.rate_limit_count})")
-                # 如果遇到一定次数的429错误，增加等待时间
-                elif self.rate_limit_count > 5:
-                    wait_time = 6.0  # 固定为6秒
-                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
-                    await asyncio.sleep(wait_time)
-                elif use_single_thread:
-                    wait_time = 1.0  # 单线程模式下批次间等待1秒
-                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
-                    await asyncio.sleep(wait_time)
-                else:
-                    wait_time = self.min_wait_time
-                    logger.info(f"等待 {wait_time} 秒后处理下一批...(当前429错误计数: {self.rate_limit_count})")
-                    await asyncio.sleep(wait_time)
-                
-        logger.info(_("jellyfin.generate_complete").format(count=len(results)))
-        return results
+    def _add_recursive_image_paths(self, possible_paths, video_id):
+        """递归查找图片路径
+        
+        Args:
+            possible_paths: 路径列表，将直接修改
+            video_id: 视频ID
+        """
+        try:
+            import glob
+            video_pattern = os.path.join(config.image_dir, "**", f"{video_id}.jpg")
+            matched_files = glob.glob(video_pattern, recursive=True)
+            for matched_file in matched_files:
+                if os.path.isfile(matched_file):
+                    possible_paths.append(matched_file)
+        except Exception as e:
+            logger.error(f"递归搜索图片文件时出错: {str(e)}")
     
     def _clean_filename(self, name):
         """清理文件名，移除不允许的字符
