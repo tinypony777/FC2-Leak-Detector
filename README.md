@@ -1,10 +1,10 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/80a9f02a029d420a938410c29cbf2b9f)](https://app.codacy.com/gh/FC2-Research-Club/FC2-Leak-Detector/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![版本](https://img.shields.io/github/v/release/FC2-Research-Club/FC2-Leak-Detector?include_prereleases&style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/releases)
 [![许可证](https://img.shields.io/badge/license-GPL--3.0-green?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/blob/main/LICENSE)
 [![Python版本](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://www.python.org/)
 [![GitHub Stars](https://img.shields.io/github/stars/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/network/members)
 [![CI状态](https://img.shields.io/github/actions/workflow/status/FC2-Research-Club/FC2-Leak-Detector/publish.yml?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/actions)
-[![代码大小](https://img.shields.io/github/languages/code-size/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector)
 [![最后提交](https://img.shields.io/github/last-commit/FC2-Research-Club/FC2-Leak-Detector?style=flat-square)](https://github.com/FC2-Research-Club/FC2-Leak-Detector/commits/main)
 
 # FC2流出检测器 | FC2 Leak Detector | FC2流出チェッカー
