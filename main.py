@@ -405,7 +405,11 @@ def check_videos(
                 # 异步调用批量生成元数据
                 import asyncio
                 # 使用asyncio.run运行异步函数
-                metadata_results = asyncio.run(jellyfin_generator.batch_generate_metadata(leaked_videos, author_info=author_info))
+                metadata_results = asyncio.run(jellyfin_generator.batch_generate_metadata(
+                    leaked_videos,
+                    author_info=author_info,
+                    enrich_from_web=True  # 始终从网络获取额外信息，包括标签
+                ))
                 
                 if metadata_results:
                     print(f"✅ 成功生成 {len(metadata_results)} 个Jellyfin元数据文件")
@@ -1084,7 +1088,7 @@ def generate_jellyfin_only():
                 leaked_videos,
                 author_info=entity_info if not is_actress else None,
                 actress_info=entity_info if is_actress else None,
-                enrich_from_web=False  # 不从网络获取额外信息，但会尝试从本地缓存读取磁链
+                enrich_from_web=True  # 始终从网络获取额外信息，包括标签
             ))
             
             if metadata_results:
