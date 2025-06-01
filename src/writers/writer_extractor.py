@@ -17,6 +17,25 @@ from bs4 import BeautifulSoup
 from config import config
 
 
+def handle_request_limit(request_counter):
+    """处理请求限制，根据请求计数器决定是否需要等待
+    
+    Args:
+        request_counter: 当前请求计数
+        
+    Returns:
+        int: 更新后的请求计数
+    """
+    counter = request_counter + 1  # 增加请求计数
+    
+    # 检查是否需要等待 - 每X次请求后的第一次进行等待
+    if counter % config.request_limit_count == 1 and counter > 1:
+        wait_time = (config.retry_base ** 2) + random.uniform(1, 3)  # 使用适当的等待时间
+        print(f"达到请求限制点 ({counter})，等待 {wait_time:.2f} 秒以避免被封...")
+        time.sleep(wait_time)
+        
+    return counter
+
 
 def extract_writerusername(url):
     """从writers URL中提取writerusername"""
@@ -43,11 +62,8 @@ def get_writer_info(writerusername, request_counter, max_retries=None):
         max_retries = config.max_retries
     url = f"{config.fc2ppvdb_api_base}/writers/{writerusername}"
 
-    # 检查是否需要等待 - 每X次请求后的第一次进行等待
-    if request_counter % config.request_limit_count == 1 and request_counter > 1:
-        wait_time = (config.retry_base ** 2) + random.uniform(1, 3)  # 使用适当的等待时间
-        print(f"达到请求限制点 ({request_counter})，等待 {wait_time:.2f} 秒以避免被封...")
-        time.sleep(wait_time)
+    # 处理请求限制
+    request_counter = handle_request_limit(request_counter)
 
     retry_count = 0
     
@@ -119,6 +135,49 @@ def get_writer_info(writerusername, request_counter, max_retries=None):
     return None
 
 
+def fetch_and_extract_links(url, request_counter):
+    """获取页面并提取作者链接
+    
+    Args:
+        url: 要获取的页面URL
+        request_counter: 请求计数器
+        
+    Returns:
+        tuple: (作者用户名集合, 更新后的请求计数器)
+    """
+    usernames = set()
+    
+    try:
+        # 处理请求限制
+        counter = handle_request_limit(request_counter)
+        
+        # 发送请求
+        response = requests.get(url, headers=config.base_headers.copy(), timeout=config.timeout)
+        response.raise_for_status()
+        
+        # 解析页面
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # 查找所有指向作者页面的链接
+        writer_links = soup.find_all(
+            "a", href=lambda href: href and href.startswith("/writers/")
+        )
+        
+        # 提取用户名
+        for link in writer_links:
+            href = link.get("href")
+            username = extract_writerusername(href)
+            if username:
+                usernames.add(username)
+                
+        print(f"从页面 {url} 找到 {len(writer_links)} 个链接")
+        
+    except Exception as e:
+        print(f"爬取页面 {url} 时出错: {e}")
+        
+    return usernames, counter
+
+
 def get_writers_from_ranking_pages(request_counter):
     """从排名页面获取所有writerusername
     
@@ -129,74 +188,18 @@ def get_writers_from_ranking_pages(request_counter):
         tuple: (过滤后的用户名集合, 更新后的请求计数器)
     """
     all_usernames = set()
-
-    # 使用配置的请求头
-    headers = config.base_headers.copy()
-    
-    # 复制计数器以便返回更新后的值
     counter = request_counter
 
     # 爬取排名页面 1-3
     for page in range(1, 4):
         url = f"{config.fc2ppvdb_api_base}/writers/ranking?page={page}"
-        try:
-            # 检查是否需要等待
-            if counter % config.request_limit_count == 1 and counter > 1:
-                wait_time = (config.retry_base ** 2) + random.uniform(1, 3)  # 使用适当的等待时间
-                print(f"达到请求限制点 ({counter})，等待 {wait_time:.2f} 秒以避免被封...")
-                time.sleep(wait_time)
-
-            counter += 1  # 增加请求计数
-
-            response = requests.get(url, headers=headers, timeout=config.timeout)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, "html.parser")
-
-            # 查找所有指向作者页面的链接
-            writer_links = soup.find_all(
-                "a", href=lambda href: href and href.startswith("/writers/")
-            )
-
-            for link in writer_links:
-                href = link.get("href")
-                username = extract_writerusername(href)
-                if username:
-                    all_usernames.add(username)
-
-            print(f"从排名页面 {page} 找到 {len(writer_links)} 个链接")
-
-        except Exception as e:
-            print(f"爬取排名页面 {page} 时出错: {e}")
+        usernames, counter = fetch_and_extract_links(url, counter)
+        all_usernames.update(usernames)
 
     # 爬取书签排名页面
-    try:
-        # 检查是否需要等待
-        if counter % config.request_limit_count == 1 and counter > 1:
-            wait_time = (config.retry_base ** 2) + random.uniform(1, 3)  # 使用适当的等待时间
-            print(f"达到请求限制点 ({counter})，等待 {wait_time:.2f} 秒以避免被封...")
-            time.sleep(wait_time)
-
-        counter += 1  # 增加请求计数
-
-        url = f"{config.fc2ppvdb_api_base}/writers/bookmark-ranking"
-        response = requests.get(url, headers=headers, timeout=config.timeout)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        writer_links = soup.find_all(
-            "a", href=lambda href: href and href.startswith("/writers/")
-        )
-
-        for link in writer_links:
-            href = link.get("href")
-            username = extract_writerusername(href)
-            if username:
-                all_usernames.add(username)
-
-        print(f"从书签排名页面找到 {len(writer_links)} 个链接")
-
-    except Exception as e:
-        print(f"爬取书签排名页面时出错: {e}")
+    url = f"{config.fc2ppvdb_api_base}/writers/bookmark-ranking"
+    usernames, counter = fetch_and_extract_links(url, counter)
+    all_usernames.update(usernames)
 
     # 过滤掉不是作者名的链接（如登录、注册等）
     filtered_usernames = {
@@ -267,9 +270,9 @@ class WriterExtractor:
         for i, username in enumerate(writer_usernames, 1):
             print(f"正在处理 ({i}/{len(writer_usernames)}): {username}")
 
-            self.request_counter += 1  # 增加请求计数
-
             writer_id = get_writer_info(username, self.request_counter)
+            self.request_counter += 1  # 增加请求计数
+            
             if writer_id:
                 writer_ids.append(writer_id)
                 writer_data.append({"username": username, "id": writer_id})
