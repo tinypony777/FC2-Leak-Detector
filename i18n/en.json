@@ -560,31 +560,5 @@
     "generation_failed": "No Jellyfin metadata files were generated",
     "invalid_input": "Invalid input",
     "error": "Error generating Jellyfin metadata"
-  },
-  
-  "jellyfin": {
-    "initialize": "Initializing Jellyfin metadata generator, output directory: {path}",
-    "generate_start": "Starting to generate metadata for video {video_id}",
-    "fetch_extra_info": "Fetching extra information for video {video_id}",
-    "fetch_failed": "Failed to fetch page: {url}",
-    "fetch_success": "Successfully fetched extra information for video {video_id}",
-    "watch_links": "Watch Links:",
-    "magnet_links": "Magnet Links:",
-    "found_image": "Found image for video {video_id}: {path}",
-    "using_author_dir": "Using author subdirectory: {dir}",
-    "using_actress_dir": "Using actress subdirectory: {dir}",
-    "save_metadata_success": "Metadata saved successfully: {path}",
-    "save_metadata_failed": "Failed to save metadata: {error}",
-    "copy_poster_success": "Poster copied successfully: {path}",
-    "copy_poster_failed": "Failed to copy poster: {error}",
-    "create_placeholder_success": "Placeholder file created successfully: {path}",
-    "create_placeholder_failed": "Failed to create placeholder file: {error}",
-    "no_leaked_videos": "No leaked videos found, skipping Jellyfin metadata generation",
-    "start_batch": "Starting batch metadata generation for {count} videos",
-    "generate_complete": "Metadata generation complete, {count} files generated",
-    "metadata_generated_batch": "Generated Jellyfin metadata for {count} videos in total",
-    "metadata_location": "Metadata save location: {path}",
-    "no_metadata_generated": "No Jellyfin metadata was successfully generated",
-    "metadata_error_batch": "Error generating batch Jellyfin metadata: {error}"
   }
 } 

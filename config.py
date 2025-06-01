@@ -33,6 +33,10 @@ class Config:
     
     def __init__(self):
         """初始化配置项，只在第一次创建实例时执行"""
+        # 将_initialized初始化移到前面，解决访问成员变量在定义前的问题
+        if not hasattr(self, "_initialized"):
+            self._initialized = False
+            
         if self._initialized:
             return
             

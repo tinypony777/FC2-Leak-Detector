@@ -518,10 +518,13 @@ class FC2Analyzer:
 
                     # 确保请求间隔≥5秒
                     current_time = time.time()
-                    if hasattr(self, "last_request_time"):
-                        elapsed = current_time - self.last_request_time
-                        if elapsed < 5.0:
-                            time.sleep(5.0 - elapsed)
+                    # 初始化last_request_time属性（如果不存在）
+                    if not hasattr(self, "last_request_time"):
+                        self.last_request_time = 0
+                        
+                    elapsed = current_time - self.last_request_time
+                    if elapsed < 5.0:
+                        time.sleep(5.0 - elapsed)
                     self.last_request_time = current_time
 
                     response = requests.get(

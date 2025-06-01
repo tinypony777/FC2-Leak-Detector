@@ -1084,7 +1084,7 @@ def generate_jellyfin_only():
                 leaked_videos,
                 author_info=entity_info if not is_actress else None,
                 actress_info=entity_info if is_actress else None,
-                enrich_from_web=not used_cache  # 如果使用了缓存，就不需要再从网络获取额外信息
+                enrich_from_web=False  # 不从网络获取额外信息，但会尝试从本地缓存读取磁链
             ))
             
             if metadata_results:

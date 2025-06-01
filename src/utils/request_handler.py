@@ -77,8 +77,7 @@ class RequestHandler:
                 # 使用自定义通知
                 if step_name:
                     retry_suffix = (
-                        _("logger.retry_suffix", " (重试 {retry}/{max})", 
-                          " (重试 {retry}/{max})").format(retry=retry_count, max=max_retries) if retry_count > 0 else ""
+                        _("logger.retry_suffix", " (重试 {retry}/{max})").format(retry=retry_count, max=max_retries) if retry_count > 0 else ""
                     )
                     logger.info(_("logger.request_step", "{step_name}{retry_suffix}").format(
                         step_name=step_name, retry_suffix=retry_suffix
