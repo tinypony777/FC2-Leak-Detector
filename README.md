@@ -75,6 +75,21 @@ cd FC2-Leak-Detector
 pip install -r requirements.txt
 ```
 
+#### 在 Google Colab 上运行
+
+在 Google Colab 中使用本项目时，建议将数据保存到 Google Drive。
+首先挂载您的云端硬盘，然后设置 `FC2_BASE_CACHE_DIR` 环境变量：
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+os.environ["FC2_BASE_CACHE_DIR"] = "/content/drive/MyDrive/fc2_data"
+```
+
+完成上述设置后，即可在 Colab 中执行 `python run.py` 运行程序。
+
 ### 使用方法
 
 #### 命令行参数
@@ -358,6 +373,21 @@ Option 2: Direct Download from Releases
 pip install -r requirements.txt
 ```
 
+#### Running on Google Colab
+
+When using this project on Google Colab, mount Google Drive and set the
+`FC2_BASE_CACHE_DIR` environment variable so data is saved persistently:
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+os.environ["FC2_BASE_CACHE_DIR"] = "/content/drive/MyDrive/fc2_data"
+```
+
+After the setup you can run `python run.py` directly in Colab.
+
 ### Usage
 
 #### Command Line Arguments
@@ -640,6 +670,21 @@ cd FC2-Leak-Detector
 ```bash
 pip install -r requirements.txt
 ```
+
+#### Google Colab での実行
+
+Google Colab で利用する場合は、Google ドライブをマウントした上で
+`FC2_BASE_CACHE_DIR` 環境変数を設定してデータの保存先を指定してください。
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+os.environ["FC2_BASE_CACHE_DIR"] = "/content/drive/MyDrive/fc2_data"
+```
+
+この設定後、Colab 上で `python run.py` を実行できます。
 
 ### 使用方法
 

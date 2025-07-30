@@ -16,7 +16,9 @@ from typing import Any, Dict, List, Tuple, Union, Optional
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # 数据存储基础目录 - 默认使用项目目录下的data文件夹
-BASE_CACHE_DIR = os.path.join(ROOT_DIR, "data")
+# 允许通过环境变量 FC2_BASE_CACHE_DIR 覆盖该目录，便于在
+# Google Colab 等环境中自定义数据保存位置
+BASE_CACHE_DIR = os.getenv("FC2_BASE_CACHE_DIR", os.path.join(ROOT_DIR, "data"))
 
 
 class Config:
