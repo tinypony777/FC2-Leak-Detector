@@ -1,8 +1,8 @@
 """
-FC2 视频分析器 - 国际化支持模块
+FC2ビデオアナライザー - 国際化サポートモジュール
 
-此模块提供多语言支持功能，使程序能够根据用户设置显示不同语言的界面。
-目前支持中文、英文和日文三种语言。
+ユーザー設定に基づいて表示言語を切り替える多言語機能を提供します。
+現在は中国語・英語・日本語に対応しています。
 """
 
 import json
@@ -40,13 +40,13 @@ os.makedirs(I18N_DIR, exist_ok=True)
 
 def load_language_file(lang_code):
     """
-    加载指定语言代码的语言文件
+    指定された言語コードのファイルを読み込む
 
-    参数:
-        lang_code: 语言代码，如'zh'、'en'、'ja'
+    Args:
+        lang_code: "zh"、"en"、"ja" などの言語コード
 
-    返回:
-        dict: 语言翻译字典，加载失败则返回None
+    Returns:
+        dict: 翻訳辞書。失敗した場合は None
     """
     try:
         # 获取语言文件路径
@@ -70,13 +70,13 @@ def load_language_file(lang_code):
 
 def save_language_preference(language):
     """
-    保存用户语言偏好设置
+    ユーザーの言語設定を保存する
 
-    参数:
-        language: 语言代码
+    Args:
+        language: 言語コード
 
-    返回:
-        bool: 是否保存成功
+    Returns:
+        bool: 保存に成功したかどうか
     """
     try:
         with open(USER_PREFS_FILE, 'w', encoding='utf-8') as f:
@@ -90,10 +90,10 @@ def save_language_preference(language):
 
 def load_language_preference():
     """
-    加载用户语言偏好设置
+    ユーザーの言語設定を読み込む
 
-    返回:
-        str: 语言代码，如果没有设置或加载失败则返回None
+    Returns:
+        str: 言語コード。未設定または失敗時は None
     """
     try:
         if os.path.exists(USER_PREFS_FILE):
@@ -109,10 +109,10 @@ def load_language_preference():
 
 def check_translation_completeness():
     """
-    检查所有语言文件的翻译完整性
+    すべての言語ファイルが揃っているか確認する
 
-    返回:
-        dict: 每种语言缺少的键，格式为{lang: [missing_keys]}
+    Returns:
+        dict: 各言語で欠けているキー {lang: [missing_keys]}
     """
     try:
         # 加载所有语言文件
@@ -144,14 +144,14 @@ def check_translation_completeness():
 
 def _extract_all_keys(data, prefix=""):
     """
-    递归提取翻译字典中的所有键
+    翻訳辞書から再帰的に全てのキーを取得する
 
-    参数:
-        data: 翻译字典
-        prefix: 键前缀
+    Args:
+        data: 翻訳辞書
+        prefix: キーの接頭辞
 
-    返回:
-        list: 所有键列表
+    Returns:
+        list: すべてのキー
     """
     keys = []
     for key, value in data.items():
@@ -165,13 +165,13 @@ def _extract_all_keys(data, prefix=""):
 
 def initialize(language=None):
     """
-    初始化国际化模块
+    国際化モジュールを初期化する
 
-    参数:
-        language: 指定语言代码，如果为None则尝试自动检测系统语言
+    Args:
+        language: 指定する言語コード。None の場合はシステム言語を自動検出
 
-    返回:
-        str: 当前使用的语言代码
+    Returns:
+        str: 使用中の言語コード
     """
     global current_language, translations
 

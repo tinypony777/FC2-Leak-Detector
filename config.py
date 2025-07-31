@@ -1,39 +1,39 @@
 """
-FC2 视频分析器 - 配置模块
+FC2ビデオアナライザー - 設定モジュール
 
-包含程序的所有可配置选项，已按功能分类整理。
-用户可根据需求调整这些设置以优化程序性能和行为。
+プログラムのすべての設定項目を機能別に整理しています。
+必要に応じて調整して動作を最適化できます。
 """
 import os
 import platform
 from typing import Any, Dict, List, Tuple, Union, Optional
 
 # -----------------------------------------------
-# 路径设置
+# パス設定
 # -----------------------------------------------
 
-# 获取项目根目录
+# プロジェクトのルートディレクトリを取得
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 数据存储基础目录 - 默认使用项目目录下的data文件夹
+# データ保存用の基礎ディレクトリ - デフォルトはプロジェクト直下のdataフォルダーを使用
 BASE_CACHE_DIR = os.path.join(ROOT_DIR, "data")
 
 
 class Config:
-    """配置类，用于管理所有配置项"""
+    """設定クラス。すべての設定項目を管理します"""
     
     _instance = None
     
     def __new__(cls):
-        """单例模式，确保全局只有一个Config实例"""
+        """シングルトンパターンでインスタンスを一つに保つ"""
         if cls._instance is None:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._initialized = False
         return cls._instance
     
     def __init__(self):
-        """初始化配置项，只在第一次创建实例时执行"""
-        # 将_initialized初始化移到前面，解决访问成员变量在定义前的问题
+        """設定項目を初期化。最初の生成時にのみ実行されます"""
+        # _initialized を前に設定し、メンバー参照の問題を回避
         if not hasattr(self, "_initialized"):
             self._initialized = False
             
@@ -43,55 +43,55 @@ class Config:
         self._initialized = True
         
         # -------------------------
-        # 基本信息
+        # 基本情報
         # -------------------------
-        self.version = "1.2.2"  # 程序版本号
+        self.version = "1.2.2"  # プログラムのバージョン
         
         # -------------------------
-        # 网络请求设置
+        # ネットワーク関連設定
         # -------------------------
-        # 请求间隔设置 - 防止请求过于频繁导致IP被限制
-        self.page_interval = (0.5, 1.2)  # 分页请求间隔时间范围(秒)
-        self.request_interval = (0.5, 1.0)  # 普通请求间隔时间范围(秒)
-        self.request_limit_count = 20  # 每X次请求后强制等待一次
-        # 并发与超时设置
-        self.max_workers = 30  # 最大并发线程数 (增加可提升速度，但可能增加被限制风险)
-        self.timeout = 15  # 请求超时时间(秒)，网络不稳定时可适当增加
-        # 重试策略设置
-        self.max_retries = 4  # 最大重试次数，遇到网络问题时会自动重试
-        self.retry_base = 2.0  # 重试间隔基数，决定每次重试等待的时间
+        # リクエスト間隔設定 - 短時間でのアクセス集中を避ける
+        self.page_interval = (0.5, 1.2)  # ページ取得間隔(秒)
+        self.request_interval = (0.5, 1.0)  # 通常リクエストの間隔(秒)
+        self.request_limit_count = 20  # 一定回数のリクエスト後に待機
+        # 並列数とタイムアウト
+        self.max_workers = 30  # 最大スレッド数 (増やすと速度向上するが制限リスクも増える)
+        self.timeout = 15  # リクエストタイムアウト(秒)。ネット環境に応じて調整
+        # リトライ設定
+        self.max_retries = 4  # 最大リトライ回数
+        self.retry_base = 2.0  # リトライ間隔の基準値
         
         # -------------------------
-        # 缓存设置
+        # キャッシュ設定
         # -------------------------
-        self.cache_ttl = 172800  # 缓存有效期(秒)，默认48小时
+        self.cache_ttl = 172800  # キャッシュの有効期間(秒)。初期値は48時間
         
         # -------------------------
-        # 数据存储目录设置
+        # データ保存ディレクトリ設定
         # -------------------------
-        # 基础缓存和数据目录
-        self.cache_dir = os.path.join(BASE_CACHE_DIR, "id_cache")  # 作者和女优ID缓存目录
-        self.image_dir = os.path.join(BASE_CACHE_DIR, "img")  # 视频缩略图存储目录
-        self.result_dir = os.path.join(BASE_CACHE_DIR, "results")  # 分析结果存储目录
-        self.magnet_dir = os.path.join(BASE_CACHE_DIR, "magnets")  # 磁链信息存储目录
+        # 基本となるキャッシュおよびデータのディレクトリ
+        self.cache_dir = os.path.join(BASE_CACHE_DIR, "id_cache")  # 作者・女優IDのキャッシュ
+        self.image_dir = os.path.join(BASE_CACHE_DIR, "img")  # サムネイル保存先
+        self.result_dir = os.path.join(BASE_CACHE_DIR, "results")  # 解析結果保存先
+        self.magnet_dir = os.path.join(BASE_CACHE_DIR, "magnets")  # マグネットリンク保存先
         
-        # 日志目录设置
-        self.log_dir = os.path.join(BASE_CACHE_DIR, "logs")  # 主日志目录
-        self.log_app_dir = os.path.join(self.log_dir, "app")  # 应用程序日志目录
-        self.log_analysis_dir = os.path.join(self.log_dir, "analysis")  # 分析结果日志目录
-        self.log_error_dir = os.path.join(self.log_dir, "errors")  # 错误日志目录
+        # ログディレクトリ設定
+        self.log_dir = os.path.join(BASE_CACHE_DIR, "logs")  # メインログ
+        self.log_app_dir = os.path.join(self.log_dir, "app")  # アプリケーションログ
+        self.log_analysis_dir = os.path.join(self.log_dir, "analysis")  # 解析結果ログ
+        self.log_error_dir = os.path.join(self.log_dir, "errors")  # エラーログ
         
-        # 日志文件保留设置
-        self.log_backup_count = 30  # 保留日志文件的天数
-        self.log_rotation = "midnight"  # 日志轮转时间：midnight(每天午夜)、W0-W6(每周)、h(每小时)
+        # ログファイル保持設定
+        self.log_backup_count = 30  # ログを保持する日数
+        self.log_rotation = "midnight"  # ローテーションタイミング: midnight(毎日), W0-W6(週次), h(毎時)
         
-        # 报告设置
+        # レポート設定
         self.summary_report = os.path.join(
             BASE_CACHE_DIR, "fc2_multi_author_summary.txt"
-        )  # 多作者汇总报告路径
+        )  # 複数作者の集計レポート
         
         # -------------------------
-        # 视频检查站点设置
+        # 動画確認サイト設定
         # -------------------------
         self.check_sites = [
             {
@@ -103,69 +103,72 @@ class Config:
         ]
         
         # -------------------------
-        # API设置
+        # API設定
         # -------------------------
-        self.fc2ppvdb_api_base = "https://fc2ppvdb.com"  # FC2PPVDB API基础URL
-        self.video_api_path = "/writers/writer-articles"  # 获取视频列表的API路径
-        self.author_api_path = "/writers/"  # 获取作者信息的API路径
+        self.fc2ppvdb_api_base = "https://fc2ppvdb.com"  # FC2PPVDB APIの基底URL
+        self.video_api_path = "/writers/writer-articles"  # 動画一覧APIのパス
+        self.author_api_path = "/writers/"  # 作者情報取得APIのパス
         
         # -------------------------
-        # 磁链搜索设置
         # -------------------------
-        # 注意：以下设置仅用于演示目的，指向的是公开索引网站
-        # 本工具不鼓励用户获取或分享侵犯版权的内容
-        # 使用者必须在遵守所在地区法律法规的前提下使用该功能
-        self.magnet_search_base = "https://sukebei.nyaa.si/"  # 磁链搜索网站基础URL
-        self.magnet_search_path = "?f=0&c=2_2&q=FC2-PPV-{vid}"  # 磁链搜索路径模板
+        # マグネット検索設定
+        # -------------------------
+        # 以下は公開インデックスサイトを参照する例示設定です。
+        # 著作権を侵害するコンテンツの取得や共有を推奨するものではありません。
+        # 利用は各地域の法律を遵守してください。
+        self.magnet_search_base = "https://sukebei.nyaa.si/"  # 検索サイトの基底URL
+        self.magnet_search_path = "?f=0&c=2_2&q=FC2-PPV-{vid}"  # 検索パスのテンプレート
         
         # -------------------------
-        # 界面设置
+        # UI設定
         # -------------------------
-        self.ui_refresh_interval = 0.5  # 界面刷新间隔(秒)
-        self.progress_color = "green"  # 进度条颜色 (可选: green, blue, yellow, red, cyan, magenta)
-        self.error_color = "red"  # 错误信息颜色
-        
-        # -------------------------
-        # 结果输出设置
-        # -------------------------
-        self.save_format = ["text", "json"]  # 保存格式，可选: "text", "json", 或同时使用
-        self.report_batch_size = 100  # 报告中每批显示的视频数量
+        self.ui_refresh_interval = 0.5  # 画面更新間隔(秒)
+        self.progress_color = "green"  # プログレスバーの色 (green, blue, yellow, red, cyan, magenta)
+        self.error_color = "red"  # エラーメッセージの色
         
         # -------------------------
-        # 日志设置
         # -------------------------
-        self.log_level = "INFO"  # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
-        
-        # 日志文件命名格式
-        self.log_date_format = "%Y%m%d"  # 日志文件日期格式，默认为年月日(20250531)
-        self.log_datetime_format = "%Y%m%d_%H%M%S"  # 精确到秒的日志文件日期时间格式(20250531_040816)
-        self.log_timestamp_format = "%Y-%m-%d %H:%M:%S"  # 日志记录时间戳格式
-        
-        # 日志文件命名选项
-        self.log_use_datetime = True  # 是否在日志文件名中使用精确到秒的时间戳
-        
-        # 日志过滤设置
-        self.log_enable_duplicate_filter = True  # 是否启用日志去重过滤
-        
-        # 控制台日志设置
-        self.log_enable_console = True  # 是否在控制台显示日志
-        self.log_console_format = "%(levelname)s - %(message)s"  # 控制台日志格式
-        
-        # 文件日志设置
-        self.log_file_format = "%(asctime)s - %(levelname)s - %(message)s"  # 文件日志格式
-        self.log_error_format = "%(asctime)s - %(levelname)s - %(message)s"  # 错误日志格式
-        self.log_analysis_format = "%(asctime)s - %(message)s"  # 分析日志格式
+        # 出力設定
+        # -------------------------
+        self.save_format = ["text", "json"]  # 保存形式: "text"、"json" または併用
+        self.report_batch_size = 100  # レポート1ページに表示する動画数
         
         # -------------------------
-        # 高级网络设置
         # -------------------------
-        self.enable_proxy = False  # 是否启用代理
-        self.proxy = {  # 代理设置 (仅当enable_proxy为True时生效)
-            "http": "",  # HTTP代理地址
-            "https": "",  # HTTPS代理地址
+        # ログ設定
+        # -------------------------
+        self.log_level = "INFO"  # ログレベル: DEBUG, INFO, WARNING, ERROR, CRITICAL
+        
+        # ログファイル名の書式
+        self.log_date_format = "%Y%m%d"  # 日付のみのフォーマット(例:20250531)
+        self.log_datetime_format = "%Y%m%d_%H%M%S"  # 日時を含むフォーマット(例:20250531_040816)
+        self.log_timestamp_format = "%Y-%m-%d %H:%M:%S"  # ログ出力時刻のフォーマット
+        
+        # ログファイル名オプション
+        self.log_use_datetime = True  # ファイル名に日時を含めるか
+        
+        # ログの重複フィルタ設定
+        self.log_enable_duplicate_filter = True  # 同一内容を重複記録しない
+        
+        # コンソールログ設定
+        self.log_enable_console = True  # コンソールにログを表示するか
+        self.log_console_format = "%(levelname)s - %(message)s"  # コンソール用フォーマット
+        
+        # ファイルログ設定
+        self.log_file_format = "%(asctime)s - %(levelname)s - %(message)s"  # ファイル用フォーマット
+        self.log_error_format = "%(asctime)s - %(levelname)s - %(message)s"  # エラーログ用フォーマット
+        self.log_analysis_format = "%(asctime)s - %(message)s"  # 解析ログ用フォーマット
+        
+        # -------------------------
+        # 高度なネットワーク設定
+        # -------------------------
+        self.enable_proxy = False  # プロキシを使用するか
+        self.proxy = {  # enable_proxy が True の場合に有効
+            "http": "",  # HTTP プロキシ
+            "https": "",  # HTTPS プロキシ
         }
-        
-        # 浏览器标识轮换，减少访问限制风险
+
+        # User-Agent をローテーションしてアクセス制限を回避
         self.user_agents = [
             # Windows Chrome
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
@@ -182,7 +185,7 @@ class Config:
             "Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6558.50 Mobile Safari/537.36",
         ]
         
-        # 基础请求头
+        # 基本ヘッダー
         self.base_headers = {
             "User-Agent": self.user_agents[0],
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
@@ -194,7 +197,7 @@ class Config:
             "Sec-Fetch-Mode": "navigate",
         }
         
-        # API请求头
+        # API用ヘッダー
         self.api_headers = {
             "User-Agent": self.user_agents[0],
             "accept": "*/*",
@@ -203,33 +206,33 @@ class Config:
             "referer": "https://fc2ppvdb.com/",
         }
         
-        # 获取系统环境信息
+        # システム環境情報を取得
         self.system_info = {
             "os": platform.system(),
             "os_version": platform.version(),
             "python_version": platform.python_version(),
         }
         
-        # 根据操作系统调整文件路径长度限制
+        # OSに合わせてファイルパスの長さ制限を設定
         if self.system_info["os"] == "Windows":
-            self.file_path_max_length = 260  # Windows路径长度限制
+            self.file_path_max_length = 260  # Windowsの制限
         elif self.system_info["os"] == "Darwin":  # macOS
             self.file_path_max_length = 1024
-        else:  # Linux和其他系统
+        else:  # Linuxなど
             self.file_path_max_length = 4096
             
-        # 创建所需目录
+        # 必要なディレクトリを作成
         self._create_directories()
     
     def _create_directories(self):
-        """创建所需的目录"""
+        """必要なディレクトリを作成する"""
         directories = [
-            # 数据目录
+            # データディレクトリ
             self.cache_dir,
             self.result_dir,
             self.image_dir,
             self.magnet_dir,
-            # 日志目录结构
+            # ログディレクトリ構造
             self.log_dir,
             self.log_app_dir,      # 应用程序日志
             self.log_analysis_dir, # 分析结果日志
@@ -242,34 +245,34 @@ class Config:
             try:
                 os.makedirs(directory, exist_ok=True)
             except Exception as e:
-                print(f"警告: 无法创建目录 {directory}: {e}")
+                print(f"警告: ディレクトリ {directory} を作成できません: {e}")
                 
-        # 创建.gitkeep文件确保空目录被版本控制
+        # 空ディレクトリもGitで管理するため.gitkeepを作成
         for directory in directories:
             gitkeep_file = os.path.join(directory, ".gitkeep")
             if not os.path.exists(gitkeep_file):
                 try:
                     with open(gitkeep_file, "w") as f:
-                        pass  # 创建空文件
+                        pass  # 空ファイル作成
                 except Exception:
-                    pass  # 忽略创建.gitkeep失败的错误
+                    pass  # 失敗しても無視
     
     def get(self, key: str, default: Any = None) -> Any:
-        """获取配置项，与字典兼容的方法"""
+        """設定値を取得する。dict風アクセス用"""
         return getattr(self, key, default)
     
     def set(self, key: str, value: Any) -> None:
-        """设置配置项"""
+        """設定値をセット"""
         setattr(self, key, value)
     
     def update(self, config_dict: Dict[str, Any]) -> None:
-        """从字典更新多个配置项"""
+        """辞書から複数の設定を更新"""
         for key, value in config_dict.items():
             if hasattr(self, key):
                 setattr(self, key, value)
     
     def to_dict(self) -> Dict[str, Any]:
-        """将配置转换为字典形式"""
+        """設定を辞書形式に変換"""
         result = {}
         for key in dir(self):
             if not key.startswith('_') and not callable(getattr(self, key)):
@@ -277,16 +280,16 @@ class Config:
         return result
     
     def __getitem__(self, key: str) -> Any:
-        """支持以字典形式访问配置"""
+        """辞書風アクセスをサポート"""
         if hasattr(self, key):
             return getattr(self, key)
-        raise KeyError(f"配置项 '{key}' 不存在")
+        raise KeyError(f"設定項目 '{key}' は存在しません")
     
     def __setitem__(self, key: str, value: Any) -> None:
-        """支持以字典形式设置配置"""
+        """辞書風に設定値をセット"""
         setattr(self, key, value)
 
 
-# 创建全局配置实例
+# グローバル設定インスタンスを生成
 config = Config()
 
